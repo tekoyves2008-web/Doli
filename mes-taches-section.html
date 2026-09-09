@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Section Mes Tâches — démonstration (structure)</title>
+  <!--
+    Démonstration STRUCTURELLE de la section « MES TÂCHES » d'un tableau de bord.
+    Aucune couleur ni palette : uniquement structure, hiérarchie, espacements,
+    tailles, alignements et bordures (classes génériques).
+  -->
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: system-ui, "Segoe UI", Arial, sans-serif;
+      margin: 0;
+      padding: 24px;
+    }
+    /* ============ CONTENEUR PRINCIPAL ============ */
+    .card {
+      max-width: 980px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 20px;
+      border: 1px solid #ccc;
+      border-radius: 12px;
+      background: #fff;
+    }
+    /* ============ EN-TÊTE ============ */
+    .card-title {
+      margin: 0 0 16px;
+      font-size: 18px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      text-align: left;
+    }
+    /* ============ BARRE D'ONGLETS ============ */
+    .tabs {
+      display: flex;
+      gap: 18px;
+      border-bottom: 1px solid #ccc;
+      margin-bottom: 14px;
+      padding: 0 2px;
+    }
+    .tab {
+      appearance: none;
+      background: none;
+      border: none;
+      padding: 8px 2px 10px;
+      font: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      color: #444;
+      cursor: pointer;
+    }
+    .tab.is-active {
+      border-bottom: 2px solid currentColor;
+      margin-bottom: -1px;
+      font-weight: 700;
+    }
+    /* ============ BARRE RECHERCHE + FILTRE ============ */
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+    .search {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 8px 12px;
+      min-width: 0;
+    }
+    .search svg { flex-shrink: 0; }
+    .search input {
+      flex: 1;
+      border: none;
+      background: none;
+      outline: none;
+      font: inherit;
+      font-size: 13px;
+      min-width: 0;
+    }
+    .filter-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      background: none;
+      padding: 9px 14px;
+      font: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    /* ============ LISTE DES TÂCHES ============ */
+    .task-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .task {
+      position: relative;
+      display: grid;
+      grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 0.9fr) auto;
+      gap: 16px;
+      align-items: center;
+      padding: 14px 16px;
+      border: 1px solid #ccc;
+      border-left: 4px solid #ccc;
+      border-radius: 10px;
+      background: #fafafa;
+      min-width: 0;
+    }
+    .task__menu {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      appearance: none;
+      background: none;
+      border: none;
+      font: inherit;
+      font-size: 18px;
+      line-height: 1;
+      padding: 2px 6px;
+      cursor: pointer;
+    }
+    .task__main {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+    .task__icon {
+      flex-shrink: 0;
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .task__title {
+      margin: 0 0 3px;
+      font-size: 15px;
+      font-weight: 700;
+      overflow-wrap: anywhere;
+    }
+    .task__priority-line {
+      margin: 0;
+      font-size: 12px;
+      color: #555;
+    }
+    .task__priority-line b { font-weight: 700; }
+    .task__adv { min-width: 0; }
+    .task__status {
+      margin: 0 0 8px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .progress {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .progress__bar {
+      flex: 1;
+      height: 8px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      overflow: hidden;
+      background: #eee;
+      min-width: 60px;
+    }
+    .progress__fill {
+      display: block;
+      height: 100%;
+      background: #888;
+    }
+    .progress__pct {
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
+    .task__situation { min-width: 0; }
+    .task__situation-label {
+      margin: 0 0 6px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #777;
+    }
+    .task__situation-value {
+      margin: 0 0 4px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .task__situation-detail {
+      margin: 0;
+      font-size: 12px;
+      color: #555;
+    }
+    .stars { display: inline-flex; gap: 2px; vertical-align: middle; }
+    .task__actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      align-items: stretch;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      background: none;
+      padding: 9px 12px;
+      font: inherit;
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .btn--primary { background: #eee; }
+    .task__when {
+      margin: 8px 0 0;
+      font-size: 12px;
+      color: #555;
+    }
+    .card-footer {
+      display: flex;
+      justify-content: center;
+      padding-top: 14px;
+      border-top: 1px solid #eee;
+    }
+    .card-footer a {
+      font-size: 13px;
+      font-weight: 600;
+      color: #222;
+      text-decoration: none;
+    }
+    @media (max-width: 720px) {
+      .task {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+      .task__menu { position: static; justify-self: end; }
+      .tabs { gap: 12px; }
+    }
+  </style>
+</head>
+<body>
+  <section class="card" aria-label="Mes tâches">
+    <h2 class="card-title">Mes tâches</h2>
+
+    <!-- Onglets -->
+    <div class="tabs" role="tablist">
+      <button type="button" class="tab is-active" data-filter="all">Toutes (24)</button>
+      <button type="button" class="tab" data-filter="doing">En cours (4)</button>
+      <button type="button" class="tab" data-filter="late">En retard (3)</button>
+      <button type="button" class="tab" data-filter="done">Terminées (12)</button>
+      <button type="button" class="tab" data-filter="todo">Non exécutées (5)</button>
+    </div>
+
+    <!-- Recherche + bouton filtrer -->
+    <div class="toolbar">
+      <label class="search">
+        <svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="9" cy="9" r="5.5"/><line x1="14" y1="14" x2="17" y2="17"/></svg>
+        <input type="search" id="searchInput" placeholder="Rechercher une tâche..." />
+      </label>
+      <button type="button" class="filter-btn">
+        <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="5" x2="17" y2="5"/><line x1="3" y1="10" x2="17" y2="10"/><line x1="7" y1="15" x2="13" y2="15"/></svg>
+        Filtrer
+      </button>
+    </div>
+
+    <!-- Liste des tâches -->
+    <div id="tasksList" class="task-list"></div>
+
+    <!-- Pied de carte -->
+    <div class="card-footer">
+      <a href="#">Voir toutes les tâches →</a>
+    </div>
+  </section>
+  <script>
+    const STAR = '<svg class="stars" viewBox="0 0 20 20" width="13" height="13" fill="currentColor"><path d="M10 2.2l2.3 4.8 5.2.7-3.8 3.7.9 5.2-4.6-2.5-4.6 2.5.9-5.2L2.5 7.7l5.2-.7z"/></svg>'
+    const IC_DOC = '<svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h6l4 4v12H6z"/><path d="M12 2v4h4"/><line x1="8" y1="12" x2="13" y2="12"/></svg>'
+    const IC_DB = '<svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><ellipse cx="10" cy="5" rx="6" ry="2.5"/><path d="M4 5v5c0 1.4 2.7 2.5 6 2.5s6-1.1 6-2.5V5"/><path d="M4 10v5c0 1.4 2.7 2.5 6 2.5s6-1.1 6-2.5v-5"/></svg>'
+    const IC_FLASK = '<svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2h4"/><path d="M9 2v5l-4.5 8a1.5 1.5 0 001.3 2.2h8.4a1.5 1.5 0 001.3-2.2L11 7V2"/><path d="M6.5 13h7"/></svg>'
+    const IC_WRENCH = '<svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15.5 7.5a4 4 0 01-5 5L6 17a2 2 0 01-3-3l4.5-4.5a4 4 0 015-5l-2 2 2.5 2.5 2-2z"/></svg>'
+    const IC_SLIDES = '<svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="3" y="4" width="14" height="10" rx="1.5"/><line x1="8" y1="17" x2="8" y2="14"/><line x1="12" y1="17" x2="12" y2="14"/></svg>'
+    const IC_PLAY = '<svg viewBox="0 0 20 20" width="13" height="13" fill="currentColor"><path d="M6 4l10 6-10 6z"/></svg>'
+    const IC_PAPER = '<svg viewBox="0 0 20 20" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8.5l-7 7a3.5 3.5 0 01-5-5l7.5-7.5a2.2 2.2 0 113 3l-7.5 7.5a.9.9 0 01-1.3-1.3l7-7"/></svg>'
+    const IC_EYE = '<svg viewBox="0 0 20 20" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 10c1.7-3 4.4-4.8 7.5-4.8S16.3 7 17.5 10c-1.2 3-3.9 4.8-7.5 4.8S3.7 13 2.5 10z"/><circle cx="10" cy="10" r="2"/></svg>'
+
+    const TASKS = [
+      { id: 1, icon: IC_DOC, title: 'Finaliser le rapport mensuel', priority: 'Urgente', status: 'En cours', progress: 65, situation: 'En retard', detail: 'Retard : 2h45', when: '10h00 → 15h00', mode: 'doing' },
+      { id: 2, icon: IC_DB, title: 'Développer la base de données', priority: 'Haute', status: 'En cours', progress: 70, situation: 'Dans les délais', detail: 'Tout va bien', when: '08h00 → 14h00', mode: 'doing' },
+      { id: 3, icon: IC_FLASK, title: "Tester l'application", priority: 'Normale', status: 'Terminée', progress: 100, situation: 'Performance Excellente', detail: STAR.repeat(5), when: '14h00 → 16h00', mode: 'done' },
+      { id: 4, icon: IC_WRENCH, title: 'Corriger les erreurs', priority: 'Haute', status: 'En cours', progress: 40, situation: 'En retard modéré', detail: 'Retard : 45 min', when: '09h00 → 12h00', mode: 'doing' },
+      { id: 5, icon: IC_SLIDES, title: 'Préparer la présentation', priority: 'Normale', status: 'Non exécutée', progress: 0, situation: 'À venir', detail: 'Commence à 10h00', when: '10h00 → 15h00', mode: 'todo' },
+    ]
+function buttons(mode) {
+      if (mode === 'done') return '<button type="button" class="btn">' + IC_EYE + ' Voir les détails</button>'
+      if (mode === 'todo') return '<button type="button" class="btn btn--primary">' + IC_PLAY + ' Commencer</button>'
+      return '<button type="button" class="btn btn--primary">' + IC_PLAY + ' Continuer</button>' +
+             '<button type="button" class="btn">' + IC_PAPER + ' Ajouter une preuve</button>'
+    }
+    function taskHtml(t) {
+      return '<article class="task" data-id="' + t.id + '">' +
+        '<button type="button" class="task__menu" aria-label="Options">…</button>' +
+        '<div class="task__main"><span class="task__icon">' + t.icon + '</span><div>' +
+          '<h3 class="task__title">' + t.title + '</h3>' +
+          '<p class="task__priority-line">Priorité : <b>' + t.priority + '</b></p></div></div>' +
+        '<div class="task__adv"><p class="task__status">' + t.status + '</p>' +
+          '<div class="progress"><div class="progress__bar"><span class="progress__fill" style="width:' + t.progress + '%"></span></div>' +
+          '<span class="progress__pct">' + t.progress + '%</span></div></div>' +
+        '<div class="task__situation"><p class="task__situation-label">Situation</p>' +
+          '<p class="task__situation-value">' + t.situation + '</p>' +
+          '<p class="task__situation-detail">' + t.detail + '</p></div>' +
+        '<div class="task__actions">' + buttons(t.mode) + '</div>' +
+        '<p class="task__when">Prévu : ' + t.when + '</p></article>'
+    }
+    function render(filter, query) {
+      const q = (query || '').trim().toLowerCase()
+      const items = TASKS.filter(function (t) {
+        if (filter && filter !== 'all') {
+          if (filter === 'doing' && t.mode !== 'doing') return false
+          if (filter === 'done' && t.mode !== 'done') return false
+          if (filter === 'todo' && t.mode !== 'todo') return false
+          if (filter === 'late') return t.situation.toLowerCase().indexOf('retard') !== -1
+        }
+        if (q && t.title.toLowerCase().indexOf(q) === -1) return false
+        return true
+      })
+      document.getElementById('tasksList').innerHTML =
+        items.length ? items.map(taskHtml).join('') : '<p style="padding:16px;text-align:center;font-size:13px;color:#666">Aucune tâche à afficher.</p>'
+    }
+    document.querySelectorAll('.tab').forEach(function (tab) {
+      tab.addEventListener('click', function () {
+        document.querySelectorAll('.tab').forEach(function (x) { x.classList.remove('is-active') })
+        tab.classList.add('is-active')
+        render(tab.dataset.filter, document.getElementById('searchInput').value)
+      })
+    })
+    document.getElementById('searchInput').addEventListener('input', function (e) {
+      render(document.querySelector('.tab.is-active').dataset.filter, e.target.value)
+    })
+    document.querySelector('.filter-btn').addEventListener('click', function () {
+      render(document.querySelector('.tab.is-active').dataset.filter, document.getElementById('searchInput').value)
+    })
+    render('all', '')
+  </script>
+</body>
+</html>
