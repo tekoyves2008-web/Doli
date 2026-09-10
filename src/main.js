@@ -1,4 +1,4 @@
-// main.js
+﻿// main.js
 // Point d'entrée de l'application. Relie les modules entre eux, réagit
 // aux événements DOM, et déclenche le re-rendu à chaque changement.
 
