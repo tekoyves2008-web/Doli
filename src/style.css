@@ -753,6 +753,24 @@ input:focus-visible,
 }
 @media (max-width: 1100px) {
   .dash__midrow { grid-template-columns: 1fr; }
+  .dash__midrow > .dash__kpis--secondary,
+  .dash__midrow > .dash__col-side {
+    position: static;
+    max-height: none;
+    overflow: visible;
+  }
+}
+/* Colonnes latérales figées pendant le défilement de « Mes tâches » :
+   elles restent visibles (sticky sous la topbar) sans que leur contenu
+   ne soit modifié. Désactivé sur mobile (voir media query ci-dessus). */
+.dash__midrow > .dash__kpis--secondary,
+.dash__midrow > .dash__col-side {
+  position: sticky;
+  top: 92px;
+  align-self: start;
+  max-height: calc(100vh - 110px);
+  overflow-y: auto;
+  scrollbar-width: thin;
 }
 .dash__kpi-right {
   display: flex;
@@ -787,6 +805,15 @@ input:focus-visible,
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--text-muted);
+}
+/* Harmonie des titres de cartes : même police partout sur le dashboard
+   (ancien + nouveau), seule la casse/espacement diffère pour les kickers. */
+.dash-card__title,
+.dash-task-section__head h4,
+.dash-mini__title {
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.01em;
 }
 .dash-kpi__ring {
   margin-bottom: 10px;
@@ -970,6 +997,231 @@ input:focus-visible,
 .dash-perf-bar--ok .dash-perf-bar__track span { background: var(--color-success); }
 .dash-perf-bar--mid .dash-perf-bar__track span { background: var(--color-warning); }
 .dash-perf-bar--bad .dash-perf-bar__track span { background: var(--color-error); }
+/* --- Top KPIs : rectangles compacts, réduits et magnifiques --- */
+.dash__kpis:not(.dash__kpis--secondary) {
+  gap: 12px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.dash__kpis:not(.dash__kpis--secondary) .dash-kpi {
+  position: relative;
+  min-height: 128px;
+  max-height: 140px;
+  padding: 12px 12px 10px;
+  gap: 4px;
+  justify-content: flex-start;
+  border-radius: 14px;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--accent) 5%, transparent), transparent 42%),
+    var(--bg-elevated);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 8px 22px -14px rgba(0, 0, 0, 0.25);
+}
+.dash__kpis:not(.dash__kpis--secondary) .dash-kpi::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 35%, transparent));
+  opacity: 0.85;
+}
+.dash__kpis:not(.dash__kpis--secondary) .dash-kpi:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05), 0 14px 28px -16px rgba(0, 0, 0, 0.3);
+}
+.dash__kpis:not(.dash__kpis--secondary) .dash-card__kicker {
+  margin-bottom: 2px;
+  font-size: 10px;
+  letter-spacing: 0.09em;
+}
+.dash__kpis:not(.dash__kpis--secondary) .dash-kpi .stats__circle {
+  width: 54px;
+  height: 54px;
+  font-size: 15px;
+  border-width: 6px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+}
+.dash__kpis:not(.dash__kpis--secondary) .dash-kpi__ring {
+  margin-bottom: 2px;
+}
+.dash__kpis:not(.dash__kpis--secondary) .dash-bignum {
+  font-size: 28px;
+  padding: 0;
+  line-height: 1.05;
+}
+.dash__kpis:not(.dash__kpis--secondary) .dash-minilist {
+  gap: 4px;
+  font-size: 11.5px;
+  line-height: 1.35;
+  max-height: 46px;
+  overflow: hidden;
+}
+.dash__kpis:not(.dash__kpis--secondary) .dash-kpi__delta,
+.dash__kpis:not(.dash__kpis--secondary) .dash-kpi__sub {
+  font-size: 10.5px;
+  line-height: 1.35;
+}
+.dash__kpis:not(.dash__kpis--secondary) .dash-kpi__sub {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-top: 0;
+}
+/* Phrase d'alerte de la carte « Tâches en retard » (en haut, comme la
+   section « Tâches terminées » a son « Cette semaine ») : même police que
+   les autres sous-titres pour garder l'harmonie (seule la teinte change). */
+.dash__kpis:not(.dash__kpis--secondary) .dash-kpi__sub--alert {
+  color: var(--badge-todo-text);
+  font-weight: 600;
+}
+/* Harmonie des grands nombres : même police/couleur de texte partout
+   (thème sombre comme clair) ; seule la teinte du liseré de la carte
+   distingue les sections (voir accent--late / accent--done ci-dessous). */
+.dash__kpis:not(.dash__kpis--secondary) .dash-bignum,
+.dash__kpis:not(.dash__kpis--secondary) .dash-bignum--late {
+  color: var(--text);
+}
+/* Liseré distinctif par section (harmonie : même hauteur/gradient, teinte
+   adaptée — erreur pour les retards, succès pour les terminées). */
+.dash__kpis:not(.dash__kpis--secondary) .dash-kpi--late::before {
+  background: linear-gradient(90deg, var(--badge-todo-text), color-mix(in srgb, var(--badge-todo-text) 35%, transparent));
+}
+.dash__kpis:not(.dash__kpis--secondary) .dash-kpi--done::before {
+  background: linear-gradient(90deg, var(--badge-done-text), color-mix(in srgb, var(--badge-done-text) 35%, transparent));
+}
+.dash__kpis:not(.dash__kpis--secondary) .dash-link {
+  font-size: 11.5px;
+  padding: 2px 0 0;
+}
+/* --- Colonne gauche : comme l'image — Répartition à gauche sous la
+   progression globale, Performance : résumé juste en dessous --- */
+.dash__kpis--secondary {
+  grid-template-columns: 1fr;
+  display: grid;
+  gap: 12px;
+  width: 100%;
+  align-content: start;
+}
+.dash__kpis--secondary .dash-card.dash-kpi {
+  width: 100%;
+  max-width: 100%;
+  padding: 12px 12px 10px;
+  gap: 6px;
+  justify-content: flex-start;
+  align-items: stretch;
+  text-align: left;
+  border-radius: 12px;
+  overflow: hidden;
+}
+/* Répartition : donut à gauche + légende à droite + total en bas. */
+.dash__kpis--secondary .dash-card__kicker {
+  margin-bottom: 2px;
+  text-align: center;
+  font-size: 10px;
+}
+.dash__kpis--secondary .dash-kpi__dist {
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  width: 100%;
+}
+.dash__kpis--secondary .dash-donut {
+  flex: 0 0 84px;
+  width: 84px;
+  height: 84px;
+}
+.dash__kpis--secondary .dash-donut__hole {
+  width: 58px;
+  height: 58px;
+  font-size: 8.5px;
+  line-height: 1.15;
+}
+.dash__kpis--secondary .dash-donut__hole strong {
+  font-size: 16px;
+}
+.dash__kpis--secondary .dash-donut__hole em {
+  font-style: normal;
+}
+.dash__kpis--secondary .dash-legend {
+  flex: 1;
+  min-width: 0;
+  gap: 6px;
+  font-size: 11px;
+  line-height: 1.4;
+}
+.dash__kpis--secondary .dash-legend li {
+  gap: 7px;
+}
+.dash__kpis--secondary .dash-legend__dot {
+  width: 10px;
+  height: 10px;
+}
+.dash__kpis--secondary .dash-legend strong {
+  font-size: 11px;
+}
+.dash__kpis--secondary .dash-kpi__delta {
+  text-align: center;
+  font-size: 10.5px;
+}
+/* Performance : résumé — texte intro, liste à pastilles, 3 jauges %. */
+.dash__kpis--secondary .dash-kpi__perf {
+  gap: 7px;
+  width: 100%;
+}
+.dash__kpis--secondary .dash-perf-intro {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.45;
+  color: var(--text-muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.dash__kpis--secondary .dash-perf-list {
+  font-size: 11px;
+  gap: 5px;
+}
+.dash__kpis--secondary .dash-perf-list li {
+  line-height: 1.4;
+  gap: 7px;
+}
+.dash__kpis--secondary .dash-perf-dot {
+  width: 9px;
+  height: 9px;
+}
+.dash__kpis--secondary .dash-perf-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+.dash__kpis--secondary .dash-perf-bar {
+  gap: 3px;
+}
+.dash__kpis--secondary .dash-perf-bar__head {
+  font-size: 11px;
+}
+.dash__kpis--secondary .dash-perf-bar__track {
+  height: 6px;
+}
+@media (max-width: 1100px) {
+  .dash__kpis--secondary {
+    grid-template-columns: 1fr 1fr;
+  }
+  .dash__kpis--secondary .dash-card.dash-kpi {
+    max-width: 340px;
+    margin: 0 auto;
+    width: 100%;
+  }
+}
+@media (max-width: 700px) {
+  .dash__kpis--secondary {
+    grid-template-columns: 1fr;
+  }
+}
 .dash-task-sections {
   display: grid;
   grid-template-columns: 1fr;
@@ -1339,7 +1591,8 @@ input:focus-visible,
   opacity: 0.8;
 }
 
-/* Colonne latérale droite du dashboard */
+/* Colonne latérale droite du dashboard — contenu intact, seule la position
+   est figée via la règle sticky sur .dash__midrow > .dash__col-side. */
 .dash__col-side {
   display: flex;
   flex-direction: column;

@@ -188,13 +188,13 @@
                 <div class="dash-kpi__ring stats__circle" id="dashProgressRing" style="--percent:0"><span id="dashProgressPct">0 %</span></div>
                 <span class="dash-kpi__delta" id="dashProgressDelta">— % par rapport à hier</span>
               </div>
-              <div class="dash-card dash-kpi">
+              <div class="dash-card dash-kpi dash-kpi--late">
                 <h4 class="dash-card__kicker">Tâches en retard</h4>
-                <span class="dash-kpi__sub">Nécessitent votre attention</span>
-                <div id="dashLateList" class="dash-minilist"></div>
-                <button type="button" id="dashViewLate" class="dash-link">Voir les retards →</button>
+                <span class="dash-kpi__sub dash-kpi__sub--alert" id="dashLateSub">À rattraper au plus vite</span>
+                <div class="dash-bignum dash-bignum--late" id="dashLateCount">0</div>
+                <button type="button" id="dashViewLate" class="dash-link">Voir les tâches →</button>
               </div>
-              <div class="dash-card dash-kpi">
+              <div class="dash-card dash-kpi dash-kpi--done">
                 <h4 class="dash-card__kicker">Tâches terminées</h4>
                 <span class="dash-kpi__sub">Cette semaine</span>
                 <div class="dash-bignum" id="dashDoneWeek">0</div>
@@ -210,7 +210,7 @@
 
             <div class="dash__midrow">
             <div class="dash__kpis dash__kpis--secondary">
-              <div class="dash-card dash-kpi">
+              <div class="dash-card dash-kpi dash-kpi--dist">
                 <h4 class="dash-card__kicker">Répartition des tâches</h4>
                 <div class="dash-kpi__dist">
                   <div class="dash-donut" id="dashDonut"><span class="dash-donut__hole"><strong id="dashDonutTotal">0</strong><em>tâches</em></span></div>
@@ -218,8 +218,9 @@
                 </div>
                 <span class="dash-kpi__delta" id="dashDistTotal"></span>
               </div>
-              <div class="dash-card dash-kpi">
+              <div class="dash-card dash-kpi dash-kpi--perf">
                 <h4 class="dash-card__kicker">Performance : résumé</h4>
+                <p class="dash-perf-intro">Vue d'ensemble sur la qualité d'exécution de vos tâches : respect des délais et gravité des retards.</p>
                 <div class="dash-kpi__perf">
                   <ul id="dashPerfList" class="dash-perf-list"></ul>
                   <div id="dashPerfBars" class="dash-perf-bars"></div>

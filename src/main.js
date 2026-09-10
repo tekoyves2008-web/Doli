@@ -111,6 +111,8 @@ const dashProgressDeltaEl = document.getElementById('dashProgressDelta')
 const dashPerformanceEl = document.getElementById('dashPerformance')
 const dashPerformancePctEl = document.getElementById('dashPerformancePct')
 const dashLateListEl = document.getElementById('dashLateList')
+const dashLateCountEl = document.getElementById('dashLateCount')
+const dashLateSubEl = document.getElementById('dashLateSub')
 const dashDoneWeekEl = document.getElementById('dashDoneWeek')
 const dashDonutEl = document.getElementById('dashDonut')
 const dashDonutTotalEl = document.getElementById('dashDonutTotal')
@@ -312,6 +314,14 @@ async function render() {
   // Tâches en retard (les plus anciennement en retard d'abord) + terminées.
   const lateTasks = [...delayed].sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))
   renderDashLate(dashLateListEl, lateTasks, now)
+  // Carte « Tâches en retard » : seulement le nombre (comme « Tâches
+  // terminées »), avec une phrase d'alerte en haut.
+  if (dashLateCountEl) dashLateCountEl.textContent = lateTasks.length
+  if (dashLateSubEl) dashLateSubEl.textContent = lateTasks.length === 0
+    ? 'Aucun retard, bravo'
+    : lateTasks.length === 1
+      ? '1 tâche à rattraper au plus vite'
+      : `${lateTasks.length} tâches à rattraper au plus vite`
   const today0 = new Date()
   today0.setHours(0, 0, 0, 0)
   const monday = new Date(today0.getTime() - ((today0.getDay() + 6) % 7) * 24 * 60 * 60 * 1000)
