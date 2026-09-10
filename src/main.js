@@ -867,9 +867,6 @@ settingsEditForm.addEventListener('submit', (event) => {
   render()
 })
 
-if (dashboardWeeklyGoalEl) bindWeeklyGoalEdit(dashboardWeeklyGoalEl, () => openSettingsEdit('goal'))
-if (dashboardAchievementsEl) bindAchievementsEdit(dashboardAchievementsEl, () => openSettingsEdit('achievements'))
-
 // --- Thème (discret, un seul bouton qui bascule) -------------------------
 onEl(themeToggleBtn, 'click', () => {
   const next = settings.theme === 'dark' ? 'light' : 'dark'

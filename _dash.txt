@@ -1,0 +1,15 @@
+84: dashboard: document.getElementById('viewDashboard'),
+91: dashboard: 'Dashboard',
+105: // --- Références DOM : dashboard (maquette Doli) --------------------------
+150: // (vieux dashboard, vues redessinées) peuvent manquer dans index.html
+212: // Prénom affiché devant la phrase d'encouragement du dashboard.
+214: let currentView = 'dashboard'
+220: // Recherche, tri et onglet actif du « Mes tâches » du dashboard.
+285: // --- Dashboard (maquette Doli) : tous les rendus passent par les calculs
+336: // Mes tâches du dashboard : onglets de filtre, recherche, tri, cartes.
+571: // --- Fournir une preuve depuis une carte du dashboard --------------------
+579: // --- Dashboard : onglets, recherche, « Filtrer », liens de navigation ----
+592: // Bouton « Filtrer » du dashboard : ouvre le menu de tri des cartes.
+621: // Liens du dashboard : redirigent vers la rubrique correspondante.
+679: // --- Actions sur une tâche (dashboard et "Mes tâches" partagent le même comportement) ---
+701: // Cartes du dashboard : clic = consultation ; Continuer / Ajouter une preuve
