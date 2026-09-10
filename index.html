@@ -183,43 +183,28 @@
             </div>
 
             <div class="dash__kpis">
-              <div id="dashboardCounts"></div>
-              <div id="dashboardTrend"></div>
-              <div id="dashboardWeekSummary"></div>
-              <div id="dashboardComparison"></div>
-              <div id="dashboardBestDay"></div>
-              <div id="dashboardAvgDelay"></div>
-              <div id="dashboardProjection"></div>
-              <div id="dashboardWeeklyGoal"></div>
-              <div id="dashboardAchievements"></div>
-              <div id="dashboardMotivation"></div>
-              <div id="dashboardStreak"></div>
-              <div id="dashboardHeatmap"></div>
-              <div id="dashboardDistribution" hidden></div>
-              <div id="dashboardPercent" hidden></div>
-              <div id="recentTasksList"></div>
-              <button type="button" id="addTaskBtn2" hidden>Nouvelle tâche</button>
-              <div id="tasksAddRow" hidden></div>
-              <!-- Nouveau dashboard : conservé pour le visuel -->
               <div class="dash-card dash-kpi dash-kpi--progress">
                 <h4 class="dash-card__kicker">Progression globale</h4>
                 <div class="dash-kpi__ring stats__circle" id="dashProgressRing" style="--percent:0"><span id="dashProgressPct">0 %</span></div>
-                <span class="dash-kpi__delta" id="dashProgressDelta">—</span>
-              </div>
-              <div class="dash-card dash-kpi">
-                <h4 class="dash-card__kicker">Performance</h4>
-                <div id="dashPerformance" class="dash-kpi__ring"></div>
-                <span class="dash-kpi__delta">Taux de réussite</span>
+                <span class="dash-kpi__delta" id="dashProgressDelta">— % par rapport à hier</span>
               </div>
               <div class="dash-card dash-kpi">
                 <h4 class="dash-card__kicker">Tâches en retard</h4>
+                <span class="dash-kpi__sub">Nécessitent votre attention</span>
                 <div id="dashLateList" class="dash-minilist"></div>
                 <button type="button" id="dashViewLate" class="dash-link">Voir les retards →</button>
               </div>
               <div class="dash-card dash-kpi">
                 <h4 class="dash-card__kicker">Tâches terminées</h4>
+                <span class="dash-kpi__sub">Cette semaine</span>
                 <div class="dash-bignum" id="dashDoneWeek">0</div>
                 <button type="button" id="dashViewDone" class="dash-link">Voir les tâches →</button>
+              </div>
+              <div class="dash-card dash-kpi">
+                <h4 class="dash-card__kicker">Performance</h4>
+                <div class="dash-kpi__ring stats__circle" id="dashPerformance" style="--percent:0"><span id="dashPerformancePct">0 %</span></div>
+                <span class="dash-kpi__delta">Score actuel</span>
+                <span class="dash-kpi__sub">Votre score dépend de votre progression et de votre performance</span>
               </div>
             </div>
 
@@ -252,7 +237,16 @@
                     <svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="9" cy="9" r="6"/><line x1="13.5" y1="13.5" x2="18" y2="18"/></svg>
                     <input type="search" id="dashSearchInput" placeholder="Rechercher une tâche..." aria-label="Rechercher une tâche" />
                   </div>
-                  <button type="button" id="dashSortBtn" class="mtasks__apply">Trier</button>
+                  <div class="sort-picker">
+                    <button type="button" id="dashSortBtn" class="mtasks__apply" aria-haspopup="true" aria-expanded="false">Filtrer</button>
+                    <div id="dashSortMenu" class="sort-picker__menu" hidden>
+                      <button type="button" class="sort-picker__option is-current" data-sort="default">Par défaut</button>
+                      <button type="button" class="sort-picker__option" data-sort="urgency">Urgence</button>
+                      <button type="button" class="sort-picker__option" data-sort="priority">Priorité</button>
+                      <button type="button" class="sort-picker__option" data-sort="due">Échéance</button>
+                      <button type="button" class="sort-picker__option" data-sort="title">Titre (A → Z)</button>
+                    </div>
+                  </div>
                 </div>
 
                 <div class="dash-task-sections">
@@ -308,6 +302,7 @@
               <div id="dashboardAchievements"></div>
               <div id="dashboardHeatmap"></div>
               <ul id="recentTasksList"></ul>
+              <div id="tasksAddRow" hidden></div>
             </div>
                   </section>
 

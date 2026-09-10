@@ -275,7 +275,10 @@ export function bindTaskEvents(container, { onSetStatus, onEdit, onDelete, onPro
     const option = event.target.closest('[data-action="set-status"]')
     if (option) {
       onSetStatus(id, option.dataset.status)
-      option.closest('.status-picker__menu').hidden = true
+      // La carte peut ne pas être dans un menu déroulant (bouton
+      // « Commencer » du dashboard) : on ferme seulement si un menu existe.
+      const menu = option.closest('.status-picker__menu')
+      if (menu) menu.hidden = true
       taskEl.classList.remove('task--menu-open')
       return
     }
@@ -1130,6 +1133,14 @@ function taskKindLabel(task) {
   return task.priority === 'high' ? 'Tâche principale' : 'Tâche secondaire'
 }
 
+// Heure courte « 8h05 » pour les libellés « Prévu : ... » des cartes.
+function fmtHour(value) {
+  if (!value) return null
+  const d = new Date(value)
+  if (Number.isNaN(d.getTime())) return null
+  return `${d.getHours()}h${String(d.getMinutes()).padStart(2, '0')}`
+}
+
 // Situation de la tâche au moment T : terminée / en retard / à venir / OK.
 function situationInfo(task, now) {
   if (task.status === STATUS.DONE) {
@@ -1185,36 +1196,71 @@ export function renderTasksTabs(el, counts, activeFilter) {
     ${tab('delayed', 'En retard', counts.delayed)}`
 }
 
+// --- Cartes riches du dashboard (maquette Doli) --------------------------
+// Priorité · Prévu · Avancement estimé · Statut · Situation · boutons.
+// La classe .task en premier élément garde la délégation d'événements
+// existante (bindTaskEvents) : Continuer / Ajouter une preuve déclenchent
+// data-action="provide-proof", la carte entière ouvre la consultation.
+function dashCardHtml(task, now) {
+  const progress = computeTaskProgress(task)
+  const fillMod = progress === null ? '--low' : progress >= 100 ? '--done' : progress >= 50 ? '--half' : '--low'
+  const progressPct = progress === null ? '—' : `${progress} %`
+  const sit = situationInfo(task, now)
+  const priority = task.priority || 'medium'
+  const overdueRow = sit.cls === 'late' ? ' mtask--overdue' : ''
+  // Statut affiché : terminée / en retard, sinon le libellé du statut brut.
+  const statusLabel = task.status === STATUS.DONE
+    ? 'Terminée'
+    : sit.cls === 'late'
+      ? 'En retard'
+      : STATUS_LABEL[task.status]
+  const isDoing = task.status === STATUS.DOING
+  // En cours : Continuer + Ajouter une preuve (toutes deux fournissent une
+  // preuve) ; les autres : consultation seule (clic carte / Voir les détails).
+  const btns = isDoing
+    ? `<button type="button" class="mtask__btn mtask__btn--primary" data-action="provide-proof">Continuer</button>
+       <button type="button" class="mtask__btn" data-action="provide-proof">Ajouter une preuve</button>`
+    : `<button type="button" class="mtask__btn">Voir les détails</button>`
+  const start = fmtHour(task.startTime)
+  const end = fmtHour(task.dueDate)
+  const prévu = start && end
+    ? `Prévu : ${start} - ${end}`
+    : end
+      ? `Prévu avant ${end}`
+      : start
+        ? `Prévu : ${start}`
+        : 'Sans horaire prévu'
+  return `
+    <article class="task dtask dtask--${task.status}${overdueRow}" data-id="${task.id}">
+      <div class="dtask__main">
+        <div class="dtask__title">${escapeHtml(task.title)}</div>
+        <span class="dtask__meta">Priorité : <span class="mtask__priority mtask__priority--${priority}">${MTASK_PRIORITY_LABEL[priority]}</span></span>
+        <span class="dtask__meta">${prévu}</span>
+      </div>
+      <div class="dtask__mid">
+        <span class="dtask__adv-label">Avancement estimé</span>
+        <div class="mtask__progress">
+          <div class="mtask__progress-track"><span class="task__progress-fill task__progress-fill${fillMod}" style="width:${progress ?? 0}%"></span><span class="mtask__progress-pct">${progressPct}</span></div>
+        </div>
+        <span class="dtask__status-label">Statut</span>
+        <span class="dtask__status">${statusLabel}</span>
+      </div>
+      <div class="dtask__side">
+        <span class="dtask__meta">Situation</span>
+        <span class="mtask__situation mtask__situation--${sit.cls}">${sit.text} · ${sit.sub}</span>
+        <div class="dtask__btns">${btns}</div>
+      </div>
+    </article>`
+}
+
 // --- Dashboard « Mes tâches » : liste verticale de cartes pleine largeur ---
-// Chaque carte occupe toute la largeur (titre + avancement + situation),
-// les tâches étant bien séparées les unes des autres. Réutilise les styles
-// de la rubrique Mes tâches (mtask). Les cartes portent la classe .task
-// pour que la délégation d'événements existante fonctionne.
 export function renderDashTaskCards(container, tasks, now) {
   if (!container) return
   if (tasks.length === 0) {
     container.innerHTML = '<p class="empty-state">Aucune tâche à afficher.</p>'
     return
   }
-  container.innerHTML = tasks.map((task) => {
-    const progress = computeTaskProgress(task)
-    const fillMod = progress === null ? '--low' : progress >= 100 ? '--done' : progress >= 50 ? '--half' : '--low'
-    const progressPct = progress === null ? '—' : `${progress} %`
-    const sit = situationInfo(task, now)
-    const overdueRow = sit.cls === 'late' ? ' mtask--overdue' : ''
-    // Sur le dashboard, pas de « · Excellente » : la situation seule suffit.
-    const sitText = sit.cls === 'done' ? sit.text : `${sit.text} · ${sit.sub}`
-    return `
-      <article class="task mtask mtask--${task.status}${overdueRow} dash-task-card" data-id="${task.id}">
-        <div class="mtask__title">${escapeHtml(task.title)}</div>
-        <div class="dash-task-card__adv">
-          <div class="mtask__progress">
-            <div class="mtask__progress-track"><span class="task__progress-fill task__progress-fill${fillMod}" style="width:${progress ?? 0}%"></span><span class="mtask__progress-pct">${progressPct}</span></div>
-          </div>
-        </div>
-        <span class="mtask__situation mtask__situation--${sit.cls}">${sitText}</span>
-      </article>`
-  }).join('')
+  container.innerHTML = tasks.map((task) => dashCardHtml(task, now)).join('')
 }
 
 export function renderTasksTable(container, tasks, emptyMessage) {
@@ -1420,26 +1466,15 @@ export function renderDashKpiPerformance(listEl, barsEl, tasks, now) {
     ${bar('bad', 'Retard important', lateBig)}`
 }
 
-// Mini-liste « Tâches en retard » : titre + délai de retard.
+// Mini-liste « Tâches en retard » : cartes détaillées (même rendu que
+// « Mes tâches »), comme sur la maquette Doli.
 export function renderDashLate(el, tasks, now) {
   if (!el) return
   if (tasks.length === 0) {
     el.innerHTML = '<p class="dash-minilist__empty">Aucune tâche en retard. Tout va bien !</p>'
     return
   }
-  el.innerHTML = tasks
-    .map((task) => {
-      const ms = now - new Date(task.dueDate).getTime()
-      const h = Math.floor(ms / 3600000)
-      const m = Math.floor((ms % 3600000) / 60000)
-      const delay = h > 0 ? `${h}h${String(m).padStart(2, '0')}` : `${m} min`
-      return `
-      <div class="dash-mini">
-        <span class="dash-mini__title">${escapeHtml(task.title)}</span>
-        <span class="dash-mini__meta dash-mini__meta--late">Retard : ${delay}</span>
-      </div>`
-    })
-    .join('')
+  el.innerHTML = tasks.map((task) => dashCardHtml(task, now)).join('')
 }
 
 // Mini-liste « Prochaines échéances » : Aujourd'hui/Demain à HH:MM + compte

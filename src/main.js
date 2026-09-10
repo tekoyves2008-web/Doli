@@ -4,20 +4,14 @@
 
 import './style.css'
 import { loadSettings, saveSettings } from './modules/storage.js'
-import { getAllTasks, addTask, updateTask, deleteTask, setStatus, findTask, STATUS } from './modules/tasks.js'
+import { getAllTasks, addTask, updateTask, deleteTask, setStatus, provideProof, findTask, STATUS } from './modules/tasks.js'
 import {
   computeStats,
-  computeTrend,
   computeStreak,
-  computeWeeklyComparison,
-  computeBestDay,
-  computeAvgCompletionDelay,
-  computeAchievements,
-  computeWeeklyActivity,
-  computeProjection,
 } from './modules/stats.js'
 import {
   computeProgressionStats,
+  computeTaskProgress,
   computeTodayDistribution,
   computeWeekComparison,
   computeProgressionTrend,
@@ -27,27 +21,9 @@ import { applyTheme } from './modules/theme.js'
 import {
   renderTasks,
   bindTaskEvents,
-  renderDashboardCounts,
-  bindDashboardCounts,
-  renderDashboardDistribution,
-  renderDashboardPercent,
   renderBell,
   bindBellMenu,
   renderReminders,
-  renderRecentTasks,
-  renderTrend,
-  renderStreak,
-  renderWeekSummary,
-  renderWeeklyComparison,
-  renderBestDay,
-  renderAvgDelay,
-  renderProjection,
-  renderWeeklyGoal,
-  bindWeeklyGoalEdit,
-  renderAchievements,
-  bindAchievementsEdit,
-  renderMotivation,
-  renderWeeklyActivity,
   triggerConfetti,
   renderProgressionStats,
   renderProgressionDayDistribution,
@@ -55,6 +31,14 @@ import {
   renderProgressionTrend,
   renderProgressionTodayStats,
   bindProgressionFilters,
+  renderDashKpiDistribution,
+  renderDashKpiPerformance,
+  renderDashLate,
+  renderDashUpcoming,
+  renderDashPerfSummary,
+  renderDashActivity,
+  renderDashTaskCards,
+  renderTasksTabs,
 } from './modules/ui.js'
 import { initAlarms } from './modules/alarms.js'
 import { getSession, login, register, signOut } from './modules/auth.js'
@@ -63,6 +47,7 @@ const STATUS_FILTER_LABEL = {
   [STATUS.TODO]: 'non exécutée',
   [STATUS.DOING]: 'en cours',
   [STATUS.DONE]: 'exécutée',
+  delayed: 'en retard',
 }
 
 const PROGRESSION_PERIOD_LABELS = {
@@ -117,24 +102,39 @@ const progressionDayDistributionCanvas = document.getElementById('progressionDay
 const progressionWeeklyComparisonCanvas = document.getElementById('progressionWeeklyComparisonChart')
 const progressionTrendCanvas = document.getElementById('progressionTrendChart')
 
-const dashboardCountsEl = document.getElementById('dashboardCounts')
-const dashboardDistributionEl = document.getElementById('dashboardDistribution')
-const dashboardPercentEl = document.getElementById('dashboardPercent')
-const dashboardTrendEl = document.getElementById('dashboardTrend')
-const dashboardStreakEl = document.getElementById('dashboardStreak')
-const dashboardMotivationEl = document.getElementById('dashboardMotivation')
-const dashboardWeekSummaryEl = document.getElementById('dashboardWeekSummary')
-const dashboardComparisonEl = document.getElementById('dashboardComparison')
-const dashboardBestDayEl = document.getElementById('dashboardBestDay')
-const dashboardAvgDelayEl = document.getElementById('dashboardAvgDelay')
-const dashboardProjectionEl = document.getElementById('dashboardProjection')
-const dashboardWeeklyGoalEl = document.getElementById('dashboardWeeklyGoal')
-const dashboardAchievementsEl = document.getElementById('dashboardAchievements')
-const dashboardHeatmapEl = document.getElementById('dashboardHeatmap')
-const recentTasksListEl = document.getElementById('recentTasksList')
+// --- Références DOM : dashboard (maquette Doli) --------------------------
+const dashGreetingEl = document.getElementById('dashGreeting')
+const dashDateEl = document.getElementById('dashDate')
+const dashProgressRingEl = document.getElementById('dashProgressRing')
+const dashProgressPctEl = document.getElementById('dashProgressPct')
+const dashProgressDeltaEl = document.getElementById('dashProgressDelta')
+const dashPerformanceEl = document.getElementById('dashPerformance')
+const dashPerformancePctEl = document.getElementById('dashPerformancePct')
+const dashLateListEl = document.getElementById('dashLateList')
+const dashDoneWeekEl = document.getElementById('dashDoneWeek')
+const dashDonutEl = document.getElementById('dashDonut')
+const dashDonutTotalEl = document.getElementById('dashDonutTotal')
+const dashLegendEl = document.getElementById('dashLegend')
+const dashDistTotalEl = document.getElementById('dashDistTotal')
+const dashPerfListEl = document.getElementById('dashPerfList')
+const dashPerfBarsEl = document.getElementById('dashPerfBars')
+const dashTabsEl = document.getElementById('dashTabs')
+const dashSearchInputEl = document.getElementById('dashSearchInput')
+const dashSortBtnEl = document.getElementById('dashSortBtn')
+const dashSortMenuEl = document.getElementById('dashSortMenu')
+const dashAllTasksEl = document.getElementById('dashAllTasks')
+const dashUpcomingEl = document.getElementById('dashUpcoming')
+const dashActivityEl = document.getElementById('dashActivity')
+const dashViewLateBtn = document.getElementById('dashViewLate')
+const dashViewDoneBtn = document.getElementById('dashViewDone')
+const dashViewAllBtn = document.getElementById('dashViewAll')
+const dashViewDetailsBtn = document.getElementById('dashViewDetails')
+const dashViewUpcomingBtn = document.getElementById('dashViewUpcoming')
+const dashViewActivityBtn = document.getElementById('dashViewActivity')
+const dashLearnStatsBtn = document.getElementById('dashLearnStats')
+const dashPerfLearnBtn = document.getElementById('dashViewPerf')
 const addTaskBtn = document.getElementById('addTaskBtn')
-const addTaskBtn2 = document.getElementById('addTaskBtn2')
-const tasksAddRowEl = document.getElementById('tasksAddRow')
+const addTaskBtn3 = document.getElementById('addTaskBtn3')
 
 const taskListEl = document.getElementById('taskList')
 const taskSearchInput = document.getElementById('taskSearchInput')
@@ -217,6 +217,10 @@ let progressionPeriod = 1 // Nombre de jours pour la vue progression (1 = aujour
 // Recherche et tri de la rubrique "Mes tâches".
 let searchQuery = ''
 let sortMode = 'default'
+// Recherche, tri et onglet actif du « Mes tâches » du dashboard.
+let dashQuery = ''
+let dashSortMode = 'default'
+let dashFilter = 'all'
 // Tâches dont le statut a changé pendant qu'un filtre était actif : elles
 // restent visibles tant que l'utilisateur ne relance pas un filtre.
 let pinnedIds = new Set()
@@ -276,13 +280,74 @@ function sortTasks(tasks, mode, now) {
 async function render() {
   const allTasks = await getAllTasks()
   const stats = computeStats(allTasks)
+  const now = Date.now()
 
-  // Dashboard
-  renderDashboardCounts(dashboardCountsEl, stats, statusFilter)
-  renderDashboardDistribution(dashboardDistributionEl, stats)
-  renderDashboardPercent(dashboardPercentEl, stats)
-  renderTrend(dashboardTrendEl, computeTrend(allTasks))
-  renderMotivation(dashboardMotivationEl, stats.percent, stats.total, currentUserFirstName)
+  // --- Dashboard (maquette Doli) : tous les rendus passent par les calculs
+  // existants (computeTaskProgress, situationInfo, etc.) — présentation seule.
+  if (dashGreetingEl) dashGreetingEl.textContent = `Bonjour ${currentUserFirstName || ''} !`
+  if (dashDateEl) {
+    const parts = new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+    dashDateEl.textContent = parts.charAt(0).toUpperCase() + parts.slice(1)
+  }
+
+  const isLate = (t) => t.status !== STATUS.DONE && t.dueDate && new Date(t.dueDate).getTime() < now
+  const delayed = allTasks.filter(isLate)
+  const kpiStats = { total: allTasks.length, done: stats.done, doing: stats.doing, todo: stats.todo, delayed: delayed.length }
+
+  // Progression globale : moyenne des progressions individuelles (0/taux/100),
+  // delta affiché par rapport à la moyenne d'hier (tendance sur 2 jours).
+  const progresses = allTasks.map(computeTaskProgress).filter((p) => p !== null)
+  const globalPct = progresses.length ? Math.round(progresses.reduce((a, b) => a + b, 0) / progresses.length) : 0
+  if (dashProgressRingEl) dashProgressRingEl.style.setProperty('--percent', globalPct)
+  if (dashProgressPctEl) dashProgressPctEl.textContent = `${globalPct} %`
+  const trend2 = computeProgressionTrend(allTasks, 2)
+  const delta = trend2.length === 2 ? trend2[1].percent - trend2[0].percent : 0
+  if (dashProgressDeltaEl) dashProgressDeltaEl.textContent = `${delta >= 0 ? '+' : ''}${delta} % par rapport à hier`
+
+  // Performance : part des tâches hors retard.
+  const perfPct = allTasks.length ? Math.round(((allTasks.length - delayed.length) / allTasks.length) * 100) : 0
+  if (dashPerformanceEl) dashPerformanceEl.style.setProperty('--percent', perfPct)
+  if (dashPerformancePctEl) dashPerformancePctEl.textContent = `${perfPct} %`
+
+  // Tâches en retard (les plus anciennement en retard d'abord) + terminées.
+  const lateTasks = [...delayed].sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))
+  renderDashLate(dashLateListEl, lateTasks, now)
+  const today0 = new Date()
+  today0.setHours(0, 0, 0, 0)
+  const monday = new Date(today0.getTime() - ((today0.getDay() + 6) % 7) * 24 * 60 * 60 * 1000)
+  const doneThisWeek = allTasks.filter((t) => t.completedAt && new Date(t.completedAt).getTime() >= monday.getTime()).length
+  if (dashDoneWeekEl) dashDoneWeekEl.textContent = doneThisWeek
+
+  // Répartition des tâches (donut + légende) et Performance : résumé.
+  renderDashKpiDistribution(dashDonutEl, dashDonutTotalEl, dashLegendEl, dashDistTotalEl, kpiStats)
+  renderDashPerfSummary(dashPerfListEl, dashPerfBarsEl, allTasks, now)
+
+  // Prochaines échéances : 3 tâches à venir, les plus proches d'abord.
+  const upcoming = allTasks
+    .filter((t) => t.status !== STATUS.DONE && t.dueDate && new Date(t.dueDate).getTime() > now)
+    .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))
+    .slice(0, 3)
+    .map((task) => ({ task, target: new Date(task.dueDate) }))
+  renderDashUpcoming(dashUpcomingEl, upcoming, now)
+
+  // Activité récente (créations, preuves, terminaisons).
+  renderDashActivity(dashActivityEl, allTasks)
+
+  // Mes tâches du dashboard : onglets de filtre, recherche, tri, cartes.
+  const dashCounts = { all: allTasks.length, doing: stats.doing, todo: stats.todo, done: stats.done, delayed: delayed.length }
+  renderTasksTabs(dashTabsEl, dashCounts, dashFilter)
+  let dashTasks = allTasks
+  if (dashFilter && dashFilter !== 'all') {
+    dashTasks = dashFilter === 'delayed' ? dashTasks.filter(isLate) : dashTasks.filter((t) => t.status === dashFilter)
+  }
+  const trimmedDashQuery = dashQuery.trim().toLowerCase()
+  if (trimmedDashQuery) {
+    dashTasks = dashTasks.filter(
+      (t) => t.title.toLowerCase().includes(trimmedDashQuery) || (t.description || '').toLowerCase().includes(trimmedDashQuery)
+    )
+  }
+  dashTasks = sortTasks(dashTasks, dashSortMode, now)
+  renderDashTaskCards(dashAllTasksEl, dashTasks, now)
 
   // Série sans retard : le record se met à jour et se persiste dès qu'il
   // est battu, avec une petite célébration.
@@ -292,35 +357,13 @@ async function render() {
     saveSettings(settings)
     triggerConfetti()
   }
-  renderStreak(dashboardStreakEl, currentStreak, settings.bestStreak)
-
-  const overdueCount = allTasks.filter((t) => t.dueDate && t.status !== STATUS.DONE && new Date(t.dueDate) < new Date()).length
-  renderWeekSummary(dashboardWeekSummaryEl, stats, overdueCount)
-
-  const weeklyComparison = computeWeeklyComparison(allTasks)
-  renderWeeklyComparison(dashboardComparisonEl, weeklyComparison)
-  renderWeeklyGoal(dashboardWeeklyGoalEl, weeklyComparison.thisWeek, settings.weeklyGoal)
-
-  renderBestDay(dashboardBestDayEl, computeBestDay(allTasks))
-  renderAvgDelay(dashboardAvgDelayEl, computeAvgCompletionDelay(allTasks))
-  renderProjection(dashboardProjectionEl, computeProjection(allTasks))
-  renderAchievements(dashboardAchievementsEl, computeAchievements(allTasks, settings.achievementThresholds))
-  renderWeeklyActivity(dashboardHeatmapEl, computeWeeklyActivity(allTasks))
-
-  const RECENT_WINDOW_MS = 12 * 60 * 60 * 1000 // 12 heures
-  const now = Date.now()
-  const lastSaved = (t) => new Date(t.updatedAt || t.completedAt || t.createdAt).getTime()
-  const recent = allTasks
-    .filter((t) => !dismissedRecentIds.has(t.id) && now - lastSaved(t) <= RECENT_WINDOW_MS)
-    .sort((a, b) => lastSaved(b) - lastSaved(a))
-    .slice(0, 5)
-  renderRecentTasks(recentTasksListEl, recent, now)
-  addTaskBtn.hidden = allTasks.length > 0
 
   // Mes tâches
   let visibleTasks = allTasks
   if (statusFilter) {
-    visibleTasks = visibleTasks.filter((t) => t.status === statusFilter || pinnedIds.has(t.id))
+    visibleTasks = statusFilter === 'delayed'
+      ? visibleTasks.filter(isLate)
+      : visibleTasks.filter((t) => t.status === statusFilter || pinnedIds.has(t.id))
   }
   const trimmedQuery = searchQuery.trim().toLowerCase()
   if (trimmedQuery) {
@@ -335,10 +378,6 @@ async function render() {
     else if (statusFilter) tasksEmptyMessage = `Aucune tâche ${STATUS_FILTER_LABEL[statusFilter]} pour le moment.`
   }
   renderTasks(taskListEl, visibleTasks, 'list', tasksEmptyMessage)
-  // Le bouton d'ajout disparaît dès qu'un filtre par statut est actif (seules
-  // les tâches correspondantes doivent apparaître), ainsi que lorsqu'une
-  // recherche ne renvoie aucun résultat.
-  tasksAddRowEl.hidden = statusFilter !== null || (trimmedQuery.length > 0 && visibleTasks.length === 0)
 
   // Rappel : tâches entrées dans la fenêtre de 5 minutes avant leur début ou
   // leur échéance. Une fois déclenché, le rappel persiste (même en retard) et
@@ -480,7 +519,7 @@ function closeModal() {
 }
 
 onEl(addTaskBtn, 'click', () => openModal())
-onEl(addTaskBtn2, 'click', () => openModal())
+onEl(addTaskBtn3, 'click', () => openModal())
 onEl(taskCancelBtn, 'click', closeModal)
 onEl(modalOverlay, 'click', (event) => {
   if (event.target === modalOverlay) closeModal()
@@ -529,15 +568,83 @@ taskForm.addEventListener('submit', async (event) => {
   render()
 })
 
-// --- Filtre par section (Exécutées / En cours / Non exécutées) --------
-if (dashboardCountsEl) {
-  bindDashboardCounts(dashboardCountsEl, (status) => {
-    statusFilter = status === 'total' ? null : status
-    pinnedIds.clear()
-    setView('tasks')
-    render()
-  })
+// --- Fournir une preuve depuis une carte du dashboard --------------------
+async function provideProofAction(id) {
+  const task = await findTask(id)
+  if (!task) return
+  await provideProof(id)
+  render()
 }
+
+// --- Dashboard : onglets, recherche, « Filtrer », liens de navigation ----
+if (dashTabsEl) dashTabsEl.addEventListener('click', (event) => {
+  const tab = event.target.closest('[data-status-tab]')
+  if (!tab) return
+  dashFilter = tab.dataset.statusTab
+  render()
+})
+
+onEl(dashSearchInputEl, 'input', () => {
+  dashQuery = dashSearchInputEl.value
+  render()
+})
+
+// Bouton « Filtrer » du dashboard : ouvre le menu de tri des cartes.
+function closeDashSortMenu() {
+  if (!dashSortMenuEl || !dashSortBtnEl) return
+  dashSortMenuEl.hidden = true
+  dashSortBtnEl.setAttribute('aria-expanded', 'false')
+}
+onEl(dashSortBtnEl, 'click', () => {
+  if (!dashSortMenuEl) return
+  const wasOpen = !dashSortMenuEl.hidden
+  closeDashSortMenu()
+  if (!wasOpen) {
+    dashSortMenuEl.hidden = false
+    dashSortBtnEl.setAttribute('aria-expanded', 'true')
+  }
+})
+if (dashSortMenuEl) dashSortMenuEl.addEventListener('click', (event) => {
+  const option = event.target.closest('[data-sort]')
+  if (!option) return
+  dashSortMode = option.dataset.sort
+  dashSortMenuEl
+    .querySelectorAll('.sort-picker__option')
+    .forEach((opt) => opt.classList.toggle('is-current', opt === option))
+  closeDashSortMenu()
+  render()
+})
+document.addEventListener('click', (event) => {
+  if (!event.target.closest('.sort-picker')) closeDashSortMenu()
+})
+
+// Liens du dashboard : redirigent vers la rubrique correspondante.
+function goToTasks(status) {
+  statusFilter = status
+  pinnedIds.clear()
+  setView('tasks')
+  render()
+}
+onEl(dashViewAllBtn, 'click', () => goToTasks(null))
+onEl(dashViewDetailsBtn, 'click', () => goToTasks(null))
+onEl(dashViewLateBtn, 'click', () => goToTasks('delayed'))
+onEl(dashViewDoneBtn, 'click', () => goToTasks(STATUS.DONE))
+onEl(dashViewUpcomingBtn, 'click', () => {
+  setView('reminders')
+  render()
+})
+onEl(dashViewActivityBtn, 'click', () => {
+  setView('tasks')
+  render()
+})
+onEl(dashLearnStatsBtn, 'click', () => {
+  setView('progression')
+  render()
+})
+onEl(dashPerfLearnBtn, 'click', () => {
+  setView('progression')
+  render()
+})
 
 // Rejoint "Mes tâches", situe la tâche dans son contexte (défilement +
 // surlignage). Utilisé aussi bien depuis un clic sur une carte que depuis
@@ -590,6 +697,15 @@ const taskActions = {
   },
 }
 if (taskListEl) bindTaskEvents(taskListEl, taskActions)
+
+// Cartes du dashboard : clic = consultation ; Continuer / Ajouter une preuve
+// enregistrent une preuve (données du taux d'avancement temporel).
+const dashTaskActions = {
+  ...taskActions,
+  onProvideProof: provideProofAction,
+}
+if (dashAllTasksEl) bindTaskEvents(dashAllTasksEl, dashTaskActions)
+if (dashLateListEl) bindTaskEvents(dashLateListEl, dashTaskActions)
 
 // --- Recherche et tri de "Mes tâches" ------------------------------------
 onEl(taskSearchInput, 'input', () => {
@@ -664,17 +780,6 @@ const reminderTaskActions = {
   onDelete: openReminderDeleteChoice,
 }
 if (reminderListEl) bindTaskEvents(reminderListEl, reminderTaskActions)
-
-// Dans "Tâches récentes", supprimer ne fait que retirer la tâche de ce
-// widget : elle reste bien présente et intacte dans "Mes tâches".
-const recentTaskActions = {
-  ...taskActions,
-  onDelete(id) {
-    dismissedRecentIds.add(id)
-    render()
-  },
-}
-if (recentTasksListEl) bindTaskEvents(recentTasksListEl, recentTaskActions)
 
 // --- Cloche des tâches en retard ----------------------------------------
 // Un overlay invisible mais bloquant empêche toute interaction avec le

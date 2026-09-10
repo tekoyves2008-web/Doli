@@ -656,35 +656,38 @@ input:focus-visible,
 .dash {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 16px;
 }
 .dash__header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 16px;
+  gap: 14px;
   flex-wrap: wrap;
 }
 .dash__greeting {
-  margin: 0 0 4px;
-  font-size: 22px;
+  margin: 0 0 3px;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
 }
 .dash__subtitle {
   margin: 0;
-  font-size: 13px;
+  font-size: 12px;
   color: var(--text-muted);
+  letter-spacing: 0.01em;
 }
 .dash__header-side {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   flex-wrap: wrap;
 }
 .dash__date {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  font-size: 13px;
+  gap: 5px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--accent);
 }
@@ -694,13 +697,13 @@ input:focus-visible,
 .dash__add-btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 10px 16px;
+  gap: 5px;
+  padding: 8px 14px;
   border: none;
   border-radius: var(--radius);
   background: var(--accent);
   color: var(--accent-contrast);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   cursor: pointer;
   box-shadow: var(--shadow);
@@ -713,14 +716,10 @@ input:focus-visible,
 
 .dash__kpis {
   display: grid;
-  /* Rangée du haut : Progression globale, Performance, Tâches en retard,
-     Tâches terminées — alignées horizontalement, même forme/hauteur. */
   grid-template-columns: repeat(4, 1fr);
-  gap: 14px;
+  gap: 12px;
 }
 .dash__kpis--secondary {
-  /* 2e rangée : Répartition au-dessus, Performance : résumé en dessous.
-     Taille d'une case de la rangée du haut, à gauche de « Mes tâches ». */
   grid-template-columns: 1fr;
   align-self: start;
 }
@@ -728,16 +727,12 @@ input:focus-visible,
   .dash__kpis { grid-template-columns: 1fr 1fr; }
   .dash__kpis--secondary { grid-template-columns: 1fr; }
 }
-/* Rangée médiane : les 2 petites sections KPI à gauche, « Mes tâches »
-   au centre, la colonne « Prochaines échéances » à droite. */
 .dash__midrow {
   display: grid;
-  /* Colonnes latérales resserrées pour laisser le maximum de place
-     à « Mes tâches » au centre. */
-  grid-template-columns: minmax(180px, 230px) minmax(0, 1fr) minmax(170px, 220px);
-  gap: 14px;
+  grid-template-columns: minmax(170px, 210px) minmax(0, 1fr) minmax(160px, 200px);
+  gap: 12px;
   align-items: start;
-  margin-top: 14px;
+  margin-top: 12px;
 }
 @media (max-width: 1000px) {
   .dash__midrow { grid-template-columns: 1fr; }
@@ -745,13 +740,13 @@ input:focus-visible,
 .dash__kpi-right {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
 }
 .dash-card {
   background: var(--bg-elevated);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 16px;
+  padding: 14px;
   min-width: 0;
 }
 .dash-kpi {
@@ -761,20 +756,25 @@ input:focus-visible,
   text-align: center;
 }
 .dash-card__kicker {
-  margin: 0 0 12px;
-  font-size: 12px;
+  margin: 0 0 10px;
+  font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
   color: var(--text-muted);
 }
 .dash-kpi__ring {
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 .dash-kpi__delta {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   color: var(--text-muted);
+}
+.dash-kpi__sub {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
 }
 .dash-kpi__dist {
   display: flex;
@@ -1070,33 +1070,86 @@ input:focus-visible,
 }
 .dtask {
   display: grid;
-  grid-template-columns: 1fr 1fr auto;
-  gap: 12px;
+  grid-template-columns: minmax(0, 2.2fr) minmax(140px, 1fr) minmax(0, auto);
+  gap: 14px;
   align-items: center;
-  padding: 12px 14px;
+  padding: 10px 14px;
   background: var(--bg);
   border: 1px solid var(--border);
   border-left: 3px solid var(--border);
+  border-radius: var(--radius);
   min-width: 0;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.dtask:hover {
+  background: var(--bg-hover);
 }
 .dtask--doing { border-left-color: var(--badge-doing-text); }
 .dtask--done { border-left-color: var(--badge-done-text); }
 .dtask--todo { border-left-color: var(--text-muted); }
+.dtask--overdue { border-left-color: var(--color-error); }
+.dtask__main {
+  min-width: 0;
+}
 .dtask__title {
-  margin: 0 0 5px;
-  font-size: 14px;
+  margin: 0 0 3px;
+  font-size: 13px;
   font-weight: 700;
   overflow-wrap: anywhere;
+  line-height: 1.3;
 }
 .dtask__meta {
   display: block;
-  font-size: 11.5px;
+  font-size: 11px;
   color: var(--text-muted);
   font-weight: 600;
+  line-height: 1.3;
 }
 .dtask__meta em {
   font-style: normal;
   opacity: 0.8;
+}
+.dtask__mid {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.dtask__adv-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+.dtask__status-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+.dtask__status {
+  font-size: 11px;
+  font-weight: 600;
+}
+.dtask__status--done { color: var(--color-success); }
+.dtask__status--doing { color: var(--badge-doing-text); }
+.dtask__status--todo { color: var(--text-muted); }
+.dtask__status--late { color: var(--color-error); }
+.dtask__side {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  text-align: right;
+}
+.dtask__btns {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+  margin-top: 4px;
 }
 .dtask__mid {
   min-width: 0;
