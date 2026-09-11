@@ -264,6 +264,14 @@ export function bindTaskEvents(container, { onSetStatus, onEdit, onDelete, onPro
     }
     if (event.target.closest('.row-menu__list')) return
 
+    // « Voir détails » des lignes « Mes tâches » : ouvre la consultation.
+    if (event.target.closest('[data-action="edit"]')) {
+      closeAllStatusMenus()
+      closeAllRowMenus()
+      onEdit(id)
+      return
+    }
+
     const proofBtn = event.target.closest('[data-action="provide-proof"]')
     if (proofBtn) {
       closeAllStatusMenus()
@@ -1129,6 +1137,29 @@ export function bindProgressionFilters(container, onFilterChange) {
 
 const MTASK_PRIORITY_LABEL = { low: 'Basse', medium: 'Normale', high: 'Haute' }
 
+// Avatar rond coloré de la ligne (maquette) : icône selon priorité.
+const TASK_AVATAR_ICON = {
+  high: `<svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l-1.5-6L11 5.5 13 3l2 2.5L11.5 9z"/><line x1="4.5" y1="17" x2="9" y2="17"/></svg>`,
+  medium: `<svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="12" height="14" rx="2"/><line x1="7" y1="7.5" x2="13" y2="7.5"/><line x1="7" y1="11" x2="13" y2="11"/></svg>`,
+  low: `<svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="13" height="10" rx="2"/><line x1="3.5" y1="8" x2="16.5" y2="8"/><line x1="6.5" y1="3.5" x2="6.5" y2="6.5"/><line x1="13.5" y1="3.5" x2="13.5" y2="6.5"/></svg>`,
+}
+
+// « 10:00 » court pour la période prévue des lignes.
+function fmtTimeShort(value) {
+  if (!value) return '—'
+  const d = new Date(value)
+  if (Number.isNaN(d.getTime())) return '—'
+  return d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+}
+
+// « 03/09/2025 » court sous la période prévue des lignes.
+function fmtDayShort(value) {
+  if (!value) return ''
+  const d = new Date(value)
+  if (Number.isNaN(d.getTime())) return ''
+  return d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' })
+}
+
 function taskKindLabel(task) {
   return task.priority === 'high' ? 'Tâche principale' : 'Tâche secondaire'
 }
@@ -1165,35 +1196,44 @@ function situationInfo(task, now) {
   return { cls: 'ok', text: 'Dans les délais', sub: 'Tout va bien' }
 }
 
-// Cartes de comptage colorées (haut de la rubrique) : clic = filtre statut.
+// Cartes de comptage (maquette « Mes tâches ») : Toutes / Terminées /
+// En cours / En retard / Non exécutées — nombre coloré + icône ronde +
+// « X % du total ». Clic = filtre statut. Calculs : simples comptages.
+const MTASKS_COUNT_ICON = {
+  all: `<svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="12" height="14" rx="2"/><line x1="7" y1="7" x2="13" y2="7"/><line x1="7" y1="10.5" x2="13" y2="10.5"/><line x1="7" y1="14" x2="11" y2="14"/></svg>`,
+  done: `<svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7.5"/><polyline points="7,10 9.2,12.2 13.5,7.5"/></svg>`,
+  doing: `<svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7.5"/><polygon points="8.3,7 13.5,10 8.3,13" fill="currentColor" stroke="none"/></svg>`,
+  delayed: `<svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7.5"/><polyline points="10,5.8 10,10 12.8,11.6"/></svg>`,
+  todo: `<svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="10" cy="10" r="7.5"/><line x1="7.5" y1="10" x2="7.5" y2="10"/><line x1="12.5" y1="10" x2="12.5" y2="10"/></svg>`,
+}
 export function renderTasksCounts(el, counts, activeFilter) {
   if (!el) return
   const pct = (n) => (counts.all === 0 ? 0 : Math.round((n / counts.all) * 100))
   const card = (key, statusClass, label, count) => `
-    <button type="button" class="mtasks-count mtasks-count--${statusClass} ${activeFilter === key ? 'is-active' : ''}" data-count-key="${key}">
-      <span class="mtasks-count__num">${count}</span>
-      <span class="mtasks-count__label">${label}</span>
-      <span class="mtasks-count__pct">${pct(count)} % du total</span>
+    <button type="button" class="mtasks2-count mtasks2-count--${statusClass} ${activeFilter === key ? 'is-active' : ''}" data-count-key="${key}">
+      <span class="mtasks2-count__top"><span class="mtasks2-count__label">${label}</span><span class="mtasks2-count__icon">${MTASKS_COUNT_ICON[key]}</span></span>
+      <span class="mtasks2-count__num">${count}</span>
+      <span class="mtasks2-count__pct">${pct(count)} % du total</span>
     </button>`
   el.innerHTML = `
     ${card('all', 'total', 'Toutes les tâches', counts.all)}
-    ${card('doing', 'doing', 'En cours', counts.doing)}
-    ${card('todo', 'todo', 'Non exécutées', counts.todo)}
     ${card('done', 'done', 'Terminées', counts.done)}
-    ${card('delayed', 'late', 'En retard', counts.delayed)}`
+    ${card('doing', 'doing', 'En cours', counts.doing)}
+    ${card('delayed', 'late', 'En retard', counts.delayed)}
+    ${card('todo', 'todo', 'Non exécutées', counts.todo)}`
 }
 
-// Onglets de filtres rapides sous les cartes.
+// Onglets de filtres rapides (maquette : pastilles « Toutes (24) »…).
 export function renderTasksTabs(el, counts, activeFilter) {
   if (!el) return
   const tab = (key, label, count) => `
-    <button type="button" class="mtasks-tab ${activeFilter === key ? 'is-active' : ''}" data-status-tab="${key}">${label} <span class="mtasks-tab__count">(${count})</span></button>`
+    <button type="button" class="mtasks2-tab ${activeFilter === key ? 'is-active' : ''}" data-status-tab="${key}">${label} <span class="mtasks2-tab__count">(${count})</span></button>`
   el.innerHTML = `
     ${tab('all', 'Toutes', counts.all)}
     ${tab('doing', 'En cours', counts.doing)}
-    ${tab('todo', 'Non exécutées', counts.todo)}
     ${tab('done', 'Terminées', counts.done)}
-    ${tab('delayed', 'En retard', counts.delayed)}`
+    ${tab('delayed', 'En retard', counts.delayed)}
+    ${tab('todo', 'Non exécutées', counts.todo)}`
 }
 
 // --- Cartes riches du dashboard (maquette Doli) --------------------------
@@ -1266,10 +1306,7 @@ export function renderDashTaskCards(container, tasks, now) {
 export function renderTasksTable(container, tasks, emptyMessage) {
   if (!container) return
   if (tasks.length === 0) {
-    container.innerHTML = `
-      <tr>
-        <td colspan="6"><p class="empty-state">${escapeHtml(emptyMessage || 'Aucune tâche pour le moment. Ajoute ta première tâche.')}</p></td>
-      </tr>`
+    container.innerHTML = `<p class="empty-state">${escapeHtml(emptyMessage || 'Aucune tâche pour le moment. Ajoute ta première tâche.')}</p>`
     return
   }
 
@@ -1290,27 +1327,43 @@ export function renderTasksTable(container, tasks, emptyMessage) {
       const sit = situationInfo(task, now)
       const priority = task.priority || 'medium'
       const overdueRow = sit.cls === 'late' ? ' mtask--overdue' : ''
+      const startHM = fmtTimeShort(task.startTime)
+      const endHM = fmtTimeShort(task.dueDate)
+      const dayLabel = fmtDayShort(task.startTime || task.dueDate)
+      const avatarCls = task.status === STATUS.DONE ? 'done' : sit.cls === 'late' ? 'late' : priority === 'high' ? 'urgent' : priority
+      const avatarIcon = task.status === STATUS.DONE
+        ? `<svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4.5,10.5 8,14 15.5,6"/></svg>`
+        : TASK_AVATAR_ICON[priority] || TASK_AVATAR_ICON.medium
+      const actionBtn = task.status === STATUS.DOING
+        ? '<button type="button" class="mtask__btn mtask__btn--primary" data-action="provide-proof">▷ Continuer</button>'
+        : task.status === STATUS.TODO
+          ? '<button type="button" class="mtask__btn mtask__btn--primary" data-action="set-status" data-status="doing">▷ Commencer</button>'
+          : ''
       return `
-      <tr class="task mtask mtask--${task.status}${overdueRow}" data-id="${task.id}">
-        <td>
-          <div class="mtask__title">${priorityFlagHtml(task)}${escapeHtml(task.title)}</div>
-          <div class="mtask__kind">${taskKindLabel(task)}</div>
-        </td>
-        <td><span class="mtask__priority mtask__priority--${priority}">${MTASK_PRIORITY_LABEL[priority]}</span></td>
-        <td class="mtask__period">
-          <span class="mtask__period-line"><em>Début</em> ${task.startTime ? formatDateTime(task.startTime) : '—'}</span>
-          <span class="mtask__period-line"><em>Fin</em> ${task.dueDate ? formatDateTime(task.dueDate) : '—'}</span>
-        </td>
-        <td class="mtask__adv">
+      <article class="task mtask2-row mtask--${task.status}${overdueRow}" data-id="${task.id}">
+        <div class="mtask2-cell mtask2-cell--task">
+          <span class="mtask2-avatar mtask2-avatar--${avatarCls}">${avatarIcon}</span>
+          <span class="mtask2-task-text">
+            <span class="mtask__title">${escapeHtml(task.title)}</span>
+            <span class="mtask__kind">${taskKindLabel(task)}</span>
+          </span>
+        </div>
+        <div class="mtask2-cell"><span class="mtask__priority mtask__priority--${priority}">${MTASK_PRIORITY_LABEL[priority]}</span></div>
+        <div class="mtask2-cell mtask__period">
+          <span class="mtask__period-cols"><span class="mtask__period-col"><em>Début</em><strong>${startHM}</strong></span><span class="mtask__period-col"><em>Fin</em><strong>${endHM}</strong></span></span>
+          <span class="mtask__period-day">${dayLabel}</span>
+        </div>
+        <div class="mtask2-cell mtask__adv">
           <div class="mtask__progress">
-            <div class="mtask__progress-track"><span class="task__progress-fill task__progress-fill${fillMod}" style="width:${progress ?? 0}%"></span></div>
             <span class="mtask__progress-pct">${progressPct}</span>
+            <div class="mtask__progress-track"><span class="task__progress-fill task__progress-fill${fillMod}" style="width:${progress ?? 0}%"></span></div>
           </div>
           <span class="mtask__progress-status">${progressLabel}</span>
-        </td>
-        <td><span class="mtask__situation mtask__situation--${sit.cls}">${sit.text} · ${sit.sub}</span></td>
-        <td class="mtask__actions">
-          ${task.status === STATUS.DOING ? '<button type="button" class="mtask__btn mtask__btn--primary" data-action="provide-proof">Continuer</button>' : ''}
+        </div>
+        <div class="mtask2-cell"><span class="mtask__situation mtask__situation--${sit.cls}"><span class="mtask__situation-line">${sit.text}</span><span class="mtask__situation-line mtask__situation-sub">${sit.sub}</span></span></div>
+        <div class="mtask2-cell mtask__actions">
+          ${actionBtn}
+          <button type="button" class="mtask__btn" data-action="edit">Voir détails</button>
           <div class="row-menu">
             <button type="button" class="row-menu__toggle" data-action="toggle-row-menu" aria-label="Options de la tâche">⋯</button>
             <div class="row-menu__list" hidden>
@@ -1318,8 +1371,8 @@ export function renderTasksTable(container, tasks, emptyMessage) {
               <button type="button" class="row-menu__option row-menu__option--danger" data-action="delete">Supprimer</button>
             </div>
           </div>
-        </td>
-      </tr>`
+        </div>
+      </article>`
     })
     .join('')
 }
@@ -1366,27 +1419,26 @@ export function renderTasksSummary(el, tasks) {
       : globalPct === 100
         ? { title: 'Parfait !', text: 'Toutes vos tâches de la journée sont terminées. Excellente journée !' }
         : globalPct >= 50
-          ? { title: 'Vous êtes sur la voie !', text: 'Continuez vos efforts pour atteindre vos objectifs quotidiens.' }
+          ? { title: 'Vous êtes sur la bonne voie !', text: 'Continuez vos efforts pour atteindre vos objectifs quotidiens.' }
           : { title: 'C\'est parti !', text: 'Fournissez des preuves sur vos tâches en cours pour faire avancer votre journée.' }
 
   el.innerHTML = `
-    <div class="mtasks-summary__block">
-      <h4 class="mtasks-summary__title">Avancement</h4>
-      ${gauge('doing', 'En cours', doingPct, doing.length)}
-      ${gauge('done', 'Terminée', 100, done.length)}
-      ${gauge('todo', 'Non exécutée', 0, todo.length)}
-    </div>
-    <div class="mtasks-summary__block">
-      <h4 class="mtasks-summary__title">Situation</h4>
-      <ul class="mtasks-summary__list">
-        <li class="mtasks-summary__item mtasks-summary__item--late"><span>${late.length} en retard</span><em>${late.length === 0 ? 'Tout va bien' : 'À rattraper'}</em></li>
-        <li class="mtasks-summary__item mtasks-summary__item--ok"><span>${done.length} terminée${done.length !== 1 ? 's' : ''}</span><em>Excellente</em></li>
-        <li class="mtasks-summary__item mtasks-summary__item--soon"><span>${todo.length} à venir</span><em>${upcoming ? `Commence à ${upcoming.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}` : 'À planifier'}</em></li>
+    <div class="mtasks2__day-ring">
+      <div class="mtasks2__ring" style="--pct:${globalPct}">
+        <span><strong>${globalPct} %</strong><em>Objectif du jour</em></span>
+      </div>
+      <ul class="mtasks2__legend">
+        <li><i style="background:var(--badge-done-text)"></i>Terminées<b>${done.length}</b></li>
+        <li><i style="background:var(--badge-doing-text)"></i>En cours<b>${doing.length}</b></li>
+        <li><i style="background:var(--badge-todo-text)"></i>En retard<b>${late.length}</b></li>
+        <li><i style="background:var(--text-muted)"></i>À venir<b>${todo.length}</b></li>
       </ul>
     </div>
-    <div class="mtasks-summary__motivation">
-      <strong>${message.title}</strong>
-      <p>${message.text}</p>
+    <div class="mtasks2__motivation">
+      <span class="mtasks2__motivation-icon">
+        <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h7v3H7zM6 4v3h1M13 4v3h1"/><path d="M7 7v1.5c0 3 1.5 5 3 5.5 1.5-.5 3-2.5 3-5.5V7"/><path d="M10 14v1.5"/><path d="M8 17h4"/></svg>
+      </span>
+      <span><strong>${message.title}</strong><p>${message.text}</p></span>
     </div>`
 }
 // --- Dashboard (maquette Doli) : rendus ---------------------------------

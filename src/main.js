@@ -19,7 +19,6 @@ import {
 } from './modules/progression.js'
 import { applyTheme } from './modules/theme.js'
 import {
-  renderTasks,
   bindTaskEvents,
   renderBell,
   bindBellMenu,
@@ -39,6 +38,9 @@ import {
   renderDashActivity,
   renderDashTaskCards,
   renderTasksTabs,
+  renderTasksCounts,
+  renderTasksTable,
+  renderTasksSummary,
 } from './modules/ui.js'
 import { initAlarms } from './modules/alarms.js'
 import { getSession, login, register, signOut } from './modules/auth.js'
@@ -142,6 +144,23 @@ const taskListEl = document.getElementById('taskList')
 const taskSearchInput = document.getElementById('taskSearchInput')
 const taskSortBtn = document.getElementById('taskSortBtn')
 const taskSortMenu = document.getElementById('taskSortMenu')
+const tasksCountsEl = document.getElementById('tasksCounts')
+const tasksTabsEl = document.getElementById('tasksTabs')
+const tasksTodayDateEl = document.getElementById('tasksTodayDate')
+const tasksTodayWeekdayEl = document.getElementById('tasksTodayWeekday')
+const tasksBellCountEl = document.getElementById('tasksBellCount')
+const tasksPageInfoEl = document.getElementById('tasksPageInfo')
+const tasksPageNumsEl = document.getElementById('tasksPageNums')
+const tasksPrevBtn = document.getElementById('tasksPrevBtn')
+const tasksNextBtn = document.getElementById('tasksNextBtn')
+const tasksSummaryEl = document.getElementById('tasksSummary')
+const taskQuickSortEl = document.getElementById('taskQuickSort')
+const taskQuickPriorityEl = document.getElementById('taskQuickPriority')
+const taskQuickStatusEl = document.getElementById('taskQuickStatus')
+const taskPeriodFilterEl = document.getElementById('taskPeriodFilter')
+const taskResetFiltersBtn = document.getElementById('taskResetFiltersBtn')
+const tasksBellBtn = document.getElementById('tasksBellBtn')
+const tasksPrivacyBtn = document.getElementById('tasksPrivacyBtn')
 
 const bellBtn = document.getElementById('bellBtn')
 const bellCountEl = document.getElementById('bellCount')
@@ -223,6 +242,13 @@ let sortMode = 'default'
 let dashQuery = ''
 let dashSortMode = 'default'
 let dashFilter = 'all'
+// Filtres rapides de la rubrique « Mes tâches » (maquette) + pagination.
+let tasksPage = 1
+const TASKS_PAGE_SIZE = 6
+let tasksQuickSort = 'due-asc'
+let tasksQuickPriority = 'all'
+let tasksQuickStatus = 'all'
+let tasksPeriod = 'week'
 // Tâches dont le statut a changé pendant qu'un filtre était actif : elles
 // restent visibles tant que l'utilisateur ne relance pas un filtre.
 let pinnedIds = new Set()
@@ -368,26 +394,109 @@ async function render() {
     triggerConfetti()
   }
 
-  // Mes tâches
+  // Mes tâches (maquette : cartes de comptage, onglets, recherche,
+  // filtres rapides, lignes riches, pagination 6/page, résumé latéral).
+  // Calculs : comptages + computeTaskProgress existant, rien de neuf.
+  const tasksCounts = { all: allTasks.length, doing: stats.doing, todo: stats.todo, done: stats.done, delayed: delayed.length }
+  // Le filtre actif suit les onglets/cartes (statusFilter) ou le select
+  // « Statut » des filtres rapides quand aucun onglet n'est actif.
+  const activeTasksFilter = statusFilter || (tasksQuickStatus !== 'all' ? tasksQuickStatus : 'all')
+  renderTasksCounts(tasksCountsEl, tasksCounts, activeTasksFilter)
+  renderTasksTabs(tasksTabsEl, tasksCounts, activeTasksFilter)
+  if (tasksTodayDateEl) {
+    const d = new Date()
+    tasksTodayDateEl.textContent = d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })
+  }
+  if (tasksTodayWeekdayEl) {
+    const d = new Date()
+    const wd = d.toLocaleDateString('fr-FR', { weekday: 'long' })
+    tasksTodayWeekdayEl.textContent = wd.charAt(0).toUpperCase() + wd.slice(1)
+  }
+  if (tasksBellCountEl) {
+    const n = delayed.length
+    tasksBellCountEl.hidden = n === 0
+    tasksBellCountEl.textContent = n > 9 ? '9+' : String(n)
+  }
+
   let visibleTasks = allTasks
-  if (statusFilter) {
-    visibleTasks = statusFilter === 'delayed'
+  // Filtre statut : onglets/cartes d'abord, sinon select des filtres rapides.
+  const statusKey = statusFilter || (tasksQuickStatus !== 'all' ? tasksQuickStatus : null)
+  if (statusKey) {
+    visibleTasks = statusKey === 'delayed'
       ? visibleTasks.filter(isLate)
-      : visibleTasks.filter((t) => t.status === statusFilter || pinnedIds.has(t.id))
+      : visibleTasks.filter((t) => t.status === statusKey || pinnedIds.has(t.id))
+  }
+  // Filtre priorité (filtres rapides).
+  if (tasksQuickPriority !== 'all') {
+    visibleTasks = visibleTasks.filter((t) => {
+      if (tasksQuickPriority === 'high') return (t.priority || 'medium') === 'high'
+      if (tasksQuickPriority === 'medium') return (t.priority || 'medium') === 'medium'
+      return (t.priority || 'medium') === 'low'
+    })
+  }
+  // Filtre période (filtres rapides) : échéance (ou création) dans la fenêtre.
+  if (tasksPeriod !== 'all') {
+    const start0 = new Date()
+    start0.setHours(0, 0, 0, 0)
+    let endTs = Infinity
+    let startTs = 0
+    if (tasksPeriod === 'today') {
+      startTs = start0.getTime()
+      endTs = startTs + 24 * 60 * 60 * 1000
+    } else if (tasksPeriod === 'week') {
+      const dow = (start0.getDay() + 6) % 7
+      startTs = start0.getTime() - dow * 24 * 60 * 60 * 1000
+      endTs = startTs + 7 * 24 * 60 * 60 * 1000
+    } else if (tasksPeriod === 'month') {
+      startTs = new Date(start0.getFullYear(), start0.getMonth(), 1).getTime()
+      endTs = new Date(start0.getFullYear(), start0.getMonth() + 1, 1).getTime()
+    }
+    visibleTasks = visibleTasks.filter((t) => {
+      const ref = t.dueDate || t.startTime || t.createdAt
+      if (!ref) return false
+      const ts = new Date(ref).getTime()
+      return ts >= startTs && ts < endTs
+    })
   }
   const trimmedQuery = searchQuery.trim().toLowerCase()
   if (trimmedQuery) {
     visibleTasks = visibleTasks.filter(
-      (t) => t.title.toLowerCase().includes(trimmedQuery) || t.description.toLowerCase().includes(trimmedQuery)
+      (t) => t.title.toLowerCase().includes(trimmedQuery) || (t.description || '').toLowerCase().includes(trimmedQuery)
     )
   }
-  visibleTasks = sortTasks(visibleTasks, sortMode, now)
+  // Tri : le select « Trier par » des filtres rapides prime sur le menu.
+  const effectiveSort = tasksQuickSort === 'due-asc' ? 'due' : tasksQuickSort === 'default' ? sortMode : tasksQuickSort
+  visibleTasks = sortTasks(visibleTasks, effectiveSort, now)
   let tasksEmptyMessage
   if (visibleTasks.length === 0) {
     if (trimmedQuery) tasksEmptyMessage = `Aucune tâche ne correspond à "${searchQuery.trim()}".`
-    else if (statusFilter) tasksEmptyMessage = `Aucune tâche ${STATUS_FILTER_LABEL[statusFilter]} pour le moment.`
+    else if (statusKey) tasksEmptyMessage = `Aucune tâche ${STATUS_FILTER_LABEL[statusKey]} pour le moment.`
   }
-  renderTasks(taskListEl, visibleTasks, 'list', tasksEmptyMessage)
+  // Pagination 6 par page (maquette : « Affichage de 1 à 6 sur 24 tâches »).
+  const totalPages = Math.max(1, Math.ceil(visibleTasks.length / TASKS_PAGE_SIZE))
+  if (tasksPage > totalPages) tasksPage = totalPages
+  const pageStart = (tasksPage - 1) * TASKS_PAGE_SIZE
+  const pageTasks = visibleTasks.slice(pageStart, pageStart + TASKS_PAGE_SIZE)
+  renderTasksTable(taskListEl, pageTasks, tasksEmptyMessage)
+  if (tasksPageInfoEl) {
+    if (visibleTasks.length === 0) tasksPageInfoEl.textContent = 'Affichage de 0 sur 0 tâche'
+    else {
+      const from = pageStart + 1
+      const to = Math.min(pageStart + TASKS_PAGE_SIZE, visibleTasks.length)
+      tasksPageInfoEl.textContent = `Affichage de ${from} à ${to} sur ${visibleTasks.length} tâche${visibleTasks.length > 1 ? 's' : ''}`
+    }
+  }
+  if (tasksPageNumsEl) {
+    let nums = ''
+    for (let p = 1; p <= totalPages; p++) {
+      nums += `<button type="button" class="mtasks2__page-num ${p === tasksPage ? 'is-current' : ''}" data-page="${p}">${p}</button>`
+    }
+    tasksPageNumsEl.innerHTML = nums
+  }
+  if (tasksPrevBtn) tasksPrevBtn.disabled = tasksPage <= 1
+  if (tasksNextBtn) tasksNextBtn.disabled = tasksPage >= totalPages
+  // Résumé de la journée (panneau latéral) : mêmes données, nouveau rendu.
+  renderTasksSummary(tasksSummaryEl, allTasks)
 
   // Rappel : tâches entrées dans la fenêtre de 5 minutes avant leur début ou
   // leur échéance. Une fois déclenché, le rappel persiste (même en retard) et
@@ -717,10 +826,109 @@ const dashTaskActions = {
 if (dashAllTasksEl) bindTaskEvents(dashAllTasksEl, dashTaskActions)
 if (dashLateListEl) bindTaskEvents(dashLateListEl, dashTaskActions)
 
-// --- Recherche et tri de "Mes tâches" ------------------------------------
+// --- Recherche, tri, filtres et pagination de "Mes tâches" --------------
 onEl(taskSearchInput, 'input', () => {
   searchQuery = taskSearchInput.value
+  tasksPage = 1
   render()
+})
+
+// Cartes de comptage + onglets : clic = filtre statut (maquette).
+if (tasksCountsEl) tasksCountsEl.addEventListener('click', (event) => {
+  const btn = event.target.closest('[data-count-key]')
+  if (!btn) return
+  const key = btn.dataset.countKey
+  statusFilter = key === 'all' ? null : key
+  if (taskQuickStatusEl) taskQuickStatusEl.value = key === 'all' ? 'all' : key
+  tasksQuickStatus = key === 'all' ? 'all' : key
+  tasksPage = 1
+  pinnedIds.clear()
+  render()
+})
+if (tasksTabsEl) tasksTabsEl.addEventListener('click', (event) => {
+  const tab = event.target.closest('[data-status-tab]')
+  if (!tab) return
+  const key = tab.dataset.statusTab
+  statusFilter = key === 'all' ? null : key
+  if (taskQuickStatusEl) taskQuickStatusEl.value = key === 'all' ? 'all' : key
+  tasksQuickStatus = key === 'all' ? 'all' : key
+  tasksPage = 1
+  pinnedIds.clear()
+  render()
+})
+
+// Pagination (maquette : 6 par page, numéros 1 2 3 4).
+onEl(tasksPrevBtn, 'click', () => {
+  if (tasksPage > 1) {
+    tasksPage -= 1
+    render()
+  }
+})
+onEl(tasksNextBtn, 'click', () => {
+  tasksPage += 1
+  render()
+})
+if (tasksPageNumsEl) tasksPageNumsEl.addEventListener('click', (event) => {
+  const btn = event.target.closest('[data-page]')
+  if (!btn) return
+  tasksPage = parseInt(btn.dataset.page, 10) || 1
+  render()
+})
+
+// Filtres rapides (panneau latéral) : tri / priorité / statut / période.
+onEl(taskQuickSortEl, 'change', () => {
+  tasksQuickSort = taskQuickSortEl.value
+  tasksPage = 1
+  render()
+})
+onEl(taskQuickPriorityEl, 'change', () => {
+  tasksQuickPriority = taskQuickPriorityEl.value
+  tasksPage = 1
+  render()
+})
+onEl(taskQuickStatusEl, 'change', () => {
+  tasksQuickStatus = taskQuickStatusEl.value
+  statusFilter = tasksQuickStatus === 'all' ? null : tasksQuickStatus
+  tasksPage = 1
+  pinnedIds.clear()
+  render()
+})
+onEl(taskPeriodFilterEl, 'change', () => {
+  tasksPeriod = taskPeriodFilterEl.value
+  tasksPage = 1
+  render()
+})
+onEl(taskResetFiltersBtn, 'click', () => {
+  searchQuery = ''
+  sortMode = 'default'
+  statusFilter = null
+  tasksPage = 1
+  tasksQuickSort = 'due-asc'
+  tasksQuickPriority = 'all'
+  tasksQuickStatus = 'all'
+  tasksPeriod = 'week'
+  pinnedIds.clear()
+  if (taskSearchInput) taskSearchInput.value = ''
+  if (taskQuickSortEl) taskQuickSortEl.value = 'due-asc'
+  if (taskQuickPriorityEl) taskQuickPriorityEl.value = 'all'
+  if (taskQuickStatusEl) taskQuickStatusEl.value = 'all'
+  if (taskPeriodFilterEl) taskPeriodFilterEl.value = 'week'
+  render()
+})
+
+// Cloche de l'en-tête « Mes tâches » : ouvre le menu des retards.
+onEl(tasksBellBtn, 'click', () => {
+  if (!bellMenuEl) return
+  if (bellMenuEl.hidden) {
+    bellMenuEl.hidden = false
+    if (bellOverlayEl) bellOverlayEl.hidden = false
+  } else {
+    bellMenuEl.hidden = true
+    if (bellOverlayEl) bellOverlayEl.hidden = true
+  }
+})
+onEl(tasksPrivacyBtn, 'click', () => {
+  window.alert('Vos données restent sur votre compte : seul vous pouvez voir vos tâches, vos preuves et vos statistiques.')
 })
 
 // Le bouton affiche toujours "Trier" (pas la valeur sélectionnée) ; toutes
