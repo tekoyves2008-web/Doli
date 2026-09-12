@@ -241,9 +241,23 @@ document.addEventListener('click', (event) => {
 function closeAllRowMenus() {
   document.querySelectorAll('.row-menu__list').forEach((menu) => {
     menu.hidden = true
+    menu.classList.remove('is-fixed')
+    menu.style.top = ''
+    menu.style.right = ''
+    // Retour dans sa carte d'origine après le passage en « portail ».
+    if (menu._home && menu.parentElement !== menu._home) {
+      menu._home.appendChild(menu)
+    }
   })
+  document
+    .querySelectorAll('.row-menu__toggle[aria-expanded="true"]')
+    .forEach((btn) => btn.setAttribute('aria-expanded', 'false'))
   document.querySelectorAll('.task--menu-open').forEach((task) => task.classList.remove('task--menu-open'))
 }
+
+// Le menu « … » suit le bouton : au moindre défilement (page ou conteneur
+// défilant), on le ferme — même comportement perçu que le menu « Filtrer ».
+document.addEventListener('scroll', () => closeAllRowMenus(), true)
 
 export function bindTaskEvents(container, { onSetStatus, onEdit, onDelete, onProvideProof }) {
   container.addEventListener('click', (event) => {
@@ -252,13 +266,37 @@ export function bindTaskEvents(container, { onSetStatus, onEdit, onDelete, onPro
     const id = taskEl.dataset.id
 
     // Menu « … » : bascule l'affichage des options (preuve / suppression).
+    // Positionné en « fixed » calculé depuis le bouton (comme le bouton
+    // « Filtrer » du dashboard) : un positionnement absolute serait rogné
+    // par le conteneur défilant (.mtasks2__tablewrap, overflow-x: auto).
     const rowToggle = event.target.closest('[data-action="toggle-row-menu"]')
     if (rowToggle) {
       const menu = rowToggle.closest('.row-menu').querySelector('.row-menu__list')
       const wasOpen = !menu.hidden
       closeAllStatusMenus()
       closeAllRowMenus()
-      menu.hidden = wasOpen
+      if (!wasOpen) {
+        menu.hidden = false
+        // « Portail » : le menu est rattaché à <body> le temps de
+        // l'affichage, hors de toutes les piles (stacking contexts) des
+        // cartes — garanti au-dessus de tous les autres éléments.
+        if (!menu._home) menu._home = menu.parentElement
+        if (menu._home && menu.parentElement !== document.body) {
+          document.body.appendChild(menu)
+        }
+        menu.classList.add('is-fixed')
+        const r = rowToggle.getBoundingClientRect()
+        menu.style.top = `${Math.round(r.bottom + 6)}px`
+        menu.style.right = `${Math.max(8, Math.round(window.innerWidth - r.right))}px`
+        // Pas de place en dessous (dernières lignes) : se déploie vers le haut.
+        requestAnimationFrame(() => {
+          const h = menu.offsetHeight
+          if (r.bottom + 6 + h > window.innerHeight - 8) {
+            menu.style.top = `${Math.max(8, Math.round(r.top - h - 6))}px`
+          }
+        })
+        rowToggle.setAttribute('aria-expanded', 'true')
+      }
       taskEl.classList.toggle('task--menu-open', !wasOpen)
       return
     }
