@@ -80,6 +80,29 @@ function pfPreviewHtml(variant) {
     .join('')}</div></div>`
 }
 
+function pfListRowHtml(it, selected) {
+  const st = pfStatusInfo(it).key
+  const stCls = st === 'validee' ? 'pf-status--ok' : st === 'attente' ? 'pf-status--wait' : 'pf-status--bad'
+  const variant = PF_PREVIEW_VARIANTS[Math.abs(it.id.length * 7 + it.proofCount) % PF_PREVIEW_VARIANTS.length]
+  const preview = pfPreviewHtml(variant)
+  const date = pfDateLabel(it.lastProofAt)
+  const taskName = it.taskName || "Tâche inconnue"
+  return `
+  <div class="pf-row ${stCls} ${selected ? 'is-selected' : ''}" data-id="${it.id}">
+    <div class="pf-row__col pf-row__col--select">${preview}</div>
+    <div class="pf-row__col pf-row__col--title">
+      <div class="pf-row__title">${escapeHtml(it.title)}</div>
+      <div class="pf-row__task">${escapeHtml(taskName)}</div>
+    </div>
+    <div class="pf-row__col pf-row__col--date">${date}</div>
+    <div class="pf-row__col pf-row__col--status"><span class="pf-row__status-badge ${stCls}">${st === 'validee' ? 'Validée' : 'En attente'}</span></div>
+    <div class="pf-row__col pf-row__col--actions">
+      <button type="button" class="pf-row__btn pf-row__btn--proof" data-action="provide-proof" aria-label="Fournir une preuve">+</button>
+      <button type="button" class="pf-row__btn pf-row__btn--delete" data-action="delete" aria-label="Supprimer">×</button>
+    </div>
+  </div>`
+}
+
 function pfCardHtml(it, selected) {
   const variant = PF_PREVIEW_VARIANTS[Math.abs(it.id.length * 7 + it.proofCount) % PF_PREVIEW_VARIANTS.length]
   return `
@@ -187,7 +210,7 @@ export function renderPreuves(container, tasks) {
   const pageItems = items.slice((pfState.page - 1) * pfState.perPage, pfState.page * pfState.perPage)
   const selected = pfState.selected ? items.find((it) => it.id === pfState.selected) : null
   container.innerHTML = `
-    <div class="pf">
+    <div class="pf-container">
       <div class="pf__main">
         <h2 class="pf__heading">Mes preuves privées
           <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round"><rect x="4.5" y="8.5" width="11" height="8" rx="1.5"/><path d="M7 8.5V6a3 3 0 016 0v2.5"/></svg>
@@ -229,15 +252,19 @@ export function renderPreuves(container, tasks) {
             <button type="button" class="${pfState.view === 'list' ? 'is-active' : ''}" data-view="list" aria-label="Liste"><svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><line x1="3" y1="5" x2="17" y2="5"/><line x1="3" y1="10" x2="17" y2="10"/><line x1="3" y1="15" x2="17" y2="15"/></svg></button>
           </div>
         </div>
-        <div class="pf-grid pf-grid--${pfState.view}">${pageItems.map((it) => pfCardHtml(it, pfState.selected === it.id)).join('') || '<p class="pf-empty">Aucune preuve ne correspond à ces filtres.</p>'}</div>
-        ${pages > 1 ? `
-        <div class="pf-pagination">
-          <button type="button" class="pf-page-btn" data-page="${pfState.page - 1}"${pfState.page <= 1 ? ' disabled' : ''}>‹ Précédent</button>
-          <span class="pf-page-nums">${Array.from({ length: pages }, (_, i) => `<button type="button" class="pf-page-btn pf-page-num${i + 1 === pfState.page ? ' is-current' : ''}" data-page="${i + 1}">${i + 1}</button>`).join('')}</span>
-          <button type="button" class="pf-page-btn" data-page="${pfState.page + 1}"${pfState.page >= pages ? ' disabled' : ''}>Suivant ›</button>
-        </div>` : ''}
       </div>
-      <aside class="pf-detail">${pfDetailHtml(selected)}</aside>
+      <div class="pf-layout">
+        <div class="pf__main">
+          <div class="pf-grid pf-grid--${pfState.view}">${pageItems.map((it) => renderItem(it, pfState.selected === it.id)).join('') || '<p class="pf-empty">Aucune preuve ne correspond à ces filtres.</p>'}</div>
+          ${pages > 1 ? `
+          <div class="pf-pagination">
+            <button type="button" class="pf-page-btn" data-page="${pfState.page - 1}"${pfState.page <= 1 ? ' disabled' : ''}>‹ Précédent</button>
+            <span class="pf-page-nums">${Array.from({ length: pages }, (_, i) => `<button type="button" class="pf-page-btn pf-page-num${i + 1 === pfState.page ? ' is-current' : ''}" data-page="${i + 1}">${i + 1}</button>`).join('')}</span>
+            <button type="button" class="pf-page-btn" data-page="${pfState.page + 1}"${pfState.page >= pages ? ' disabled' : ''}>Suivant ›</button>
+          </div>` : ''}
+        </div>
+        <aside class="pf-detail">${pfDetailHtml(selected)}</aside>
+      </div>
     </div>`
   bindPreuvesEvents(container, items, selected)
 }
