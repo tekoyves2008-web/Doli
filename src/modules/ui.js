@@ -1135,7 +1135,14 @@ export function bindProgressionFilters(container, onFilterChange) {
 // Pure présentation : l'avancement utilise computeTaskProgress (méthode
 // Doli existante), aucune base de calcul n'est modifiée.
 
-const MTASK_PRIORITY_LABEL = { low: 'Basse', medium: 'Normale', high: 'Haute' }
+const MTASK_PRIORITY_LABEL = { urgent: 'Urgente', high: 'Haute', medium: 'Normale', normal: 'Normale', low: 'Basse' }
+function effectivePriority(task) {
+  const pr = (task.priority || 'medium').toLowerCase()
+  if (pr === 'urgent' || pr === 'urgente' || pr === 'critical') return 'urgent'
+  if (pr === 'high' || pr === 'haute' || pr === 'haut') return 'high'
+  if (pr === 'low' || pr === 'basse' || pr === 'bas') return 'low'
+  return 'medium'
+}
 
 // Avatar rond coloré de la ligne (maquette) : icône selon priorité.
 const TASK_AVATAR_ICON = {
@@ -1161,7 +1168,7 @@ function fmtDayShort(value) {
 }
 
 function taskKindLabel(task) {
-  return task.priority === 'high' ? 'Tâche principale' : 'Tâche secondaire'
+  return task.priority === 'high' || task.priority === 'urgent' ? 'Tâche principale' : 'Tâche secondaire'
 }
 
 // Heure courte « 8h05 » pour les libellés « Prévu : ... » des cartes.
@@ -1169,10 +1176,10 @@ function fmtHour(value) {
   if (!value) return null
   const d = new Date(value)
   if (Number.isNaN(d.getTime())) return null
-  return `${d.getHours()}h${String(d.getMinutes()).padStart(2, '0')}`
+  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
 }
 
-// Situation de la tâche au moment T : terminée / en retard / à venir / OK.
+// Situation de la tâche au moment T : textes exacts de la maquette.
 function situationInfo(task, now) {
   if (task.status === STATUS.DONE) {
     return { cls: 'done', text: 'Terminée', sub: 'Excellente' }
@@ -1182,7 +1189,15 @@ function situationInfo(task, now) {
     const ms = now - due.getTime()
     const h = Math.floor(ms / 3600000)
     const m = Math.floor((ms % 3600000) / 60000)
-    const delay = h > 0 ? `Retard ${h}h${String(m).padStart(2, '0')}` : `Retard ${m} min`
+    if (h >= 2) {
+      const delay = `Retard : ${h}h${String(m).padStart(2, '0')}`
+      return { cls: 'late', text: 'En retard', sub: delay }
+    }
+    if (h >= 1 || m >= 30) {
+      const delay = h > 0 ? `Retard : ${m + h * 60} min` : `Retard : ${m} min`
+      return { cls: 'latemod', text: 'En retard modéré', sub: delay }
+    }
+    const delay = h > 0 ? `Retard : ${h}h${String(m).padStart(2, '0')}` : `Retard : ${m} min`
     return { cls: 'late', text: 'En retard', sub: delay }
   }
   const start = task.startTime ? new Date(task.startTime) : null
@@ -1200,7 +1215,7 @@ function situationInfo(task, now) {
 // En cours / En retard / Non exécutées — nombre coloré + icône ronde +
 // « X % du total ». Clic = filtre statut. Calculs : simples comptages.
 const MTASKS_COUNT_ICON = {
-  all: `<svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="12" height="14" rx="2"/><line x1="7" y1="7" x2="13" y2="7"/><line x1="7" y1="10.5" x2="13" y2="10.5"/><line x1="7" y1="14" x2="11" y2="14"/></svg>`,
+  all: `<svg viewBox="0 0 20 20" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="12" height="14" rx="2"/><line x1="7" y1="7" x2="13" y2="7"/><line x1="7" y1="10.5" x2="13" y2="10.5"/><line x1="7" y1="14" x2="11" y2="14"/></svg>`,
   done: `<svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7.5"/><polyline points="7,10 9.2,12.2 13.5,7.5"/></svg>`,
   doing: `<svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7.5"/><polygon points="8.3,7 13.5,10 8.3,13" fill="currentColor" stroke="none"/></svg>`,
   delayed: `<svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7.5"/><polyline points="10,5.8 10,10 12.8,11.6"/></svg>`,

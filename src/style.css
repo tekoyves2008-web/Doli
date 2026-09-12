@@ -11,7 +11,7 @@
 }
 
 :root {
-  --font: system-ui, 'Segoe UI', Roboto, sans-serif;
+  --font: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   --radius: 10px;
 }
 
@@ -38,19 +38,21 @@
 
 /* Thème clair : blanc, accent bleu marine professionnel */
 :root[data-theme='light'] {
-  --bg: #f4f5f7;
+  --bg: #f5f7fb;
   --bg-elevated: #ffffff;
   --bg-hover: #eceff4;
   --text: #1c2536;
-  --text-muted: #626c7d;
-  --border: #e1e4ea;
-  --accent: #34518f;
+  --text-muted: #6b7689;
+  --border: #e6eaf1;
+  --accent: #2563eb;
   --accent-contrast: #ffffff;
   --shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
   --sidebar-bg: #1c2740;
   /* Blanc adouci pour les cartes de tâche : plus clair que le fond de page
      (--bg) mais volontairement pas un blanc pur, pour rester distinct. */
   --task-bg: #fafbfc;
+  --task-track: #e9edf4;
+  --chip-bg: #f1f5f9;
 
   --badge-todo-bg: #fdecea;
   --badge-todo-text: #c0392b;
@@ -2181,15 +2183,32 @@ input:focus-visible,
 /* Lignes de tâches (maquette : 6 colonnes, avatar rond, cartes) */
 .mtasks2__colhead {
   display: grid;
+  /* Même grille EXACTEMENT que .mtasks2-row (les motifs de chaque ligne
+     doivent tomber pile sous leur sous-titre de colonne). */
   grid-template-columns: minmax(0, 1.9fr) minmax(0, 0.8fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.1fr);
   gap: 8px;
+  /* Padding horizontal identique à celui des lignes (12px) pour un
+     alignement pixel-parfait sous chaque sous-section. */
   padding: 0 12px;
-  margin-bottom: 5px;
-  font-size: 9.5px;
+  margin-bottom: 6px;
+  font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.045em;
   color: var(--text-muted);
+}
+.mtasks2__colhead span {
+  text-align: left;
+  line-height: 1.4;
+}
+/* Chaque motif (pastille, jauge, situation, boutons) commence au même
+   endroit : toutes les cellules de ligne sont alignées à gauche, comme
+   leurs en-têtes de colonne. */
+.mtasks2-cell {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
 }
 .mtasks2__list {
   display: flex;
@@ -2245,10 +2264,10 @@ input:focus-visible,
   font-size: 12.5px;
   margin-bottom: 0;
 }
-.mtasks2__list .mtask__kind { font-size: 10px; }
+.mtasks2__list .mtask__kind { font-size: 10.5px; }
 .mtasks2__list .mtask__priority {
-  font-size: 10.5px;
-  padding: 3px 8px;
+  font-size: 11px;
+  padding: 4px 9px;
   gap: 5px;
 }
 .mtasks2__list .mtask__priority::before {
@@ -2256,6 +2275,7 @@ input:focus-visible,
   height: 6px;
 }
 .mtasks2__list .mtask__period { font-size: 11px; }
+.mtasks2__list .mtask__period-col strong { font-size: 11.5px; }
 .mtask__period-cols {
   display: flex;
   gap: 10px;
@@ -2281,9 +2301,9 @@ input:focus-visible,
 }
 .mtasks2__list .mtask__progress { min-width: 0; gap: 6px; }
 .mtasks2__list .mtask__progress-track { height: 5px; }
-.mtasks2__list .mtask__progress-pct { font-size: 11px; min-width: 34px; }
-.mtasks2__list .mtask__progress-status { font-size: 10px; margin-top: 2px; }
-.mtasks2__list .mtask__situation { font-size: 10.5px; }
+.mtasks2__list .mtask__progress-pct { font-size: 12px; min-width: 34px; }
+.mtasks2__list .mtask__progress-status { font-size: 10.5px; margin-top: 2px; }
+.mtasks2__list .mtask__situation { font-size: 11px; }
 .mtask__situation-line { display: block; }
 .mtask__situation-sub { font-weight: 500; }
 .mtasks2__list .mtask__actions {
@@ -2293,8 +2313,8 @@ input:focus-visible,
   flex-wrap: wrap;
 }
 .mtasks2__list .mtask__btn {
-  padding: 5px 9px;
-  font-size: 10.5px;
+  padding: 5px 10px;
+  font-size: 11px;
   border-radius: 7px;
 }
 .task--highlight {
