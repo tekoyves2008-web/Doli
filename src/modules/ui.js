@@ -1146,9 +1146,11 @@ function effectivePriority(task) {
 
 // Avatar rond coloré de la ligne (maquette) : icône selon priorité.
 const TASK_AVATAR_ICON = {
-  high: `<svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l-1.5-6L11 5.5 13 3l2 2.5L11.5 9z"/><line x1="4.5" y1="17" x2="9" y2="17"/></svg>`,
-  medium: `<svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="12" height="14" rx="2"/><line x1="7" y1="7.5" x2="13" y2="7.5"/><line x1="7" y1="11" x2="13" y2="11"/></svg>`,
-  low: `<svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="13" height="10" rx="2"/><line x1="3.5" y1="8" x2="16.5" y2="8"/><line x1="6.5" y1="3.5" x2="6.5" y2="6.5"/><line x1="13.5" y1="3.5" x2="13.5" y2="6.5"/></svg>`,
+  urgent: `<svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="12" height="14" rx="2"/><line x1="7" y1="7.5" x2="13" y2="7.5"/><line x1="7" y1="11" x2="13" y2="11"/></svg>`,
+  high: `<svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l-1.5-6L11 5.5 13 3l2 2.5L11.5 9z"/><line x1="4.5" y1="17" x2="9" y2="17"/></svg>`,
+  medium: `<svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="4.5,10.5 8,14 15.5,6"/></svg>`,
+  normal: `<svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="4.5,10.5 8,14 15.5,6"/></svg>`,
+  low: `<svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3.5" y="5" width="13" height="10" rx="2"/><line x1="3.5" y1="8" x2="16.5" y2="8"/><line x1="6.5" y1="3.5" x2="6.5" y2="6.5"/><line x1="13.5" y1="3.5" x2="13.5" y2="6.5"/></svg>`,
 }
 
 // « 10:00 » court pour la période prévue des lignes.
@@ -1168,7 +1170,7 @@ function fmtDayShort(value) {
 }
 
 function taskKindLabel(task) {
-  return task.priority === 'high' || task.priority === 'urgent' ? 'Tâche principale' : 'Tâche secondaire'
+  return effectivePriority(task) === 'low' ? 'Tâche secondaire' : 'Tâche principale'
 }
 
 // Heure courte « 8h05 » pour les libellés « Prévu : ... » des cartes.
@@ -1215,11 +1217,11 @@ function situationInfo(task, now) {
 // En cours / En retard / Non exécutées — nombre coloré + icône ronde +
 // « X % du total ». Clic = filtre statut. Calculs : simples comptages.
 const MTASKS_COUNT_ICON = {
-  all: `<svg viewBox="0 0 20 20" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="12" height="14" rx="2"/><line x1="7" y1="7" x2="13" y2="7"/><line x1="7" y1="10.5" x2="13" y2="10.5"/><line x1="7" y1="14" x2="11" y2="14"/></svg>`,
-  done: `<svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7.5"/><polyline points="7,10 9.2,12.2 13.5,7.5"/></svg>`,
-  doing: `<svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7.5"/><polygon points="8.3,7 13.5,10 8.3,13" fill="currentColor" stroke="none"/></svg>`,
-  delayed: `<svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7.5"/><polyline points="10,5.8 10,10 12.8,11.6"/></svg>`,
-  todo: `<svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="10" cy="10" r="7.5"/><line x1="7.5" y1="10" x2="7.5" y2="10"/><line x1="12.5" y1="10" x2="12.5" y2="10"/></svg>`,
+  all: `<svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="12" height="14" rx="2"/><line x1="7" y1="7" x2="13" y2="7"/><line x1="7" y1="10.2" x2="13" y2="10.2"/><line x1="7" y1="13.5" x2="11" y2="13.5"/></svg>`,
+  done: `<svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7.5"/><polyline points="7,10.2 9.3,12.5 13.4,7.6"/></svg>`,
+  doing: `<svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7.5"/><polygon points="8.2,7 13.6,10 8.2,13" fill="currentColor" stroke="none"/></svg>`,
+  delayed: `<svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7.5"/><polyline points="10,5.6 10,10 12.9,11.7"/></svg>`,
+  todo: `<svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="10" cy="10" r="7.5"/><line x1="7.6" y1="10" x2="7.6" y2="10"/><line x1="12.4" y1="10" x2="12.4" y2="10"/></svg>`,
 }
 export function renderTasksCounts(el, counts, activeFilter) {
   if (!el) return
@@ -1238,11 +1240,11 @@ export function renderTasksCounts(el, counts, activeFilter) {
     ${card('todo', 'todo', 'Non exécutées', counts.todo)}`
 }
 
-// Onglets de filtres rapides (maquette : pastilles « Toutes (24) »…).
+// Onglets de filtres rapides (maquette : « Toutes (24) », « En cours (4) »…).
 export function renderTasksTabs(el, counts, activeFilter) {
   if (!el) return
   const tab = (key, label, count) => `
-    <button type="button" class="mtasks2-tab ${activeFilter === key ? 'is-active' : ''}" data-status-tab="${key}">${label} <span class="mtasks2-tab__count">(${count})</span></button>`
+    <button type="button" role="tab" aria-selected="${activeFilter === key ? 'true' : 'false'}" class="mtasks2-tab ${activeFilter === key ? 'is-active' : ''}" data-status-tab="${key}">${label} <span class="mtasks2-tab__count">(${count})</span></button>`
   el.innerHTML = `
     ${tab('all', 'Toutes', counts.all)}
     ${tab('doing', 'En cours', counts.doing)}
@@ -1330,17 +1332,15 @@ export function renderTasksTable(container, tasks, emptyMessage) {
       const now = Date.now()
       const progress = computeTaskProgress(task)
       const fillMod = progress === null ? '--low' : progress >= 100 ? '--done' : progress >= 50 ? '--half' : '--low'
-      const progressPct = progress === null ? '—' : `${progress} %`
+      const progressPct = progress === null ? '0 %' : `${progress} %`
       const progressLabel =
         task.status === STATUS.DONE
           ? 'Terminée'
           : task.status === STATUS.TODO
             ? 'Non exécutée'
-            : progress === null
-              ? 'Preuve requise'
-              : 'En cours'
+            : 'En cours'
       const sit = situationInfo(task, now)
-      const priority = task.priority || 'medium'
+      const priority = effectivePriority(task)
       const overdueRow = sit.cls === 'late' ? ' mtask--overdue' : ''
       const startHM = fmtTimeShort(task.startTime)
       const endHM = fmtTimeShort(task.dueDate)
@@ -1350,42 +1350,44 @@ export function renderTasksTable(container, tasks, emptyMessage) {
         ? `<svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4.5,10.5 8,14 15.5,6"/></svg>`
         : TASK_AVATAR_ICON[priority] || TASK_AVATAR_ICON.medium
       const actionBtn = task.status === STATUS.DOING
-        ? '<button type="button" class="mtask__btn mtask__btn--primary" data-action="provide-proof">▷ Continuer</button>'
+        ? '<button type="button" class="mtask__btn mtask__btn--primary" data-action="provide-proof"><svg viewBox="0 0 20 20" width="10" height="10" fill="currentColor"><polygon points="6,4 16,10 6,16"/></svg> Continuer</button>'
         : task.status === STATUS.TODO
-          ? '<button type="button" class="mtask__btn mtask__btn--primary" data-action="set-status" data-status="doing">▷ Commencer</button>'
+          ? '<button type="button" class="mtask__btn mtask__btn--primary" data-action="set-status" data-status="doing"><svg viewBox="0 0 20 20" width="10" height="10" fill="currentColor"><polygon points="6,4 16,10 6,16"/></svg> Commencer</button>'
           : ''
       return `
-      <article class="task mtask2-row mtask--${task.status}${overdueRow}" data-id="${task.id}">
-        <div class="mtask2-cell mtask2-cell--task">
-          <span class="mtask2-avatar mtask2-avatar--${avatarCls}">${avatarIcon}</span>
-          <span class="mtask2-task-text">
+      <article class="task mtasks2-row mtask--${task.status}${overdueRow}" data-id="${task.id}">
+        <div class="mtasks2-cell mtasks2-cell--task">
+          <span class="mtasks2-avatar mtasks2-avatar--${avatarCls}">${avatarIcon}</span>
+          <span class="mtasks2-task-text">
             <span class="mtask__title">${escapeHtml(task.title)}</span>
             <span class="mtask__kind">${taskKindLabel(task)}</span>
           </span>
         </div>
-        <div class="mtask2-cell"><span class="mtask__priority mtask__priority--${priority}">${MTASK_PRIORITY_LABEL[priority]}</span></div>
-        <div class="mtask2-cell mtask__period">
+        <div class="mtasks2-cell"><span class="mtask__priority mtask__priority--${priority}">${MTASK_PRIORITY_LABEL[priority]}</span></div>
+        <div class="mtasks2-cell mtask__period">
           <span class="mtask__period-cols"><span class="mtask__period-col"><em>Début</em><strong>${startHM}</strong></span><span class="mtask__period-col"><em>Fin</em><strong>${endHM}</strong></span></span>
           <span class="mtask__period-day">${dayLabel}</span>
         </div>
-        <div class="mtask2-cell mtask__adv">
+        <div class="mtasks2-cell mtask__adv">
           <div class="mtask__progress">
             <span class="mtask__progress-pct">${progressPct}</span>
             <div class="mtask__progress-track"><span class="task__progress-fill task__progress-fill${fillMod}" style="width:${progress ?? 0}%"></span></div>
           </div>
-          <span class="mtask__progress-status">${progressLabel}</span>
+          <span class="mtask__progress-status mtask__progress-status--${task.status}">${progressLabel}</span>
         </div>
-        <div class="mtask2-cell"><span class="mtask__situation mtask__situation--${sit.cls}"><span class="mtask__situation-line">${sit.text}</span><span class="mtask__situation-line mtask__situation-sub">${sit.sub}</span></span></div>
-        <div class="mtask2-cell mtask__actions">
+        <div class="mtasks2-cell"><span class="mtask__situation mtask__situation--${sit.cls}"><span class="mtask__situation-line mtask__situation-top"><svg viewBox="0 0 20 20" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7.5"/><polyline points="10,6 10,10 13,12"/></svg>${sit.text}</span><span class="mtask__situation-line mtask__situation-sub"><svg viewBox="0 0 20 20" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7.5"/><polyline points="10,6 10,10 13,12"/></svg>${sit.sub}</span></span></div>
+        <div class="mtasks2-cell mtasks2-cell--actions mtask__actions">
           ${actionBtn}
-          <button type="button" class="mtask__btn" data-action="edit">Voir détails</button>
-          <div class="row-menu">
-            <button type="button" class="row-menu__toggle" data-action="toggle-row-menu" aria-label="Options de la tâche">⋯</button>
-            <div class="row-menu__list" hidden>
-              <button type="button" class="row-menu__option" data-action="provide-proof">Ajouter une preuve</button>
-              <button type="button" class="row-menu__option row-menu__option--danger" data-action="delete">Supprimer</button>
+          <span class="mtask__actions-row">
+            <button type="button" class="mtask__btn" data-action="edit">Voir détails</button>
+            <div class="row-menu">
+              <button type="button" class="row-menu__toggle" data-action="toggle-row-menu" aria-label="Options de la tâche">⋯</button>
+              <div class="row-menu__list" hidden>
+                <button type="button" class="row-menu__option" data-action="provide-proof">Ajouter une preuve</button>
+                <button type="button" class="row-menu__option row-menu__option--danger" data-action="delete">Supprimer</button>
+              </div>
             </div>
-          </div>
+          </span>
         </div>
       </article>`
     })
@@ -1450,9 +1452,7 @@ export function renderTasksSummary(el, tasks) {
       </ul>
     </div>
     <div class="mtasks2__motivation">
-      <span class="mtasks2__motivation-icon">
-        <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h7v3H7zM6 4v3h1M13 4v3h1"/><path d="M7 7v1.5c0 3 1.5 5 3 5.5 1.5-.5 3-2.5 3-5.5V7"/><path d="M10 14v1.5"/><path d="M8 17h4"/></svg>
-      </span>
+      <span class="mtasks2__motivation-icon" aria-hidden="true">🏆</span>
       <span><strong>${message.title}</strong><p>${message.text}</p></span>
     </div>`
 }

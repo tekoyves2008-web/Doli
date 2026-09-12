@@ -1,0 +1,51 @@
+<!doctype html>
+<!-- Page de TEST temporaire (rendu tête de liste Mes tâches) — à supprimer. -->
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Test — Liste Mes tâches</title>
+  <link rel="stylesheet" href="/src/style.css?v=lock1" />
+</head>
+<body>
+  <main class="mtasks2">
+    <div class="mtasks2__main">
+      <div class="mtasks2__tablewrap">
+        <div class="mtasks2__colhead" aria-hidden="true">
+          <span>Tâche</span><span>Priorité</span><span>Période prévue</span><span>Avancement</span><span>Situation</span><span>Actions</span>
+        </div>
+        <div id="taskList" class="mtasks2__list" aria-live="polite"></div>
+      </div>
+    </div>
+  </main>
+  <script type="module">
+    import { renderTasksTable } from '/src/modules/ui.js'
+    const H = 3600000
+    const M = 60000
+    const now = Date.now()
+    const at = (ms) => new Date(now + ms).toISOString()
+    const tasks = [
+      // En retard important (~96h57), avancement 97 % → Continuer
+      { id: 't1', title: 'Finaliser le rapport mensuel', priority: 'urgent', status: 'doing',
+        startTime: at(-(96 * H + 57 * M) - 4 * H), dueDate: at(-(96 * H + 57 * M)),
+        startedAt: at(-(96 * H + 57 * M) - 300 * H), lastProofAt: at(-(96 * H + 57 * M) - 9 * H) },
+      // En cours dans les délais, 40 %
+      { id: 't2', title: 'Développer la base de données', priority: 'high', status: 'doing',
+        startTime: at(-3 * H), dueDate: at(2 * H), startedAt: at(-5 * H), lastProofAt: at(-3 * H) },
+      // Terminée (Normale)
+      { id: 't3', title: "Tester l'application", priority: 'medium', status: 'done',
+        startTime: at(-5 * H), dueDate: at(-3 * H), startedAt: at(-5 * H), lastProofAt: at(-3 * H) },
+      // À venir (Non exécutée) → Commencer
+      { id: 't4', title: 'Préparer la présentation', priority: 'medium', status: 'todo',
+        startTime: at(1 * H), dueDate: at(3 * H) },
+      // En retard modéré (45 min)
+      { id: 't5', title: 'Corriger les erreurs', priority: 'high', status: 'doing',
+        startTime: at(-3 * H), dueDate: at(-45 * M), startedAt: at(-3 * H), lastProofAt: at(-30 * M) },
+      // Basse, Tâche secondaire, en retard 2h05
+      { id: 't6', title: 'Réunion avec équipe', priority: 'low', status: 'doing',
+        startTime: at(-6 * H), dueDate: at(-(2 * H + 5 * M)), startedAt: at(-8 * H), lastProofAt: at(-4 * H) },
+    ]
+    renderTasksTable(document.getElementById('taskList'), tasks)
+  </script>
+</body>
+</html>

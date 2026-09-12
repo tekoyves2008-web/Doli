@@ -230,6 +230,14 @@
                 </div>
                 <span class="dash-kpi__delta">Score actuel</span>
               </div>
+              <div class="dash-card dash-kpi dash-kpi--learn">
+                <h4 class="dash-card__title">Comprendre mes statistiques</h4>
+                <ul class="dash-learn-list">
+                  <li>Retards et gravité</li>
+                  <li>Priorités et influence</li>
+                </ul>
+                <button type="button" id="dashLearnStats" class="dash-link">Expliquer mes statistiques →</button>
+              </div>
             </div>
               <div class="dash-card dash-tasks">
                 <div class="dash-card__head">
@@ -275,14 +283,6 @@
                   <h4 class="dash-card__title">Activité récente</h4>
                   <div id="dashActivity" class="dash-activity"></div>
                   <button type="button" id="dashViewActivity" class="dash-link">Voir toute l'activité →</button>
-                </div>
-                <div class="dash-card">
-                  <h4 class="dash-card__title">Comprendre mes statistiques</h4>
-                  <ul class="dash-learn-list">
-                    <li>Retards et gravité</li>
-                    <li>Priorités et influence</li>
-                  </ul>
-                  <button type="button" id="dashLearnStats" class="dash-link">Expliquer mes statistiques →</button>
                 </div>
               </div>
             </div>
@@ -357,10 +357,12 @@
                 </div>
               </div>
 
-              <div class="mtasks2__colhead" aria-hidden="true">
-                <span>Tâche</span><span>Priorité</span><span>Période prévue</span><span>Avancement</span><span>Situation</span><span>Actions</span>
+              <div class="mtasks2__tablewrap">
+                <div class="mtasks2__colhead" aria-hidden="true">
+                  <span>Tâche</span><span>Priorité</span><span>Période prévue</span><span>Avancement</span><span>Situation</span><span>Actions</span>
+                </div>
+                <div id="taskList" class="mtasks2__list" aria-live="polite"></div>
               </div>
-              <div id="taskList" class="mtasks2__list" aria-live="polite"></div>
 
               <div class="mtasks2__pagination">
                 <span id="tasksPageInfo" class="mtasks2__page-info"></span>
