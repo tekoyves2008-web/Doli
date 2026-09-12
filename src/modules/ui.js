@@ -259,6 +259,32 @@ function closeAllRowMenus() {
 // défilant), on le ferme — même comportement perçu que le menu « Filtrer ».
 document.addEventListener('scroll', () => closeAllRowMenus(), true)
 
+// Options du menu « … » : comme le menu est déplacé dans <body> (portail),
+// il est HORS du conteneur écouté par bindTaskEvents — les clics sur
+// « Ajouter une preuve » / « Supprimer » ne remonteraient jamais à la
+// délégation. Ce listener global exécute donc l'action via les handlers
+// mémorisés sur le menu au moment de son ouverture.
+document.addEventListener('click', (event) => {
+  const list = event.target.closest('.row-menu__list')
+  if (!list || !list._actions) return
+  const homeTask = list._home ? list._home.closest('.task') : null
+  if (!homeTask) return
+  const id = homeTask.dataset.id
+  const option = event.target.closest('[data-action="provide-proof"], [data-action="delete"]')
+  if (!option) return
+  const handlers = list._actions
+  if (option.dataset.action === 'provide-proof') {
+    closeAllRowMenus()
+    if (handlers.onProvideProof) handlers.onProvideProof(id)
+    else handlers.onEdit(id)
+    return
+  }
+  if (option.dataset.action === 'delete') {
+    closeAllRowMenus()
+    if (handlers.onDelete) handlers.onDelete(id)
+  }
+})
+
 export function bindTaskEvents(container, { onSetStatus, onEdit, onDelete, onProvideProof }) {
   container.addEventListener('click', (event) => {
     const taskEl = event.target.closest('.task')
@@ -277,6 +303,10 @@ export function bindTaskEvents(container, { onSetStatus, onEdit, onDelete, onPro
       closeAllRowMenus()
       if (!wasOpen) {
         menu.hidden = false
+        // Handlers de la liste d'origine : le menu est déplacé dans <body>
+        // (portail), les clics sur ses options sont donc traités par le
+        // listener global ci-dessous, qui utilise ces handlers mémorisés.
+        menu._actions = { onSetStatus, onEdit, onDelete, onProvideProof }
         // « Portail » : le menu est rattaché à <body> le temps de
         // l'affichage, hors de toutes les piles (stacking contexts) des
         // cartes — garanti au-dessus de tous les autres éléments.

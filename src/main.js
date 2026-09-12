@@ -806,6 +806,12 @@ const taskActions = {
     render()
   },
   onEdit: goToTask,
+  async onProvideProof(id) {
+    const task = await findTask(id)
+    if (!task) return
+    await provideProof(id)
+    render()
+  },
   async onDelete(id) {
     const task = await findTask(id)
     if (!task) return

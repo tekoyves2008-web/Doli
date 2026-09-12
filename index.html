@@ -343,16 +343,22 @@
                     <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="9" cy="9" r="6"/><line x1="13.5" y1="13.5" x2="18" y2="18"/></svg>
                     <input type="search" id="taskSearchInput" placeholder="Rechercher une tâche..." aria-label="Rechercher une tâche" />
                   </div>
-                  <button type="button" id="taskSortBtn" class="mtasks2__filter-btn" aria-haspopup="true" aria-expanded="false">
-                    <svg viewBox="0 0 20 20" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="3" y1="5" x2="17" y2="5"/><line x1="6" y1="10" x2="14" y2="10"/><line x1="9" y1="15" x2="11" y2="15"/></svg>
-                    Filtrer
-                  </button>
-                  <div id="taskSortMenu" class="sort-picker__menu" hidden>
-                    <button type="button" class="sort-picker__option is-current" data-sort="default">Par défaut</button>
-                    <button type="button" class="sort-picker__option" data-sort="urgency">Urgence</button>
-                    <button type="button" class="sort-picker__option" data-sort="priority">Priorité</button>
-                    <button type="button" class="sort-picker__option" data-sort="due">Échéance</button>
-                    <button type="button" class="sort-picker__option" data-sort="title">Titre (A → Z)</button>
+                  <!-- Même structure que le bouton « Filtrer » du dashboard :
+                       bouton + menu enveloppés dans .sort-picker (position
+                       relative) pour l'ancrage du menu et la fermeture au
+                       clic extérieur. -->
+                  <div class="sort-picker">
+                    <button type="button" id="taskSortBtn" class="mtasks2__filter-btn" aria-haspopup="true" aria-expanded="false">
+                      <svg viewBox="0 0 20 20" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="3" y1="5" x2="17" y2="5"/><line x1="6" y1="10" x2="14" y2="10"/><line x1="9" y1="15" x2="11" y2="15"/></svg>
+                      Filtrer
+                    </button>
+                    <div id="taskSortMenu" class="sort-picker__menu" hidden>
+                      <button type="button" class="sort-picker__option is-current" data-sort="default">Par défaut</button>
+                      <button type="button" class="sort-picker__option" data-sort="urgency">Urgence</button>
+                      <button type="button" class="sort-picker__option" data-sort="priority">Priorité</button>
+                      <button type="button" class="sort-picker__option" data-sort="due">Échéance</button>
+                      <button type="button" class="sort-picker__option" data-sort="title">Titre (A → Z)</button>
+                    </div>
                   </div>
                 </div>
               </div>
