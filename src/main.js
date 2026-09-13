@@ -42,6 +42,7 @@ import {
   renderTasksTable,
   renderTasksSummary,
 } from './modules/ui.js'
+import { renderPreuves } from './modules/preuves.js'
 import { initAlarms } from './modules/alarms.js'
 import { getSession, login, register, signOut } from './modules/auth.js'
 
@@ -103,6 +104,7 @@ const progressionContainer = viewEls.progression
 const progressionDayDistributionCanvas = document.getElementById('progressionDayDistributionChart')
 const progressionWeeklyComparisonCanvas = document.getElementById('progressionWeeklyComparisonChart')
 const progressionTrendCanvas = document.getElementById('progressionTrendChart')
+const preuvesListEl = document.getElementById('preuvesList')
 
 // --- Références DOM : dashboard (maquette Doli) --------------------------
 const dashGreetingEl = document.getElementById('dashGreeting')
@@ -540,6 +542,11 @@ async function render() {
 
     const todayStats = computeTodayStats(allTasks, progressionPeriod)
     renderProgressionTodayStats(todayStats)
+  }
+
+  // Preuves : historique des preuves par tâche
+  if (preuvesListEl) {
+    renderPreuves(preuvesListEl, allTasks)
   }
 
   themeToggleBtn.innerHTML = settings.theme === 'dark' ? MOON_ICON : SUN_ICON

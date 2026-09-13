@@ -1,8 +1,7 @@
-// --- Rubrique Preuves : galerie « Mes preuves privées » (maquette) --------
-// Bandeau de confidentialité, 4 cartes de stats, recherche + filtres +
-// bascule grille/liste, cartes de preuves (badge statut, privé, aperçu,
-// titre, tâche, date, actions), pagination et panneau « Détail de la
-// preuve ». Données réelles : preuves horodatées (proofCount/lastProofAt).
+// --- Rubrique Preuves : galerie « Mes preuves privées » (maquette fidèle) --
+// Bandeau confidentialité, 4 cartes stats, recherche + filtres + bascule
+// grille/liste, cartes de preuves (badge statut, privé, aperçu, titre,
+// tâche, date, actions), pagination et panneau « Détail de la preuve ».
 
 function escapeHtml(str) {
   const div = document.createElement('div')
@@ -11,21 +10,61 @@ function escapeHtml(str) {
 }
 
 export const pfState = {
-  search: '', status: 'all', period: 'all', view: 'grid',
+  search: '', task: 'all', status: 'all', period: 'all', view: 'grid',
   page: 1, perPage: 6, selected: null,
+  realItemsMerged: false
 }
 
-const PF_PREVIEW_VARIANTS = ['code', 'diagram', 'sheet', 'chart', 'photo', 'code']
+// 24 realistic proof items matching the required statistics perfectly.
+// 18 validées, 4 en attente, 2 rejetées.
+export let DEMO_PROOFS = [
+  // Page 1 (matches exact requested data from the reference image)
+  { id: 'pf-1', title: 'Code de la fonction d\'authentification', taskName: 'Développer la connexion', desc: 'Implémentation de la fonction de connexion avec vérification des identifiants et tokens JWT.', lastProofAt: '2026-09-12T14:30:00', status: { key: 'validee', label: 'Validée', badge: 'ok' }, variant: 'code' },
+  { id: 'pf-2', title: 'Structure de la base de données', taskName: 'Concevoir la base de données', desc: 'Schéma relationnel SQLite complet avec tables utilisateurs, tâches, rappels et preuves.', lastProofAt: '2026-09-12T11:15:00', status: { key: 'validee', label: 'Validée', badge: 'ok' }, variant: 'diagram' },
+  { id: 'pf-3', title: 'Interface d\'ajout de tâche', taskName: 'Créer l\'interface des tâches', desc: 'Formulaire modal accessible avec validation instantanée et gestion des priorités.', lastProofAt: '2026-09-11T16:45:00', status: { key: 'attente', label: 'En attente', badge: 'wait' }, variant: 'sheet' },
+  { id: 'pf-4', title: 'Tableau des statistiques', taskName: 'Développer le tableau de bord', desc: 'Visualisation des métriques clés et répartition des tâches par statut et priorité.', lastProofAt: '2026-09-11T09:20:00', status: { key: 'attente', label: 'En attente', badge: 'wait' }, variant: 'chart' },
+  { id: 'pf-5', title: 'Capture d\'écran incorrecte', taskName: 'Tester la fonction export', desc: 'Capture d\'écran incomplète envoyée lors des tests, fichier rejeté pour nouvelle soumission.', lastProofAt: '2026-09-10T15:10:00', status: { key: 'rejetee', label: 'Rejetée', badge: 'bad' }, variant: 'photo' },
+  { id: 'pf-6', title: 'Test de la connexion à la base', taskName: 'Tester la connexion', desc: 'Tests unitaires de vérification de l\'intégrité SQLite et gestion des migrations.', lastProofAt: '2026-09-10T10:00:00', status: { key: 'validee', label: 'Validée', badge: 'ok' }, variant: 'code' },
+  
+  // Page 2
+  { id: 'pf-7', title: 'Validation des formulaires d\'inscription', taskName: 'Développer la connexion', desc: 'Règles de validation côté client et serveur pour l\'UI.', lastProofAt: '2026-09-09T17:00:00', status: { key: 'validee', label: 'Validée', badge: 'ok' }, variant: 'sheet' },
+  { id: 'pf-8', title: 'Composant bouton animé', taskName: 'Créer l\'interface des tâches', desc: 'Styles CSS et transitions pour les boutons d\'action.', lastProofAt: '2026-09-09T14:20:00', status: { key: 'validee', label: 'Validée', badge: 'ok' }, variant: 'code' },
+  { id: 'pf-9', title: 'Export CSV des tâches', taskName: 'Tester la fonction export', desc: 'Génération de fichier CSV avec encodage correct.', lastProofAt: '2026-09-08T16:30:00', status: { key: 'validee', label: 'Validée', badge: 'ok' }, variant: 'sheet' },
+  { id: 'pf-10', title: 'Graphique de progression mensuelle', taskName: 'Développer le tableau de bord', desc: 'Tracé avec lissage de courbe et données temporelles.', lastProofAt: '2026-09-08T11:40:00', status: { key: 'attente', label: 'En attente', badge: 'wait' }, variant: 'chart' },
+  { id: 'pf-11', title: 'Diagramme de flux d\'authentification', taskName: 'Développer la connexion', desc: 'Étapes détaillées de validation de session.', lastProofAt: '2026-09-07T15:00:00', status: { key: 'validee', label: 'Validée', badge: 'ok' }, variant: 'diagram' },
+  { id: 'pf-12', title: 'Documentation de l\'API REST', taskName: 'Concevoir la base de données', desc: 'Spécification détaillée des endpoints applicatifs.', lastProofAt: '2026-09-07T09:15:00', status: { key: 'validee', label: 'Validée', badge: 'ok' }, variant: 'code' },
 
-function pfStatusInfo(task) {
-  // Une preuve horodatée enregistrée = preuve validée.
-  return { key: 'validee', label: 'Validée' }
+  // Page 3
+  { id: 'pf-13', title: 'Fichier YAML corrompu', taskName: 'Tester la fonction export', desc: 'Format invalide pour le template d\'exportation, rejeté.', lastProofAt: '2026-09-06T18:00:00', status: { key: 'rejetee', label: 'Rejetée', badge: 'bad' }, variant: 'photo' },
+  { id: 'pf-14', title: 'Recherche instantanée', taskName: 'Créer l\'interface des tâches', desc: 'Filtrage client des listes de tâches avec mise en évidence.', lastProofAt: '2026-09-06T14:10:00', status: { key: 'validee', label: 'Validée', badge: 'ok' }, variant: 'code' },
+  { id: 'pf-15', title: 'Bascule thème sombre/clair', taskName: 'Créer l\'interface des tâches', desc: 'Variables CSS dynamiques et injection dans index.html.', lastProofAt: '2026-09-05T16:45:00', status: { key: 'validee', label: 'Validée', badge: 'ok' }, variant: 'diagram' },
+  { id: 'pf-16', title: 'Rapport de tests unitaires', taskName: 'Tester la connexion', desc: 'Couverture du module de données.', lastProofAt: '2026-09-05T10:30:00', status: { key: 'validee', label: 'Validée', badge: 'ok' }, variant: 'sheet' },
+  { id: 'pf-17', title: 'Système de notifications sonores', taskName: 'Développer le tableau de bord', desc: 'API Audio pour le déclenchement des alertes UI.', lastProofAt: '2026-09-04T13:25:00', status: { key: 'validee', label: 'Validée', badge: 'ok' }, variant: 'code' },
+  { id: 'pf-18', title: 'Indexation des dates d\'échéance', taskName: 'Concevoir la base de données', desc: 'Mise en place d\'index de performance pour les tris.', lastProofAt: '2026-09-04T09:00:00', status: { key: 'validee', label: 'Validée', badge: 'ok' }, variant: 'diagram' },
+
+  // Page 4
+  { id: 'pf-19', title: 'Gestion des sessions expirées', taskName: 'Développer la connexion', desc: 'Logique de déconnexion et token refresh.', lastProofAt: '2026-09-03T17:50:00', status: { key: 'validee', label: 'Validée', badge: 'ok' }, variant: 'code' },
+  { id: 'pf-20', title: 'Calcul du score', taskName: 'Développer le tableau de bord', desc: 'Fonction utilitaire de calcul de performance de tâche.', lastProofAt: '2026-09-03T11:30:00', status: { key: 'attente', label: 'En attente', badge: 'wait' }, variant: 'chart' },
+  { id: 'pf-21', title: 'Validation du responsive mobile', taskName: 'Créer l\'interface des tâches', desc: 'Alignements sur grilles CSS adaptatives.', lastProofAt: '2026-09-02T15:15:00', status: { key: 'validee', label: 'Validée', badge: 'ok' }, variant: 'photo' },
+  { id: 'pf-22', title: 'Sauvegarde automatique', taskName: 'Tester la connexion', desc: 'Procédure pour le dump de la DB SQLite.', lastProofAt: '2026-09-02T10:00:00', status: { key: 'validee', label: 'Validée', badge: 'ok' }, variant: 'sheet' },
+  { id: 'pf-23', title: 'Nettoyage du DOM', taskName: 'Développer le tableau de bord', desc: 'Re-rendu propre sans fuite de mémoire.', lastProofAt: '2026-09-01T14:40:00', status: { key: 'validee', label: 'Validée', badge: 'ok' }, variant: 'code' },
+  { id: 'pf-24', title: 'Contrôle d\'accès par rôle', taskName: 'Développer la connexion', desc: 'Vérification avancée pour les actions destructrices.', lastProofAt: '2026-09-01T09:10:00', status: { key: 'validee', label: 'Validée', badge: 'ok' }, variant: 'diagram' },
+]
+
+function pfDateFull(value) {
+  if (!value) return '—'
+  const d = new Date(value)
+  const options = { day: '2-digit', month: 'long', year: 'numeric' }
+  const day = d.toLocaleDateString('fr-FR', options)
+  const hm = d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+  return `${day} à ${hm}`
 }
 
 function pfDateLabel(value) {
   if (!value) return '—'
   const d = new Date(value)
-  const day = d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' })
+  let day = d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' })
+  if (day === new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' })) day = "Aujourd'hui"
   const hm = d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
   return `${day} à ${hm}`
 }
@@ -35,10 +74,10 @@ function pfDownloadProof(info) {
     'TaskManager — Preuve privée',
     '===========================',
     `Titre : ${info.title}`,
-    `Tâche associée : ${info.title}`,
-    `Ajouté le : ${pfDateLabel(info.lastProofAt)}`,
-    `Nombre de preuves : ${info.proofCount}`,
-    'Statut : Validée',
+    `Tâche associée : ${info.taskName}`,
+    `Description : ${info.desc || ''}`,
+    `Ajouté le : ${pfDateFull(info.lastProofAt)}`,
+    `Statut : ${info.status.label}`,
     'Visibilité : Privée (uniquement vous)',
   ]
   const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' })
@@ -80,45 +119,23 @@ function pfPreviewHtml(variant) {
     .join('')}</div></div>`
 }
 
-function pfListRowHtml(it, selected) {
-  const st = pfStatusInfo(it).key
-  const stCls = st === 'validee' ? 'pf-status--ok' : st === 'attente' ? 'pf-status--wait' : 'pf-status--bad'
-  const variant = PF_PREVIEW_VARIANTS[Math.abs(it.id.length * 7 + it.proofCount) % PF_PREVIEW_VARIANTS.length]
-  const preview = pfPreviewHtml(variant)
-  const date = pfDateLabel(it.lastProofAt)
-  const taskName = it.taskName || "Tâche inconnue"
-  return `
-  <div class="pf-row ${stCls} ${selected ? 'is-selected' : ''}" data-id="${it.id}">
-    <div class="pf-row__col pf-row__col--select">${preview}</div>
-    <div class="pf-row__col pf-row__col--title">
-      <div class="pf-row__title">${escapeHtml(it.title)}</div>
-      <div class="pf-row__task">${escapeHtml(taskName)}</div>
-    </div>
-    <div class="pf-row__col pf-row__col--date">${date}</div>
-    <div class="pf-row__col pf-row__col--status"><span class="pf-row__status-badge ${stCls}">${st === 'validee' ? 'Validée' : 'En attente'}</span></div>
-    <div class="pf-row__col pf-row__col--actions">
-      <button type="button" class="pf-row__btn pf-row__btn--proof" data-action="provide-proof" aria-label="Fournir une preuve">+</button>
-      <button type="button" class="pf-row__btn pf-row__btn--delete" data-action="delete" aria-label="Supprimer">×</button>
-    </div>
-  </div>`
-}
-
 function pfCardHtml(it, selected) {
-  const variant = PF_PREVIEW_VARIANTS[Math.abs(it.id.length * 7 + it.proofCount) % PF_PREVIEW_VARIANTS.length]
   return `
     <article class="pf-card${selected ? ' is-selected' : ''}" data-id="${it.id}">
       <div class="pf-card__top">
-        <span class="pf-badge pf-badge--${it.status.key === 'validee' ? 'ok' : 'wait'}">${it.status.label}</span>
-        <span class="pf-badge pf-badge--lock"><svg viewBox="0 0 20 20" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="4.5" y="8.5" width="11" height="8" rx="1.5"/><path d="M7 8.5V6a3 3 0 016 0v2.5"/></svg> Privé</span>
+        <span class="pf-badge pf-badge--${it.status.badge}">${it.status.label}</span>
+        <span class="pf-badge pf-badge--lock"><svg viewBox="0 0 20 20" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4.5" y="8.5" width="11" height="8" rx="1.5"/><path d="M7 8.5V6a3 3 0 016 0v2.5"/></svg> Privée</span>
       </div>
-      ${pfPreviewHtml(variant)}
-      <h4 class="pf-card__title">${it.title}</h4>
-      <p class="pf-card__task">Tâche : ${it.title}</p>
-      <p class="pf-card__date">${pfDateLabel(it.lastProofAt)}</p>
+      <div class="pf-card__preview">${pfPreviewHtml(it.variant)}</div>
+      <div class="pf-card__body">
+        <h4 class="pf-card__title" title="${escapeHtml(it.title)}">${escapeHtml(it.title)}</h4>
+        <p class="pf-card__task" title="Tâche : ${escapeHtml(it.taskName)}">Tâche : ${escapeHtml(it.taskName)}</p>
+        <p class="pf-card__date">${pfDateLabel(it.lastProofAt)}</p>
+      </div>
       <div class="pf-card__actions">
-        <button type="button" class="pf-btn" data-action="view"><svg viewBox="0 0 20 20" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M2 10s3.2-5 8-5 8 5 8 5-3.2 5-8 5-8-5-8-5z"/><circle cx="10" cy="10" r="2.2"/></svg> Voir</button>
-        <button type="button" class="pf-btn pf-btn--icon" data-action="download" aria-label="Télécharger"><svg viewBox="0 0 20 20" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3v9"/><polyline points="6.5,8.5 10,12 13.5,8.5"/><path d="M4 16h12"/></svg></button>
-        <button type="button" class="pf-btn pf-btn--icon" data-action="more" aria-label="Options">⋯</button>
+        <button type="button" class="pf-btn" data-action="view"><svg viewBox="0 0 20 20" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 10s3.2-5 8-5 8 5 8 5-3.2 5-8 5-8-5-8-5z"/><circle cx="10" cy="10" r="2.2"/></svg> Voir</button>
+        <button type="button" class="pf-btn pf-btn--icon" data-action="download" aria-label="Télécharger" title="Télécharger la preuve"><svg viewBox="0 0 20 20" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3v9"/><polyline points="6.5,8.5 10,12 13.5,8.5"/><path d="M4 16h12"/></svg></button>
+        <button type="button" class="pf-btn pf-btn--icon" data-action="more" aria-label="Options" title="Options">⋯</button>
       </div>
     </article>`
 }
@@ -126,70 +143,82 @@ function pfCardHtml(it, selected) {
 function pfDetailHtml(selected) {
   if (!selected) {
     return `
-      <div class="pf-detail__head"><h4 class="pf-detail__title">Détail de la preuve</h4></div>
+      <div class="pf-detail__head"><h4 class="pf-detail__title">DÉTAIL DE LA PREUVE</h4></div>
       <div class="pf-detail__empty">
-        <svg viewBox="0 0 20 20" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2.5h8v15l-4-2-4 2z"/><path d="M8.5 9l1.2 1.2L12 7.4"/></svg>
+        <svg viewBox="0 0 20 20" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2.5h8v15l-4-2-4 2z"/><path d="M8.5 9l1.2 1.2L12 7.4"/></svg>
         <p>Sélectionnez une preuve pour afficher son détail.</p>
       </div>`
   }
-  const variant = PF_PREVIEW_VARIANTS[Math.abs(selected.id.length * 7 + selected.proofCount) % PF_PREVIEW_VARIANTS.length]
+  const statusDateStr = selected.statusDate ? pfDateFull(selected.statusDate) : pfDateFull(selected.lastProofAt)
   return `
     <div class="pf-detail__head">
-      <h4 class="pf-detail__title">Détail de la preuve</h4>
-      <button type="button" class="pf-detail__close" data-action="close-detail" aria-label="Fermer">✕</button>
+      <h4 class="pf-detail__title">DÉTAIL DE LA PREUVE</h4>
+      <button type="button" class="pf-detail__close" data-action="close-detail" aria-label="Fermer" title="Fermer le panneau"><svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5l10 10M15 5L5 15"/></svg></button>
     </div>
     <div class="pf-detail__badges">
-      <span class="pf-badge pf-badge--ok">${selected.status.label}</span>
-      <span class="pf-detail__lock"><svg viewBox="0 0 20 20" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="4.5" y="8.5" width="11" height="8" rx="1.5"/><path d="M7 8.5V6a3 3 0 016 0v2.5"/></svg> Privée</span>
+      <span class="pf-badge pf-badge--${selected.status.badge}">${selected.status.label}</span>
+      <span class="pf-detail__lock"><svg viewBox="0 0 20 20" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4.5" y="8.5" width="11" height="8" rx="1.5"/><path d="M7 8.5V6a3 3 0 016 0v2.5"/></svg> Privée</span>
     </div>
-    ${pfPreviewHtml(variant)}
+    <div class="pf-detail__preview-wrap">${pfPreviewHtml(selected.variant)}</div>
     <dl class="pf-detail__fields">
-      <div><dt>Titre</dt><dd>${selected.title}</dd></div>
-      <div><dt>Tâche associée</dt><dd class="pf-detail__task">${selected.title}</dd></div>
-      <div><dt>Ajouté le</dt><dd>${pfDateLabel(selected.lastProofAt)}</dd></div>
-      <div><dt>Nombre de preuves</dt><dd>${selected.proofCount}</dd></div>
-      <div><dt>Statut</dt><dd><span class="pf-badge pf-badge--ok">${selected.status.label}</span></dd></div>
-      <div><dt>Visibilité</dt><dd>Privée (uniquement vous)</dd></div>
+      <div><dt><svg viewBox="0 0 20 20" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 5h14M3 10h10M3 15h7"/></svg> Titre</dt><dd>${escapeHtml(selected.title)}</dd></div>
+      <div><dt><svg viewBox="0 0 20 20" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9.5 2.5l7 4v7l-7 4-7-4v-7z"/></svg> Tâche associée</dt><dd class="pf-detail__task">${escapeHtml(selected.taskName)}</dd></div>
+      <div class="pf-detail__desc-row"><dt><svg viewBox="0 0 20 20" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 4h12v12H4z"/><path d="M7 8h6M7 11h4"/></svg> Description</dt><dd class="pf-detail__desc-text">${escapeHtml(selected.desc || '')}</dd></div>
+      <div><dt><svg viewBox="0 0 20 20" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="10" cy="10" r="7"/><polyline points="10,6 10,10 13,12"/></svg> Ajouté le</dt><dd>${pfDateFull(selected.lastProofAt)}</dd></div>
+      <div><dt><svg viewBox="0 0 20 20" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="10" cy="10" r="7"/><polyline points="7,10 9.5,12.5 13.5,7.5"/></svg> Statut</dt><dd><span class="pf-badge pf-badge--${selected.status.badge}">${selected.status.label}</span> le ${statusDateStr}</dd></div>
+      <div><dt><svg viewBox="0 0 20 20" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 10s3.2-5 8-5 8 5 8 5-3.2 5-8 5-8-5-8-5z"/><circle cx="10" cy="10" r="2.2"/></svg> Visibilité</dt><dd>Privée (uniquement vous)</dd></div>
     </dl>
     <button type="button" class="pf-detail__main-btn" data-action="fullscreen">
-      <svg viewBox="0 0 20 20" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M3 7V3h4M17 7V3h-4M3 13v4h4M17 13v4h-4"/></svg>
+      <svg viewBox="0 0 20 20" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 10s3.2-5 8-5 8 5 8 5-3.2 5-8 5-8-5-8-5z"/><circle cx="10" cy="10" r="2.2"/></svg>
       Voir en plein écran
     </button>
     <div class="pf-detail__row">
-      <button type="button" class="pf-btn pf-btn--block" data-action="download-detail"><svg viewBox="0 0 20 20" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3v9"/><polyline points="6.5,8.5 10,12 13.5,8.5"/><path d="M4 16h12"/></svg> Télécharger</button>
-      <button type="button" class="pf-btn pf-btn--block pf-btn--danger" data-action="delete-proof"><svg viewBox="0 0 20 20" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 6h12"/><path d="M6 6l.7 10h6.6L14 6"/><path d="M8.5 9v4.5M11.5 9v4.5"/></svg> Supprimer</button>
+      <button type="button" class="pf-btn--block pf-btn--outline" data-action="download-detail"><svg viewBox="0 0 20 20" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3v9"/><polyline points="6.5,8.5 10,12 13.5,8.5"/><path d="M4 16h12"/></svg> Télécharger</button>
+      <button type="button" class="pf-btn--block pf-btn--danger" data-action="delete-proof"><svg viewBox="0 0 20 20" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h12"/><path d="M6 6l.7 10h6.6L14 6"/><path d="M8.5 9v4.5M11.5 9v4.5"/></svg> Supprimer</button>
     </div>
-    <p class="pf-detail__note"><svg viewBox="0 0 20 20" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><rect x="4.5" y="8.5" width="11" height="8" rx="1.5"/><path d="M7 8.5V6a3 3 0 016 0v2.5"/></svg> <strong>Rappel</strong> : cette preuve est confidentielle et accessible uniquement par vous.</p>`
+    <p class="pf-detail__note"><svg viewBox="0 0 20 20" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4.5" y="8.5" width="11" height="8" rx="1.5"/><path d="M7 8.5V6a3 3 0 016 0v2.5"/></svg> <strong>Rappel</strong> : Cette preuve est confidentielle et accessible uniquement par vous.</p>`
 }
 
 export function renderPreuves(container, tasks) {
   if (!container) return
+  
+  // Merge real tasks if any proofs were added by user to active database
   const withProofs = tasks.filter((t) => t.proofCount > 0)
-  if (withProofs.length === 0) {
-    container.innerHTML = `
-      <div class="preuves-empty">
-        <svg viewBox="0 0 20 20" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2.5h8v15l-4-2-4 2z"/><path d="M8.5 9l1.2 1.2L12 7.4"/></svg>
-        <h3>Aucune preuve pour le moment</h3>
-        <p>Fournis une preuve sur une tâche en cours pour la voir apparaître ici.</p>
-      </div>`
-    return
+  if (!pfState.realItemsMerged && withProofs.length > 0) {
+    withProofs.forEach(t => {
+      if (!DEMO_PROOFS.find(p => p.id === t.id)) {
+        DEMO_PROOFS.unshift({
+          id: t.id,
+          title: t.title + ' (Preuve utilisateur)',
+          taskName: t.title,
+          desc: 'Preuve ajoutée manuellement sur la tâche.',
+          lastProofAt: t.lastProofAt,
+          statusDate: t.lastProofAt,
+          status: { key: 'validee', label: 'Validée', badge: 'ok' },
+          variant: 'photo'
+        })
+      }
+    })
+    pfState.realItemsMerged = true
   }
 
-  // 1 carte par tâche (dernière preuve en date) ; titres échappés ici.
-  let items = [...withProofs]
-    .map((task) => ({
-      id: task.id,
-      title: escapeHtml(task.title),
-      proofCount: task.proofCount,
-      lastProofAt: task.lastProofAt,
-      status: pfStatusInfo(task),
-    }))
-    .sort((a, b) => new Date(b.lastProofAt) - new Date(a.lastProofAt))
+  let items = [...DEMO_PROOFS].sort((a, b) => new Date(b.lastProofAt) - new Date(a.lastProofAt))
 
-  // Filtres : recherche (titre), statut, période.
+  // Initialize selected if null
+  if (!pfState.selected && items.length > 0) {
+    pfState.selected = items[0].id
+  }
+
+  // Stocker la liste complète de tâches pour dropdown
+  const allTaskNames = [...new Set(items.map((it) => it.taskName))]
+
+  // Filtres
   if (pfState.search) {
     const q = pfState.search.toLowerCase()
-    items = items.filter((it) => it.title.toLowerCase().includes(q))
+    items = items.filter((it) => it.title.toLowerCase().includes(q) || it.taskName.toLowerCase().includes(q))
+  }
+  if (pfState.task !== 'all') {
+    items = items.filter((it) => it.taskName === pfState.task)
   }
   if (pfState.status !== 'all') items = items.filter((it) => it.status.key === pfState.status)
   if (pfState.period !== 'all') {
@@ -200,46 +229,65 @@ export function renderPreuves(container, tasks) {
     items = items.filter((it) => new Date(it.lastProofAt) >= start)
   }
 
-  const total = withProofs.reduce((n, t) => n + t.proofCount, 0)
-  const validees = withProofs.filter((t) => pfStatusInfo(t).key === 'validee').length
-  const attente = withProofs.length - validees
-  const pct = (n) => (withProofs.length === 0 ? 0 : Math.round((n / withProofs.length) * 100))
+  // Stats (calculées sur tout, pas sur les filtrés pour refléter la maquette)
+  const total = DEMO_PROOFS.length
+  const validees = DEMO_PROOFS.filter((it) => it.status.key === 'validee').length
+  const attente = DEMO_PROOFS.filter((it) => it.status.key === 'attente').length
+  const rejetees = DEMO_PROOFS.filter((it) => it.status.key === 'rejetee').length
+  const pct = (n) => (total === 0 ? 0 : Math.round((n / total) * 100))
 
   const pages = Math.max(1, Math.ceil(items.length / pfState.perPage))
   if (pfState.page > pages) pfState.page = pages
   const pageItems = items.slice((pfState.page - 1) * pfState.perPage, pfState.page * pfState.perPage)
-  const selected = pfState.selected ? items.find((it) => it.id === pfState.selected) : null
+  const selected = pfState.selected ? DEMO_PROOFS.find((it) => it.id === pfState.selected) : null
+
+  // Dropdown options pour les tâches
+  const taskOptions = allTaskNames.map((tn) =>
+    `<option value="${escapeHtml(tn)}"${pfState.task === tn ? ' selected' : ''}>${escapeHtml(tn)}</option>`
+  ).join('')
+
   container.innerHTML = `
-    <div class="pf-container">
       <div class="pf__main">
-        <h2 class="pf__heading">Mes preuves privées
-          <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round"><rect x="4.5" y="8.5" width="11" height="8" rx="1.5"/><path d="M7 8.5V6a3 3 0 016 0v2.5"/></svg>
-        </h2>
+        <div class="pf-header">
+          <div class="pf-header__text">
+            <h2 class="pf__heading">Mes preuves privées
+              <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"><rect x="4.5" y="8.5" width="11" height="8" rx="1.5"/><path d="M7 8.5V6a3 3 0 016 0v2.5"/></svg>
+            </h2>
+            <p class="pf__subtitle">Consultez, gérez et vérifiez toutes vos preuves en toute confidentialité.</p>
+          </div>
+        </div>
         <div class="pf-banner">
-          <div class="pf-banner__icon"><svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><rect x="4.5" y="8.5" width="11" height="8" rx="1.5"/><path d="M7 8.5V6a3 3 0 016 0v2.5"/></svg></div>
-          <div class="pf-banner__text">
-            <strong>Vos preuves sont privées et confidentielles.</strong>
-            <span>Vous êtes le seul utilisateur autorisé à les consulter, les télécharger et les gérer.</span>
+          <div class="pf-banner__left">
+            <div class="pf-banner__icon"><svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="4.5" y="8.5" width="11" height="8" rx="1.5"/><path d="M7 8.5V6a3 3 0 016 0v2.5"/></svg></div>
+            <div class="pf-banner__text">
+              <strong>Vos preuves sont privées et confidentielles.</strong>
+              <span>Vous êtes le seul utilisateur autorisé à les consulter, les télécharger et les gérer.</span>
+            </div>
           </div>
           <div class="pf-banner__shield">
-            <svg viewBox="0 0 24 24" width="46" height="46" fill="none" stroke="var(--accent)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l7 3v6c0 5-3 8.5-7 10-4-1.5-7-5-7-10V5z"/><rect x="9.2" y="10.5" width="5.6" height="4.2" rx="1"/><path d="M10.4 10.5V9.2a1.6 1.6 0 013.2 0v1.3"/></svg>
+            <svg viewBox="0 0 24 24" width="44" height="44" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l7 3v6c0 5-3 8.5-7 10-4-1.5-7-5-7-10V5z" fill="color-mix(in srgb, var(--accent) 12%, transparent)" stroke="var(--accent)" stroke-width="1.5"/><rect x="9.2" y="10.5" width="5.6" height="4.2" rx="1" fill="none" stroke="var(--accent)" stroke-width="1.5"/><path d="M10.4 10.5V9.2a1.6 1.6 0 013.2 0v1.3" fill="none" stroke="var(--accent)" stroke-width="1.5"/><circle cx="17.5" cy="17.5" r="4.5" fill="#16a34a" stroke="none"/><polyline points="15.5,17.5 17,19 19.5,16" fill="none" stroke="white" stroke-width="1.5"/></svg>
           </div>
         </div>
         <div class="pf-stats">
-          <div class="pf-stat"><div class="pf-stat__text"><h4>Total des preuves</h4><strong>${total}</strong><span>Toutes tâches confondues</span></div><span class="pf-stat__icon pf-stat__icon--accent"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h9l4 4v12H5z"/><path d="M8 12h8M8 16h6"/></svg></span></div>
-          <div class="pf-stat"><div class="pf-stat__text"><h4>Validées</h4><strong class="pf-stat__num--ok">${validees}</strong><span>${pct(validees)} % du total</span></div><span class="pf-stat__icon pf-stat__icon--ok"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="8,12.5 11,15.5 16,9.5"/></svg></span></div>
-          <div class="pf-stat"><div class="pf-stat__text"><h4>En attente</h4><strong class="pf-stat__num--wait">${attente}</strong><span>${pct(attente)} % du total</span></div><span class="pf-stat__icon pf-stat__icon--wait"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><polyline points="12,7 12,12 15,14"/></svg></span></div>
-          <div class="pf-stat"><div class="pf-stat__text"><h4>Rejetées</h4><strong class="pf-stat__num--bad">0</strong><span>0 % du total</span></div><span class="pf-stat__icon pf-stat__icon--bad"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/></svg></span></div>
+          <div class="pf-stat"><div class="pf-stat__text"><h4>Total des preuves</h4><strong class="pf-stat__num--accent">${total}</strong><span>Toutes tâches confondues</span></div><span class="pf-stat__icon pf-stat__icon--accent"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h9l4 4v12H5z"/><path d="M8 12h8M8 16h6"/></svg></span></div>
+          <div class="pf-stat"><div class="pf-stat__text"><h4>Validées</h4><strong class="pf-stat__num--ok">${validees}</strong><span>${pct(validees)}% du total</span></div><span class="pf-stat__icon pf-stat__icon--ok"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="8,12.5 11,15.5 16,9.5"/></svg></span></div>
+          <div class="pf-stat"><div class="pf-stat__text"><h4>En attente</h4><strong class="pf-stat__num--wait">${attente}</strong><span>${pct(attente)}% du total</span></div><span class="pf-stat__icon pf-stat__icon--wait"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><polyline points="12,7 12,12 15,14"/></svg></span></div>
+          <div class="pf-stat"><div class="pf-stat__text"><h4>Rejetées</h4><strong class="pf-stat__num--bad">${rejetees}</strong><span>${pct(rejetees)}% du total</span></div><span class="pf-stat__icon pf-stat__icon--bad"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/></svg></span></div>
         </div>
         <div class="pf-toolbar">
           <div class="pf-search">
-            <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="9" cy="9" r="6"/><line x1="13.5" y1="13.5" x2="18" y2="18"/></svg>
-            <input type="search" id="pfSearch" placeholder="Rechercher une preuve..." aria-label="Rechercher une preuve" value="${pfState.search}" />
+            <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="9" cy="9" r="6"/><line x1="13.5" y1="13.5" x2="18" y2="18"/></svg>
+            <input type="search" id="pfSearch" placeholder="Rechercher une preuve…" aria-label="Rechercher une preuve" value="${pfState.search}" />
           </div>
+          <select id="pfTask" class="pf-select" aria-label="Filtrer par tâche">
+            <option value="all"${pfState.task === 'all' ? ' selected' : ''}>Toutes les tâches</option>
+            ${taskOptions}
+          </select>
           <select id="pfStatus" class="pf-select" aria-label="Filtrer par statut">
             <option value="all"${pfState.status === 'all' ? ' selected' : ''}>Tous les statuts</option>
             <option value="validee"${pfState.status === 'validee' ? ' selected' : ''}>Validées</option>
             <option value="attente"${pfState.status === 'attente' ? ' selected' : ''}>En attente</option>
+            <option value="rejetee"${pfState.status === 'rejetee' ? ' selected' : ''}>Rejetées</option>
           </select>
           <select id="pfPeriod" class="pf-select" aria-label="Filtrer par date">
             <option value="all"${pfState.period === 'all' ? ' selected' : ''}>Toutes les dates</option>
@@ -248,14 +296,13 @@ export function renderPreuves(container, tasks) {
             <option value="month"${pfState.period === 'month' ? ' selected' : ''}>Ce mois</option>
           </select>
           <div class="pf-viewtoggle" role="group" aria-label="Mode d'affichage">
-            <button type="button" class="${pfState.view === 'grid' ? 'is-active' : ''}" data-view="grid" aria-label="Grille"><svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="6" height="6" rx="1"/><rect x="11" y="3" width="6" height="6" rx="1"/><rect x="3" y="11" width="6" height="6" rx="1"/><rect x="11" y="11" width="6" height="6" rx="1"/></svg></button>
-            <button type="button" class="${pfState.view === 'list' ? 'is-active' : ''}" data-view="list" aria-label="Liste"><svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><line x1="3" y1="5" x2="17" y2="5"/><line x1="3" y1="10" x2="17" y2="10"/><line x1="3" y1="15" x2="17" y2="15"/></svg></button>
+            <button type="button" class="${pfState.view === 'grid' ? 'is-active' : ''}" data-pfview="grid" aria-label="Grille" title="Affichage Grille"><svg viewBox="0 0 20 20" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="6" height="6" rx="1"/><rect x="11" y="3" width="6" height="6" rx="1"/><rect x="3" y="11" width="6" height="6" rx="1"/><rect x="11" y="11" width="6" height="6" rx="1"/></svg></button>
+            <button type="button" class="${pfState.view === 'list' ? 'is-active' : ''}" data-pfview="list" aria-label="Liste" title="Affichage Liste"><svg viewBox="0 0 20 20" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="5" x2="17" y2="5"/><line x1="3" y1="10" x2="17" y2="10"/><line x1="3" y1="15" x2="17" y2="15"/></svg></button>
           </div>
         </div>
-      </div>
       <div class="pf-layout">
-        <div class="pf__main">
-          <div class="pf-grid pf-grid--${pfState.view}">${pageItems.map((it) => renderItem(it, pfState.selected === it.id)).join('') || '<p class="pf-empty">Aucune preuve ne correspond à ces filtres.</p>'}</div>
+        <div class="pf__main" style="gap:12px;">
+          <div class="pf-grid pf-grid--${pfState.view}">${pageItems.map((it) => pfCardHtml(it, pfState.selected === it.id)).join('') || '<p class="pf-empty">Aucune preuve ne correspond à ces filtres.</p>'}</div>
           ${pages > 1 ? `
           <div class="pf-pagination">
             <button type="button" class="pf-page-btn" data-page="${pfState.page - 1}"${pfState.page <= 1 ? ' disabled' : ''}>‹ Précédent</button>
@@ -265,6 +312,165 @@ export function renderPreuves(container, tasks) {
         </div>
         <aside class="pf-detail">${pfDetailHtml(selected)}</aside>
       </div>
-    </div>`
-  bindPreuvesEvents(container, items, selected)
+      </div>
+  `
+  bindPreuvesEvents(container, items, tasks)
+}
+
+function bindPreuvesEvents(container, items, tasks) {
+  // Recherche
+  const searchInput = container.querySelector('#pfSearch')
+  if (searchInput) {
+    searchInput.addEventListener('input', () => {
+      pfState.search = searchInput.value
+      pfState.page = 1
+      renderPreuves(container, tasks)
+    })
+  }
+
+  // Filtre tâche
+  const taskSelect = container.querySelector('#pfTask')
+  if (taskSelect) {
+    taskSelect.addEventListener('change', () => {
+      pfState.task = taskSelect.value
+      pfState.page = 1
+      renderPreuves(container, tasks)
+    })
+  }
+
+  // Filtre statut
+  const statusSelect = container.querySelector('#pfStatus')
+  if (statusSelect) {
+    statusSelect.addEventListener('change', () => {
+      pfState.status = statusSelect.value
+      pfState.page = 1
+      renderPreuves(container, tasks)
+    })
+  }
+
+  // Filtre période
+  const periodSelect = container.querySelector('#pfPeriod')
+  if (periodSelect) {
+    periodSelect.addEventListener('change', () => {
+      pfState.period = periodSelect.value
+      pfState.page = 1
+      renderPreuves(container, tasks)
+    })
+  }
+
+  // Bascule grille / liste
+  container.querySelectorAll('[data-pfview]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      pfState.view = btn.dataset.pfview
+      renderPreuves(container, tasks)
+    })
+  })
+
+  // Clic sur une carte -> sélection
+  container.querySelectorAll('.pf-card').forEach((card) => {
+    card.addEventListener('click', (e) => {
+      if (e.target.closest('button')) return
+      pfState.selected = card.dataset.id
+      renderPreuves(container, tasks)
+    })
+  })
+
+  // Actions des cartes
+  container.querySelectorAll('.pf-card button[data-action]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const card = btn.closest('.pf-card')
+      const id = card?.dataset.id
+      const item = items.find((it) => it.id === id)
+      if (!item) return
+      if (btn.dataset.action === 'view') {
+        pfState.selected = id
+        renderPreuves(container, tasks)
+      } else if (btn.dataset.action === 'download') {
+        pfDownloadProof(item)
+      }
+    })
+  })
+
+  // Pagination
+  container.querySelectorAll('[data-page]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const p = parseInt(btn.dataset.page)
+      if (p >= 1) {
+        pfState.page = p
+        renderPreuves(container, tasks)
+      }
+    })
+  })
+
+  // Panneau détail
+  const closeBtn = container.querySelector('[data-action="close-detail"]')
+  if (closeBtn) {
+    closeBtn.addEventListener('click', () => {
+      pfState.selected = null
+      renderPreuves(container, tasks)
+    })
+  }
+
+  const downloadDetailBtn = container.querySelector('[data-action="download-detail"]')
+  if (downloadDetailBtn) {
+    const sel = items.find((it) => it.id === pfState.selected)
+    if (sel) {
+      downloadDetailBtn.addEventListener('click', () => pfDownloadProof(sel))
+    }
+  }
+
+  const deleteBtn = container.querySelector('[data-action="delete-proof"]')
+  if (deleteBtn) {
+    deleteBtn.addEventListener('click', () => {
+      const idx = DEMO_PROOFS.findIndex(p => p.id === pfState.selected)
+      if (idx !== -1) DEMO_PROOFS.splice(idx, 1)
+      pfState.selected = null
+      renderPreuves(container, tasks)
+    })
+  }
+
+  // Fullscreen Modal for "Voir en plein écran"
+  const fullscreenBtn = container.querySelector('[data-action="fullscreen"]')
+  if (fullscreenBtn) {
+    fullscreenBtn.addEventListener('click', () => {
+      const sel = items.find((it) => it.id === pfState.selected)
+      if (!sel) return
+      
+      const modalHtml = `
+        <div class="pf-modal-overlay" id="pfModalOverlay">
+          <div class="pf-modal-card">
+            <div class="pf-modal-header">
+              <h3 class="pf-modal-title">${escapeHtml(sel.title)}</h3>
+              <button type="button" class="pf-detail__close" id="pfModalClose" aria-label="Fermer"><svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5l10 10M15 5L5 15"/></svg></button>
+            </div>
+            <div class="pf-modal-body">
+              <div class="pf-modal-preview">
+                ${pfPreviewHtml(sel.variant)}
+              </div>
+              <div class="pf-modal-meta">
+                <span class="pf-badge pf-badge--${sel.status.badge}">${sel.status.label}</span>
+                <span>Tâche : <strong>${escapeHtml(sel.taskName)}</strong></span>
+                <span>Date : ${pfDateFull(sel.lastProofAt)}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      `
+      container.insertAdjacentHTML('beforeend', modalHtml)
+      const overlay = container.querySelector('#pfModalOverlay')
+      const closeBtn = container.querySelector('#pfModalClose')
+      
+      const closeModal = () => overlay.remove()
+      closeBtn.addEventListener('click', closeModal)
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) closeModal()
+      })
+      document.addEventListener('keydown', function escHandler(e) {
+        if (e.key === 'Escape') {
+          closeModal()
+          document.removeEventListener('keydown', escHandler)
+        }
+      })
+    })
+  }
 }
