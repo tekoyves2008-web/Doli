@@ -137,13 +137,57 @@ router.patch('/:id', (req, res) => {
 // « Fournir une preuve » enregistre juste un horodatage côté serveur. La
 // tâche passe automatiquement « en cours » (et reçoit son heure réelle de
 // début) si elle ne l'était pas déjà : une preuve suppose qu'on travaille.
+// Le bouton « Ajouter une preuve » peut aussi importer un vrai fichier
+// (photo / document) : nom + type + taille + contenu base64, stockés avec
+// l'horodatage. Ces preuves fichier apparaissent dans la rubrique Preuves.
 
 const insertProofStmt = db.prepare(
-  'INSERT INTO proofs (id, task_id, user_email, created_at) VALUES (?, ?, ?, ?)'
+  'INSERT INTO proofs (id, task_id, user_email, created_at, file_name, mime_type, size_bytes, data_base64) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
 )
 const listProofsStmt = db.prepare(
-  'SELECT id, task_id, created_at FROM proofs WHERE task_id = ? AND user_email = ? ORDER BY created_at ASC'
+  'SELECT id, task_id, created_at, file_name, mime_type, size_bytes FROM proofs WHERE task_id = ? AND user_email = ? ORDER BY created_at ASC'
 )
+
+// Historique global des preuves de l'utilisateur (avec nom de la tâche) :
+// alimente la rubrique « Preuves » sans changer son interface.
+const listAllProofsStmt = db.prepare(`
+  SELECT p.id, p.task_id, p.created_at, p.file_name, p.mime_type, p.size_bytes,
+    CASE WHEN p.data_base64 IS NOT NULL THEN 1 ELSE 0 END AS has_file,
+    t.title AS task_title
+  FROM proofs p
+  JOIN tasks t ON t.id = p.task_id AND t.user_email = p.user_email
+  WHERE p.user_email = ?
+  ORDER BY p.created_at DESC
+  LIMIT 200
+`)
+
+// Contenu d'une preuve fichier (téléchargement / aperçu plein écran).
+const getProofFileStmt = db.prepare(
+  'SELECT file_name, mime_type, data_base64 FROM proofs WHERE id = ? AND user_email = ?'
+)
+
+// Suppression d'une preuve de l'utilisateur (scopée par son e-mail).
+router.delete('/proofs/:proofId', (req, res) => {
+  const result = db
+    .prepare('DELETE FROM proofs WHERE id = ? AND user_email = ?')
+    .run(req.params.proofId, req.user.email)
+  if (result.changes === 0) return res.status(404).json({ error: 'Preuve introuvable.' })
+  res.status(204).end()
+})
+
+// IMPORTANT : déclarée AVANT '/:id' / '/:id/proofs', sinon Express prendrait
+// 'all' pour un identifiant de tâche et renverrait 404.
+router.get('/proofs/all', (req, res) => {
+  res.json(listAllProofsStmt.all(req.user.email))
+})
+
+router.get('/proofs/:proofId/file', (req, res) => {
+  const row = getProofFileStmt.get(req.params.proofId, req.user.email)
+  if (!row || !row.data_base64) return res.status(404).json({ error: 'Fichier introuvable.' })
+  res.json({ fileName: row.file_name, mimeType: row.mime_type, dataBase64: row.data_base64 })
+})
+
+const PROOF_FILE_MAX_BYTES = 8 * 1024 * 1024 // 8 Mo : photo / document raisonnable.
 
 router.post('/:id/proofs', (req, res) => {
   const existing = getStmt.get(req.params.id, req.user.email)
@@ -160,7 +204,25 @@ router.post('/:id/proofs', (req, res) => {
     ).run(startedAt, now, req.params.id, req.user.email)
   }
 
-  insertProofStmt.run(crypto.randomUUID(), req.params.id, req.user.email, now)
+  // Preuve avec fichier importé (optionnel) : le client envoie le fichier en
+  // base64. Sans fichier, on enregistre un simple horodatage (comportement
+  // historique du bouton « Fournir une preuve »).
+  let fileName = null
+  let mimeType = null
+  let sizeBytes = null
+  let dataBase64 = null
+  if (req.body && (req.body.dataBase64 || req.body.fileName)) {
+    fileName = String(req.body.fileName || 'preuve').slice(0, 180)
+    mimeType = String(req.body.mimeType || 'application/octet-stream').slice(0, 120)
+    dataBase64 = String(req.body.dataBase64 || '')
+    // Taille réelle estimée depuis le base64 (×3/4) : refuse au-delà de 8 Mo.
+    sizeBytes = Math.floor((dataBase64.length * 3) / 4)
+    if (!dataBase64 || sizeBytes > PROOF_FILE_MAX_BYTES) {
+      return res.status(413).json({ error: 'Fichier trop volumineux (8 Mo maximum).' })
+    }
+  }
+
+  insertProofStmt.run(crypto.randomUUID(), req.params.id, req.user.email, now, fileName, mimeType, sizeBytes, dataBase64)
   res.status(201).json(rowToTask(getStmt.get(req.params.id, req.user.email)))
 })
 

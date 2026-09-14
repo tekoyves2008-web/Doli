@@ -59,14 +59,133 @@ function progressBlockHtml(task) {
     </div>`
 }
 
-// Bouton « Fournir une preuve » : visible sur les tâches en cours, il
-// enregistre simplement un horodatage côté serveur (surface d'alimentation
-// du taux d'avancement temporel).
+// Bouton « Fournir une preuve » : visible sur les tâches en cours, il ouvre
+// la petite fenêtre « Ajouter une preuve » (import fichier / photo + preuve
+// simple). L'horodatage seul reste la 3e option (taux d'avancement temporel).
 function proofButtonHtml(task) {
   if (task.status !== STATUS.DOING) return ''
   const hasProof = task.proofCount > 0
   const label = hasProof ? 'Preuve ✓' : 'Fournir une preuve'
-  return `<button type="button" class="task__proof" data-action="provide-proof" title="Enregistrer un horodatage de preuve (${hasProof ? 'preuve suivante' : 'première preuve'})">${label}</button>`
+  return `<button type="button" class="task__proof" data-action="provide-proof" title="Ajouter une preuve : importer un fichier ou une photo, ou enregistrer une preuve simple">${label}</button>`
+}
+
+// Mini-menu « Ajouter une preuve » : petite fenetre deroulante proposee par
+// le bouton « Fournir une preuve » — « Importer un fichier ou une photo »
+// (explorateur), « Prendre une photo » (mobile), « Preuve simple »
+// (horodatage, comportement historique). Reutilise les classes existantes
+// .row-menu__list / .row-menu__option : aucun CSS ajoute, design inchange.
+// Selecteur de fichier cache partage (jamais visible dans l'interface).
+let proofFileInputEl = null
+let proofFileTaskId = null
+function getProofFileInput() {
+  if (proofFileInputEl) return proofFileInputEl
+  proofFileInputEl = document.createElement('input')
+  proofFileInputEl.type = 'file'
+  proofFileInputEl.hidden = true
+  proofFileInputEl.setAttribute('aria-hidden', 'true')
+  proofFileInputEl.tabIndex = -1
+  proofFileInputEl.accept = 'image/*,.pdf,.txt,.md,.csv,.doc,.docx'
+  proofFileInputEl.addEventListener('change', async () => {
+    const file = proofFileInputEl.files && proofFileInputEl.files[0]
+    const taskId = proofFileTaskId
+    proofFileInputEl.value = ''
+    proofFileInputEl.removeAttribute('capture')
+    if (!file || !taskId) return
+    if (file.size > 8 * 1024 * 1024) {
+      window.alert('Fichier trop volumineux (8 Mo maximum).')
+      return
+    }
+    try {
+      const dataUrl = await new Promise((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onload = () => resolve(reader.result)
+        reader.onerror = () => reject(reader.error)
+        reader.readAsDataURL(file)
+      })
+      const dataBase64 = String(dataUrl).split(',')[1] || ''
+      if (window.__doliProofFileHandler) await window.__doliProofFileHandler(taskId, { fileName: file.name, mimeType: file.type || 'application/octet-stream', dataBase64 })
+    } catch {
+      window.alert("Impossible d'importer ce fichier.")
+    }
+  })
+  document.body.appendChild(proofFileInputEl)
+  return proofFileInputEl
+}
+
+// Ouvre l'explorateur de fichiers (ou l'appareil photo sur mobile).
+export function openProofFilePicker(taskId, photoOnly = false) {
+  const input = getProofFileInput()
+  proofFileTaskId = taskId
+  input.accept = photoOnly ? 'image/*' : 'image/*,.pdf,.txt,.md,.csv,.doc,.docx'
+  if (photoOnly) input.setAttribute('capture', 'environment')
+  else input.removeAttribute('capture')
+  input.click()
+}
+
+export function openProofAddMenu(anchorBtn, taskId, { onSimpleProof } = {}) {
+  return openProofAddMenuAtRect(anchorBtn.getBoundingClientRect(), taskId, { onSimpleProof })
+}
+
+// Même mini-menu, mais ancré sur un rectangle déjà capturé : utilisé par
+// l'option « Ajouter une preuve » du menu « … », dont le parent est refermé
+// (et donc repositionné à 0,0) avant l'ouverture.
+export function openProofAddMenuAtRect(anchorRect, taskId, { onSimpleProof } = {}) {
+  closeAllStatusMenus()
+  closeAllRowMenus()
+  const old = document.querySelector('.row-menu__list--proof-add')
+  if (old) old.remove()
+  const menu = document.createElement('div')
+  menu.className = 'row-menu__list row-menu__list--proof-add is-fixed'
+  menu.innerHTML = `
+    <button type="button" class="row-menu__option" data-proof-choice="file">Importer un fichier ou une photo</button>
+    <button type="button" class="row-menu__option" data-proof-choice="photo">Prendre une photo</button>
+    <button type="button" class="row-menu__option" data-proof-choice="simple">Preuve simple (sans fichier)</button>`
+  menu.hidden = false
+  document.body.appendChild(menu)
+  const r = anchorRect
+  menu.style.top = `${Math.round(r.bottom + 6)}px`
+  menu.style.right = `${Math.max(8, Math.round(window.innerWidth - r.right))}px`
+  requestAnimationFrame(() => {
+    const h = menu.offsetHeight
+    if (r.bottom + 6 + h > window.innerHeight - 8) {
+      menu.style.top = `${Math.max(8, Math.round(r.top - h - 6))}px`
+    }
+  })
+  let closed = false
+  const close = () => {
+    if (closed) return
+    closed = true
+    menu.remove()
+    // Retrait différé : le clic qui a ouvert le menu (celui sur le bouton
+    // « Ajouter une preuve », phase de bouillonnement) arrive JUSTE APRÈS
+    // l'ajout de ce listener — sans ce délai, onDocClick le verrait comme
+    // un clic « hors menu » et refermerait aussitôt le menu, et son propre
+    // listener 'click' ne recevrait jamais l'événement (menu détaché).
+    setTimeout(() => {
+      document.removeEventListener('click', onDocClick, true)
+      document.removeEventListener('keydown', onKey)
+    }, 0)
+  }
+  const onDocClick = (event) => {
+    if (event.target.closest('.row-menu__list--proof-add')) return
+    close()
+  }
+  const onKey = (event) => {
+    if (event.key === 'Escape') close()
+  }
+  document.addEventListener('click', onDocClick, true)
+  document.addEventListener('keydown', onKey)
+  menu.addEventListener('click', async (event) => {
+    const choice = event.target.closest('[data-proof-choice]')
+    if (!choice) return
+    event.stopPropagation()
+    const kind = choice.dataset.proofChoice
+    const simpleCb = onSimpleProof || window.__doliProofSimpleHandler
+    close()
+    if (kind === 'file') openProofFilePicker(taskId, false)
+    else if (kind === 'photo') openProofFilePicker(taskId, true)
+    else if (simpleCb) simpleCb(taskId)
+  })
 }
 
 // Fanion color indiquant la priorit (basse/moyenne/haute), affich devant
@@ -229,7 +348,12 @@ function closeAllStatusMenus(except) {
 }
 
 // Ferme tout menu de statut ouvert ds qu'on clique en dehors d'un slecteur.
+// EXCLUT le mini-menu « Ajouter une preuve » : en portail dans <body>, il
+// n'est ni dans .status-picker ni dans .row-menu, mais il gere lui-meme sa
+// fermeture (onDocClick) — sans cette garde, ce listener (enregistre AVANT
+// l'ouverture) le detruirait au meme clic d'ouverture.
 document.addEventListener('click', (event) => {
+  if (event.target.closest('.row-menu__list--proof-add')) return
   if (!event.target.closest('.status-picker')) closeAllStatusMenus()
   if (!event.target.closest('.row-menu')) closeAllRowMenus()
 })
@@ -239,7 +363,10 @@ document.addEventListener('click', (event) => {
 // badge ouvre un menu proposant les 3 statuts ; le bouton corbeille supprime.
 // Ferme tous les menus « … » des lignes de tâches.
 function closeAllRowMenus() {
-  document.querySelectorAll('.row-menu__list').forEach((menu) => {
+  // Le mini-menu « Ajouter une preuve » gère lui-même sa fermeture (son
+  // propre onDocClick) : closeAllRowMenus() ne doit JAMAIS le toucher, sinon
+  // l'ouvrir (qui appelle cette fonction) le détruirait aussitôt.
+  document.querySelectorAll('.row-menu__list:not(.row-menu__list--proof-add)').forEach((menu) => {
     menu.hidden = true
     menu.classList.remove('is-fixed')
     menu.style.top = ''
@@ -264,7 +391,17 @@ document.addEventListener('scroll', () => closeAllRowMenus(), true)
 // « Ajouter une preuve » / « Supprimer » ne remonteraient jamais à la
 // délégation. Ce listener global exécute donc l'action via les handlers
 // mémorisés sur le menu au moment de son ouverture.
+// L'option « Ajouter une preuve » ouvre EXACTEMENT le même mini-menu que le
+// bouton du dashboard (openProofAddMenu : import fichier/photo + simple) :
+// on capture le rectangle d'ancrage AVANT closeAllRowMenus(), car cette
+// fermeture réinitialise le style du menu parent (top/right vidés) et le
+// replace dans sa carte — getBoundingClientRect() pris après vaudrait 0,0
+// et le mini-menu s'afficherait hors écran (bug « rien ne se passe »).
 document.addEventListener('click', (event) => {
+  // Le mini-menu « Ajouter une preuve » a son propre listener : on l'ignore
+  // ici (il n'a pas de _actions ; sans garde, `list` serait truthy mais
+  // `list._actions` falsy → return de toute façon, garde défensive).
+  if (event.target.closest('.row-menu__list--proof-add')) return
   const list = event.target.closest('.row-menu__list')
   if (!list || !list._actions) return
   const homeTask = list._home ? list._home.closest('.task') : null
@@ -275,8 +412,9 @@ document.addEventListener('click', (event) => {
   const handlers = list._actions
   if (option.dataset.action === 'provide-proof') {
     closeAllRowMenus()
-    if (handlers.onProvideProof) handlers.onProvideProof(id)
-    else handlers.onEdit(id)
+    // Rubrique « Mes tâches » : PETITE FENÊTRE modale avec les 3 choix
+    // (même pattern que « Que faire de ce rappel ? »), pas un menu.
+    if (window.__doliProofDialogHandler) window.__doliProofDialogHandler(id)
     return
   }
   if (option.dataset.action === 'delete') {
@@ -344,7 +482,11 @@ export function bindTaskEvents(container, { onSetStatus, onEdit, onDelete, onPro
     if (proofBtn) {
       closeAllStatusMenus()
       closeAllRowMenus()
-      if (onProvideProof) onProvideProof(id)
+      // Le bouton ouvre la petite fenêtre « Ajouter une preuve » (import
+      // fichier / photo + preuve simple) — jamais d'action directe.
+      // Le menu rappelle onProvideProof(id, { file }) ou (id, null).
+      if (onProvideProof && onProvideProof.length >= 3) onProvideProof(id, proofBtn, { openMenu: true })
+      else if (onProvideProof) onProvideProof(id, proofBtn)
       else onEdit(id)
       return
     }

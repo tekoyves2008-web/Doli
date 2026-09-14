@@ -12,7 +12,9 @@ import settingsRoutes from './routes/settings.js'
 const PORT = 3001
 
 const app = express()
-app.use(express.json())
+// Limite relevée : l'import d'une preuve envoie son contenu en base64 dans
+// du JSON (fichiers jusqu'à 8 Mo acceptés côté route des tâches).
+app.use(express.json({ limit: '12mb' }))
 app.use(cookieParser())
 
 app.use('/api/auth', authRoutes)

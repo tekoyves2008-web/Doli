@@ -106,6 +106,11 @@
             <span class="sidebar-nav__label">Rappel</span>
             <span id="reminderNavCount" class="sidebar-nav__badge" hidden></span>
           </button>
+          <button type="button" class="sidebar-nav__item" data-view="retards">
+            <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="11" r="7"/><line x1="10" y1="7" x2="10" y2="11"/><line x1="10" y1="11" x2="13" y2="12.5"/><line x1="7" y1="2.5" x2="13" y2="2.5"/></svg>
+            <span class="sidebar-nav__label">Retards</span>
+            <span id="retardsNavCount" class="sidebar-nav__badge" hidden></span>
+          </button>
           <button type="button" class="sidebar-nav__item" data-view="progression">
             <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="13" width="3" height="4" rx="0.5"/><rect x="8.5" y="9" width="3" height="8" rx="0.5"/><rect x="14" y="5" width="3" height="12" rx="0.5"/></svg>
             <span class="sidebar-nav__label">Progression</span>
@@ -343,20 +348,18 @@
                     <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="9" cy="9" r="6"/><line x1="13.5" y1="13.5" x2="18" y2="18"/></svg>
                     <input type="search" id="taskSearchInput" placeholder="Rechercher une tâche..." aria-label="Rechercher une tâche" />
                   </div>
-                  <!-- Même structure que le bouton « Filtrer » du dashboard :
-                       bouton + menu enveloppés dans .sort-picker (position
-                       relative) pour l'ancrage du menu et la fermeture au
-                       clic extérieur. -->
+                  <!-- Bouton « Trier » : menu de tri (ordre d'affichage),
+                       même structure que le dashboard pour l'ancrage du
+                       menu et la fermeture au clic extérieur. -->
                   <div class="sort-picker">
                     <button type="button" id="taskSortBtn" class="mtasks2__filter-btn" aria-haspopup="true" aria-expanded="false">
                       <svg viewBox="0 0 20 20" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="3" y1="5" x2="17" y2="5"/><line x1="6" y1="10" x2="14" y2="10"/><line x1="9" y1="15" x2="11" y2="15"/></svg>
-                      Filtrer
+                      Trier
                     </button>
                     <div id="taskSortMenu" class="sort-picker__menu" hidden>
                       <button type="button" class="sort-picker__option is-current" data-sort="default">Par défaut</button>
                       <button type="button" class="sort-picker__option" data-sort="urgency">Urgence</button>
                       <button type="button" class="sort-picker__option" data-sort="priority">Priorité</button>
-                      <button type="button" class="sort-picker__option" data-sort="due">Échéance</button>
                       <button type="button" class="sort-picker__option" data-sort="title">Titre (A → Z)</button>
                     </div>
                   </div>
@@ -393,11 +396,9 @@
                 <h3 class="mtasks2__card-title">Filtres rapides</h3>
                 <label class="mtasks2__field">Trier par
                   <select id="taskQuickSort" class="mtasks2__select">
-                    <option value="due-asc">Date de début (plus proche)</option>
                     <option value="default">Par défaut</option>
                     <option value="urgency">Urgence</option>
                     <option value="priority">Priorité</option>
-                    <option value="due">Échéance</option>
                     <option value="title">Titre (A → Z)</option>
                   </select>
                 </label>
@@ -554,6 +555,128 @@
           </div>
         </section>
 
+        <section id="viewRetards" class="view" hidden>
+          <div class="retards-container">
+            <div class="retards-main">
+            <div class="retards-header">
+              <div>
+                <h2 class="retards-title">Suivi des retards</h2>
+                <p id="retardsSubtitle" class="retards-subtitle">Aucune tâche en retard</p>
+              </div>
+            </div>
+
+            <div class="retards-stats">
+              <div class="retards-stat-card">
+                <div class="stat-icon stat-icon--delay">⏰</div>
+                <div class="stat-content">
+                  <div id="retardsStatCount" class="stat-number">0</div>
+                  <div class="stat-label">Tâches en retard</div>
+                  <div id="retardsStatCountPercent" class="stat-percent">0%</div>
+                </div>
+              </div>
+
+              <div class="retards-stat-card">
+                <div class="stat-icon stat-icon--doing">Σ</div>
+                <div class="stat-content">
+                  <div id="retardsStatTotal" class="stat-number">0 h</div>
+                  <div class="stat-label">Retard cumulé</div>
+                  <div class="stat-percent">toutes tâches</div>
+                </div>
+              </div>
+
+              <div class="retards-stat-card">
+                <div class="stat-icon stat-icon--list">≡</div>
+                <div class="stat-content">
+                  <div id="retardsStatAvg" class="stat-number">0 h</div>
+                  <div class="stat-label">Retard moyen</div>
+                  <div class="stat-percent">par tâche</div>
+                </div>
+              </div>
+
+              <div class="retards-stat-card">
+                <div class="stat-icon stat-icon--notdone">✕</div>
+                <div class="stat-content">
+                  <div id="retardsStatWorst" class="stat-number">—</div>
+                  <div class="stat-label">Retard le plus long</div>
+                  <div id="retardsStatWorstTask" class="stat-percent"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="retards-charts">
+              <div class="retards-chart">
+                <h3>Retard par tâche (heures)</h3>
+                <canvas id="retardsBarChart" width="400" height="300"></canvas>
+              </div>
+
+              <div class="retards-chart">
+                <h3>Répartition par priorité</h3>
+                <canvas id="retardsDonutChart" width="400" height="300"></canvas>
+              </div>
+            </div>
+
+            <div class="retards-table-card">
+              <h3>Tâches en retard</h3>
+              <div class="retards-table-wrap">
+                <table class="retards-table">
+                  <thead>
+                    <tr>
+                      <th>Tâche</th>
+                      <th>Priorité</th>
+                      <th>Échéance</th>
+                      <th>Retard</th>
+                    </tr>
+                  </thead>
+                  <tbody id="retardsTableBody"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="retards-bottom">
+              <div class="retards-summary summary-card">
+                <div class="summary-icon-wrapper">
+                  <div class="summary-icon">⏰</div>
+                </div>
+                <div class="summary-content">
+                  <h4>Conseil</h4>
+                  <div id="retardsMessage" class="summary-message">Aucun retard : continuez ainsi !</div>
+                </div>
+              </div>
+            </div>
+            </div>
+
+            <aside class="retards-aside">
+              <div class="aside-card aside-card--info">
+                <h4>À propos du retard</h4>
+                <p>
+                  Un retard est comptabilisé dès que la date limite d'une tâche est dépassée.
+                  Plus vous attendez, plus le retard cumulé augmente : traitez d'abord les
+                  tâches les plus anciennes et les plus prioritaires.
+                </p>
+              </div>
+
+              <div class="aside-card aside-card--warning">
+                <h4>Rappel important</h4>
+                <p>
+                  Pour valider une tâche terminée, n'oubliez pas de joindre vos preuves.
+                  Elles attestent de votre travail et débloquent la validation.
+                </p>
+                <button type="button" id="retardsViewProofsBtn" class="aside-btn">
+                  Voir mes preuves
+                </button>
+              </div>
+
+              <div class="aside-card aside-card--motivation">
+                <h4>Un petit effort aujourd'hui…</h4>
+                <p>
+                  …c'est un grand pas vers vos objectifs demain. Rattrapez une tâche,
+                  même petite, et votre retard fondra un peu plus chaque jour. 💪
+                </p>
+              </div>
+            </aside>
+          </div>
+        </section>
+
         <section id="viewPreuves" class="view" hidden>
           <div id="preuvesList" class="preuves-container"></div>
         </section>
@@ -602,6 +725,19 @@
           <button type="button" id="reminderDeleteFullBtn" class="modal__action--danger">Supprimer définitivement la tâche</button>
           <button type="button" id="reminderDeleteDismissBtn" class="modal__action--neutral">Retirer seulement du Rappel</button>
           <button type="button" id="reminderDeleteCancelBtn">Annuler</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="proofAddOverlay" class="modal-overlay" hidden>
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="proofAddTitle">
+        <h3 id="proofAddTitle">Ajouter une preuve</h3>
+        <p id="proofAddText" class="modal__text"></p>
+        <div class="modal__actions modal__actions--stack">
+          <button type="button" id="proofAddFileBtn" class="modal__action--neutral">Importer un fichier ou une photo</button>
+          <button type="button" id="proofAddPhotoBtn">Prendre une photo</button>
+          <button type="button" id="proofAddSimpleBtn">Preuve simple (sans fichier)</button>
+          <button type="button" id="proofAddCancelBtn">Annuler</button>
         </div>
       </div>
     </div>

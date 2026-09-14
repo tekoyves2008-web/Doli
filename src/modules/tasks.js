@@ -54,9 +54,13 @@ export async function setStatus(id, status) {
 // Fournir une preuve sur une tâche : le serveur enregistre l'horodatage et,
 // si besoin, bascule la tâche « en cours » avec son heure réelle de début.
 // C'est ce timestamp qui sert au taux d'avancement temporel.
-export async function provideProof(id) {
+// Avec un fichier (import explorateur / photo), le contenu est envoyé en
+// base64 et stocké avec la preuve : il réapparaît dans la rubrique Preuves.
+export async function provideProof(id, filePayload = null) {
   const res = await fetch(`/api/tasks/${id}/proofs`, {
     method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(filePayload || {}),
   })
   return parseOrThrow(res, "Impossible d'enregistrer la preuve.")
 }
@@ -64,6 +68,23 @@ export async function provideProof(id) {
 export async function getProofs(id) {
   const res = await fetch(`/api/tasks/${id}/proofs`)
   return parseOrThrow(res, 'Impossible de charger les preuves.')
+}
+
+// Historique global des preuves (rubrique « Preuves ») + contenu d'un
+// fichier de preuve (aperçu plein écran / téléchargement).
+export async function getAllProofs() {
+  const res = await fetch('/api/tasks/proofs/all')
+  return parseOrThrow(res, 'Impossible de charger les preuves.')
+}
+
+export async function getProofFile(proofId) {
+  const res = await fetch(`/api/tasks/proofs/${proofId}/file`)
+  return parseOrThrow(res, 'Impossible de charger le fichier de preuve.')
+}
+
+export async function deleteProof(proofId) {
+  const res = await fetch(`/api/tasks/proofs/${proofId}`, { method: 'DELETE' })
+  return parseOrThrow(res, 'Impossible de supprimer la preuve.')
 }
 
 export async function deleteTask(id) {

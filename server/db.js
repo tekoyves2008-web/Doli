@@ -82,4 +82,12 @@ if (!taskColumns.includes('started_at')) {
   db.exec('ALTER TABLE tasks ADD COLUMN started_at TEXT')
 }
 
+// Migration pour les bases existantes : les preuves peuvent désormais porter
+// un vrai fichier (nom + type + taille + contenu base64), importé depuis le
+// bouton « Ajouter une preuve » (explorateur / appareil photo).
+const proofColumns = db.prepare('PRAGMA table_info(proofs)').all().map((c) => c.name)
+for (const [col, def] of [['file_name', 'TEXT'], ['mime_type', 'TEXT'], ['size_bytes', 'INTEGER'], ['data_base64', 'TEXT']]) {
+  if (!proofColumns.includes(col)) db.exec(`ALTER TABLE proofs ADD COLUMN ${col} ${def}`)
+}
+
 export default db

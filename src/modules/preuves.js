@@ -12,44 +12,67 @@ function escapeHtml(str) {
 export const pfState = {
   search: '', task: 'all', status: 'all', period: 'all', view: 'grid',
   page: 1, perPage: 6, selected: null,
-  realItemsMerged: false
 }
 
-// 24 realistic proof items matching the required statistics perfectly.
-// 18 validées, 4 en attente, 2 rejetées.
-export let DEMO_PROOFS = [
-  // Page 1 (matches exact requested data from the reference image)
-  { id: 'pf-1', title: 'Code de la fonction d\'authentification', taskName: 'Développer la connexion', desc: 'Implémentation de la fonction de connexion avec vérification des identifiants et tokens JWT.', lastProofAt: '2026-09-12T14:30:00', status: { key: 'validee', label: 'Validée', badge: 'ok' }, variant: 'code' },
-  { id: 'pf-2', title: 'Structure de la base de données', taskName: 'Concevoir la base de données', desc: 'Schéma relationnel SQLite complet avec tables utilisateurs, tâches, rappels et preuves.', lastProofAt: '2026-09-12T11:15:00', status: { key: 'validee', label: 'Validée', badge: 'ok' }, variant: 'diagram' },
-  { id: 'pf-3', title: 'Interface d\'ajout de tâche', taskName: 'Créer l\'interface des tâches', desc: 'Formulaire modal accessible avec validation instantanée et gestion des priorités.', lastProofAt: '2026-09-11T16:45:00', status: { key: 'attente', label: 'En attente', badge: 'wait' }, variant: 'sheet' },
-  { id: 'pf-4', title: 'Tableau des statistiques', taskName: 'Développer le tableau de bord', desc: 'Visualisation des métriques clés et répartition des tâches par statut et priorité.', lastProofAt: '2026-09-11T09:20:00', status: { key: 'attente', label: 'En attente', badge: 'wait' }, variant: 'chart' },
-  { id: 'pf-5', title: 'Capture d\'écran incorrecte', taskName: 'Tester la fonction export', desc: 'Capture d\'écran incomplète envoyée lors des tests, fichier rejeté pour nouvelle soumission.', lastProofAt: '2026-09-10T15:10:00', status: { key: 'rejetee', label: 'Rejetée', badge: 'bad' }, variant: 'photo' },
-  { id: 'pf-6', title: 'Test de la connexion à la base', taskName: 'Tester la connexion', desc: 'Tests unitaires de vérification de l\'intégrité SQLite et gestion des migrations.', lastProofAt: '2026-09-10T10:00:00', status: { key: 'validee', label: 'Validée', badge: 'ok' }, variant: 'code' },
-  
-  // Page 2
-  { id: 'pf-7', title: 'Validation des formulaires d\'inscription', taskName: 'Développer la connexion', desc: 'Règles de validation côté client et serveur pour l\'UI.', lastProofAt: '2026-09-09T17:00:00', status: { key: 'validee', label: 'Validée', badge: 'ok' }, variant: 'sheet' },
-  { id: 'pf-8', title: 'Composant bouton animé', taskName: 'Créer l\'interface des tâches', desc: 'Styles CSS et transitions pour les boutons d\'action.', lastProofAt: '2026-09-09T14:20:00', status: { key: 'validee', label: 'Validée', badge: 'ok' }, variant: 'code' },
-  { id: 'pf-9', title: 'Export CSV des tâches', taskName: 'Tester la fonction export', desc: 'Génération de fichier CSV avec encodage correct.', lastProofAt: '2026-09-08T16:30:00', status: { key: 'validee', label: 'Validée', badge: 'ok' }, variant: 'sheet' },
-  { id: 'pf-10', title: 'Graphique de progression mensuelle', taskName: 'Développer le tableau de bord', desc: 'Tracé avec lissage de courbe et données temporelles.', lastProofAt: '2026-09-08T11:40:00', status: { key: 'attente', label: 'En attente', badge: 'wait' }, variant: 'chart' },
-  { id: 'pf-11', title: 'Diagramme de flux d\'authentification', taskName: 'Développer la connexion', desc: 'Étapes détaillées de validation de session.', lastProofAt: '2026-09-07T15:00:00', status: { key: 'validee', label: 'Validée', badge: 'ok' }, variant: 'diagram' },
-  { id: 'pf-12', title: 'Documentation de l\'API REST', taskName: 'Concevoir la base de données', desc: 'Spécification détaillée des endpoints applicatifs.', lastProofAt: '2026-09-07T09:15:00', status: { key: 'validee', label: 'Validée', badge: 'ok' }, variant: 'code' },
+// Preuves fichier importées par l'utilisateur (serveur SQLite) : fusionnées
+// aux démos SANS toucher au HTML/CSS existant — mêmes cartes, mêmes badges.
+// `photoUrl` = aperçu image (data URL) quand le fichier est une image.
+export let USER_PROOFS = []
 
-  // Page 3
-  { id: 'pf-13', title: 'Fichier YAML corrompu', taskName: 'Tester la fonction export', desc: 'Format invalide pour le template d\'exportation, rejeté.', lastProofAt: '2026-09-06T18:00:00', status: { key: 'rejetee', label: 'Rejetée', badge: 'bad' }, variant: 'photo' },
-  { id: 'pf-14', title: 'Recherche instantanée', taskName: 'Créer l\'interface des tâches', desc: 'Filtrage client des listes de tâches avec mise en évidence.', lastProofAt: '2026-09-06T14:10:00', status: { key: 'validee', label: 'Validée', badge: 'ok' }, variant: 'code' },
-  { id: 'pf-15', title: 'Bascule thème sombre/clair', taskName: 'Créer l\'interface des tâches', desc: 'Variables CSS dynamiques et injection dans index.html.', lastProofAt: '2026-09-05T16:45:00', status: { key: 'validee', label: 'Validée', badge: 'ok' }, variant: 'diagram' },
-  { id: 'pf-16', title: 'Rapport de tests unitaires', taskName: 'Tester la connexion', desc: 'Couverture du module de données.', lastProofAt: '2026-09-05T10:30:00', status: { key: 'validee', label: 'Validée', badge: 'ok' }, variant: 'sheet' },
-  { id: 'pf-17', title: 'Système de notifications sonores', taskName: 'Développer le tableau de bord', desc: 'API Audio pour le déclenchement des alertes UI.', lastProofAt: '2026-09-04T13:25:00', status: { key: 'validee', label: 'Validée', badge: 'ok' }, variant: 'code' },
-  { id: 'pf-18', title: 'Indexation des dates d\'échéance', taskName: 'Concevoir la base de données', desc: 'Mise en place d\'index de performance pour les tris.', lastProofAt: '2026-09-04T09:00:00', status: { key: 'validee', label: 'Validée', badge: 'ok' }, variant: 'diagram' },
+// Évite les doubles insertions quand render() est rappelé plusieurs fois.
+let userProofSyncInFlight = false
 
-  // Page 4
-  { id: 'pf-19', title: 'Gestion des sessions expirées', taskName: 'Développer la connexion', desc: 'Logique de déconnexion et token refresh.', lastProofAt: '2026-09-03T17:50:00', status: { key: 'validee', label: 'Validée', badge: 'ok' }, variant: 'code' },
-  { id: 'pf-20', title: 'Calcul du score', taskName: 'Développer le tableau de bord', desc: 'Fonction utilitaire de calcul de performance de tâche.', lastProofAt: '2026-09-03T11:30:00', status: { key: 'attente', label: 'En attente', badge: 'wait' }, variant: 'chart' },
-  { id: 'pf-21', title: 'Validation du responsive mobile', taskName: 'Créer l\'interface des tâches', desc: 'Alignements sur grilles CSS adaptatives.', lastProofAt: '2026-09-02T15:15:00', status: { key: 'validee', label: 'Validée', badge: 'ok' }, variant: 'photo' },
-  { id: 'pf-22', title: 'Sauvegarde automatique', taskName: 'Tester la connexion', desc: 'Procédure pour le dump de la DB SQLite.', lastProofAt: '2026-09-02T10:00:00', status: { key: 'validee', label: 'Validée', badge: 'ok' }, variant: 'sheet' },
-  { id: 'pf-23', title: 'Nettoyage du DOM', taskName: 'Développer le tableau de bord', desc: 'Re-rendu propre sans fuite de mémoire.', lastProofAt: '2026-09-01T14:40:00', status: { key: 'validee', label: 'Validée', badge: 'ok' }, variant: 'code' },
-  { id: 'pf-24', title: 'Contrôle d\'accès par rôle', taskName: 'Développer la connexion', desc: 'Vérification avancée pour les actions destructrices.', lastProofAt: '2026-09-01T09:10:00', status: { key: 'validee', label: 'Validée', badge: 'ok' }, variant: 'diagram' },
-]
+function proofFileVariant(mimeType, fileName) {
+  const mime = String(mimeType || '')
+  const name = String(fileName || '').toLowerCase()
+  if (mime.startsWith('image/') || /\.(png|jpe?g|gif|webp|bmp|svg)$/.test(name)) return 'photo'
+  if (mime.includes('pdf') || name.endsWith('.pdf')) return 'sheet'
+  if (mime.startsWith('text/') || mime.includes('json') || /\.(txt|md|csv|json|js|ts|html|css)$/.test(name)) return 'code'
+  return 'sheet'
+}
+
+function formatFileSize(bytes) {
+  if (!bytes && bytes !== 0) return ''
+  if (bytes < 1024) return `${bytes} o`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} Ko`
+  return `${(bytes / (1024 * 1024)).toFixed(1)} Mo`
+}
+
+// Synchronise les VRAIES preuves du serveur (dont les fichiers importés via
+// « Ajouter une preuve ») : appel réseau unique, interface inchangée.
+export async function syncUserProofs() {
+  if (userProofSyncInFlight) return
+  userProofSyncInFlight = true
+  try {
+    const { getAllProofs } = await import('./tasks.js')
+    const rows = await getAllProofs()
+    USER_PROOFS = (rows || []).map((r) => ({
+      id: `srv-${r.id}`,
+      serverId: r.id,
+      taskId: r.task_id,
+      title: r.file_name || `Preuve du ${pfDateLabel(r.created_at)}`,
+      taskName: r.task_title || 'Tâche',
+      desc: r.file_name
+        ? `Fichier importé : ${r.file_name}${r.size_bytes ? ` (${formatFileSize(r.size_bytes)})` : ''}.`
+        : 'Preuve enregistrée depuis la tâche.',
+      lastProofAt: r.created_at,
+      status: { key: 'validee', label: 'Validée', badge: 'ok' },
+      variant: proofFileVariant(r.mime_type, r.file_name),
+      mimeType: r.mime_type,
+      fileName: r.file_name,
+      hasFile: !!r.has_file,
+      fromServer: true,
+    }))
+  } catch {
+    // Hors-ligne / non connecté : on garde les démos, sans casser la rubrique.
+    USER_PROOFS = []
+  } finally {
+    userProofSyncInFlight = false
+  }
+}
+
+// Aucune preuve démo : la rubrique n'affiche QUE les preuves réellement
+// ajoutées par l'utilisateur (USER_PROOFS, serveur SQLite).
 
 function pfDateFull(value) {
   if (!value) return '—'
@@ -70,6 +93,27 @@ function pfDateLabel(value) {
 }
 
 function pfDownloadProof(info) {
+  // Preuve fichier importée : on retélécharge le VRAI fichier du serveur.
+  // Interface inchangée : même bouton « Télécharger », même carte.
+  if (info.fromServer && info.hasFile && info.serverId) {
+    import('./tasks.js').then(({ getProofFile }) => getProofFile(info.serverId)).then(({ fileName, mimeType, dataBase64 }) => {
+      const byteChars = atob(dataBase64)
+      const bytes = new Uint8Array(byteChars.length)
+      for (let i = 0; i < byteChars.length; i++) bytes[i] = byteChars.charCodeAt(i)
+      const blob = new Blob([bytes], { type: mimeType || 'application/octet-stream' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = fileName || 'preuve'
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      URL.revokeObjectURL(url)
+    }).catch(() => {
+      window.alert('Impossible de télécharger ce fichier pour le moment.')
+    })
+    return
+  }
   const lines = [
     'TaskManager — Preuve privée',
     '===========================',
@@ -91,7 +135,7 @@ function pfDownloadProof(info) {
   URL.revokeObjectURL(url)
 }
 
-function pfPreviewHtml(variant) {
+function pfPreviewHtml(variant, photoUrl = null) {
   if (variant === 'code') {
     const widths = [3, 7, 5, 9, 4, 8, 6, 10, 5]
     return `<div class="pf-preview pf-preview--code"><div class="pf-preview__code">${widths
@@ -112,6 +156,11 @@ function pfPreviewHtml(variant) {
     </div>`
   }
   if (variant === 'photo') {
+    // Aperçu image réel quand la preuve fichier est une photo : même cadre
+    // .pf-preview--photo existant, avec l'image en fond (aucun CSS ajouté).
+    if (photoUrl) {
+      return `<div class="pf-preview pf-preview--photo"><img src="${photoUrl}" alt="Aperçu de la preuve" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;" /><span class="pf-preview__shine"></span></div>`
+    }
     return '<div class="pf-preview pf-preview--photo"><span class="pf-preview__shine"></span></div>'
   }
   return `<div class="pf-preview pf-preview--sheet"><div class="pf-preview__rows">${Array
@@ -126,7 +175,7 @@ function pfCardHtml(it, selected) {
         <span class="pf-badge pf-badge--${it.status.badge}">${it.status.label}</span>
         <span class="pf-badge pf-badge--lock"><svg viewBox="0 0 20 20" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4.5" y="8.5" width="11" height="8" rx="1.5"/><path d="M7 8.5V6a3 3 0 016 0v2.5"/></svg> Privée</span>
       </div>
-      <div class="pf-card__preview">${pfPreviewHtml(it.variant)}</div>
+      <div class="pf-card__preview">${pfPreviewHtml(it.variant, it.photoUrl || null)}</div>
       <div class="pf-card__body">
         <h4 class="pf-card__title" title="${escapeHtml(it.title)}">${escapeHtml(it.title)}</h4>
         <p class="pf-card__task" title="Tâche : ${escapeHtml(it.taskName)}">Tâche : ${escapeHtml(it.taskName)}</p>
@@ -159,7 +208,7 @@ function pfDetailHtml(selected) {
       <span class="pf-badge pf-badge--${selected.status.badge}">${selected.status.label}</span>
       <span class="pf-detail__lock"><svg viewBox="0 0 20 20" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4.5" y="8.5" width="11" height="8" rx="1.5"/><path d="M7 8.5V6a3 3 0 016 0v2.5"/></svg> Privée</span>
     </div>
-    <div class="pf-detail__preview-wrap">${pfPreviewHtml(selected.variant)}</div>
+    <div class="pf-detail__preview-wrap">${pfPreviewHtml(selected.variant, selected.photoUrl || null)}</div>
     <dl class="pf-detail__fields">
       <div><dt><svg viewBox="0 0 20 20" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 5h14M3 10h10M3 15h7"/></svg> Titre</dt><dd>${escapeHtml(selected.title)}</dd></div>
       <div><dt><svg viewBox="0 0 20 20" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9.5 2.5l7 4v7l-7 4-7-4v-7z"/></svg> Tâche associée</dt><dd class="pf-detail__task">${escapeHtml(selected.taskName)}</dd></div>
@@ -181,28 +230,14 @@ function pfDetailHtml(selected) {
 
 export function renderPreuves(container, tasks) {
   if (!container) return
-  
-  // Merge real tasks if any proofs were added by user to active database
-  const withProofs = tasks.filter((t) => t.proofCount > 0)
-  if (!pfState.realItemsMerged && withProofs.length > 0) {
-    withProofs.forEach(t => {
-      if (!DEMO_PROOFS.find(p => p.id === t.id)) {
-        DEMO_PROOFS.unshift({
-          id: t.id,
-          title: t.title + ' (Preuve utilisateur)',
-          taskName: t.title,
-          desc: 'Preuve ajoutée manuellement sur la tâche.',
-          lastProofAt: t.lastProofAt,
-          statusDate: t.lastProofAt,
-          status: { key: 'validee', label: 'Validée', badge: 'ok' },
-          variant: 'photo'
-        })
-      }
-    })
-    pfState.realItemsMerged = true
-  }
 
-  let items = [...DEMO_PROOFS].sort((a, b) => new Date(b.lastProofAt) - new Date(a.lastProofAt))
+  // Uniquement les VRAIES preuves du serveur (fichiers importés et
+  // horodatages enregistrés via « Ajouter une preuve ») — plus de démos.
+  const serverItems = (USER_PROOFS || []).map((p) => {
+    const match = (tasks || []).find((t) => t.id === p.taskId || t.title === p.taskName)
+    return match ? { ...p, taskName: match.title } : p
+  })
+  let items = [...serverItems].sort((a, b) => new Date(b.lastProofAt) - new Date(a.lastProofAt))
 
   // Initialize selected if null
   if (!pfState.selected && items.length > 0) {
@@ -229,17 +264,17 @@ export function renderPreuves(container, tasks) {
     items = items.filter((it) => new Date(it.lastProofAt) >= start)
   }
 
-  // Stats (calculées sur tout, pas sur les filtrés pour refléter la maquette)
-  const total = DEMO_PROOFS.length
-  const validees = DEMO_PROOFS.filter((it) => it.status.key === 'validee').length
-  const attente = DEMO_PROOFS.filter((it) => it.status.key === 'attente').length
-  const rejetees = DEMO_PROOFS.filter((it) => it.status.key === 'rejetee').length
+  // Stats (calculées sur TOUTES les preuves utilisateur, pas sur les filtrées)
+  const total = serverItems.length
+  const validees = serverItems.filter((it) => it.status.key === 'validee').length
+  const attente = serverItems.filter((it) => it.status.key === 'attente').length
+  const rejetees = serverItems.filter((it) => it.status.key === 'rejetee').length
   const pct = (n) => (total === 0 ? 0 : Math.round((n / total) * 100))
 
   const pages = Math.max(1, Math.ceil(items.length / pfState.perPage))
   if (pfState.page > pages) pfState.page = pages
   const pageItems = items.slice((pfState.page - 1) * pfState.perPage, pfState.page * pfState.perPage)
-  const selected = pfState.selected ? DEMO_PROOFS.find((it) => it.id === pfState.selected) : null
+  const selected = pfState.selected ? serverItems.find((it) => it.id === pfState.selected) : null
 
   // Dropdown options pour les tâches
   const taskOptions = allTaskNames.map((tn) =>
@@ -315,6 +350,46 @@ export function renderPreuves(container, tasks) {
       </div>
   `
   bindPreuvesEvents(container, items, tasks)
+}
+
+// Remplit les cadres photo des preuves fichier images (cartes + détail) en
+// allant chercher le contenu à la demande — aucun changement de HTML/CSS.
+async function hydrateServerPhotoPreviews(container, items) {
+  let tasksApi = null
+  try {
+    tasksApi = await import('./tasks.js')
+  } catch {
+    return
+  }
+  const targets = (items || []).filter(
+    (it) => it.fromServer && it.hasFile && !it.photoUrl && String(it.mimeType || '').startsWith('image/') && it.serverId
+  )
+  if (targets.length === 0) return
+  await Promise.all(targets.slice(0, 12).map(async (it) => {
+    try {
+      const file = await tasksApi.getProofFile(it.serverId)
+      it.photoUrl = `data:${file.mimeType || 'image/*'};base64,${file.dataBase64}`
+    } catch { /* on garde l'aperçu stylisé */ }
+  }))
+  let changed = false
+  container.querySelectorAll('.pf-card').forEach((card) => {
+    const it = targets.find((t) => t.id === card.dataset.id)
+    if (!it || !it.photoUrl) return
+    const preview = card.querySelector('.pf-card__preview .pf-preview--photo')
+    if (preview && !preview.querySelector('img')) {
+      preview.insertAdjacentHTML('afterbegin', `<img src="${it.photoUrl}" alt="Aperçu de la preuve" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;" />`)
+      changed = true
+    }
+  })
+  const sel = items.find((it) => it.id === pfState.selected)
+  if (sel && sel.photoUrl) {
+    const wrap = container.querySelector('.pf-detail__preview-wrap .pf-preview--photo')
+    if (wrap && !wrap.querySelector('img')) {
+      wrap.insertAdjacentHTML('afterbegin', `<img src="${sel.photoUrl}" alt="Aperçu de la preuve" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;" />`)
+      changed = true
+    }
+  }
+  if (changed) void 0
 }
 
 function bindPreuvesEvents(container, items, tasks) {
@@ -411,6 +486,10 @@ function bindPreuvesEvents(container, items, tasks) {
     })
   }
 
+  // Aperçus images réels : chargés à la demande (data URL), sans changer le
+  // HTML/CSS — on remplit simplement les cadres photo existants.
+  hydrateServerPhotoPreviews(container, items)
+
   const downloadDetailBtn = container.querySelector('[data-action="download-detail"]')
   if (downloadDetailBtn) {
     const sel = items.find((it) => it.id === pfState.selected)
@@ -421,10 +500,18 @@ function bindPreuvesEvents(container, items, tasks) {
 
   const deleteBtn = container.querySelector('[data-action="delete-proof"]')
   if (deleteBtn) {
-    deleteBtn.addEventListener('click', () => {
-      const idx = DEMO_PROOFS.findIndex(p => p.id === pfState.selected)
-      if (idx !== -1) DEMO_PROOFS.splice(idx, 1)
+    deleteBtn.addEventListener('click', async () => {
+      const sel = items.find((it) => it.id === pfState.selected)
       pfState.selected = null
+      if (sel && sel.fromServer && sel.serverId) {
+        try {
+          const { deleteProof } = await import('./tasks.js')
+          await deleteProof(sel.serverId)
+          await syncUserProofs()
+        } catch {
+          window.alert('Impossible de supprimer cette preuve pour le moment.')
+        }
+      }
       renderPreuves(container, tasks)
     })
   }
@@ -432,10 +519,25 @@ function bindPreuvesEvents(container, items, tasks) {
   // Fullscreen Modal for "Voir en plein écran"
   const fullscreenBtn = container.querySelector('[data-action="fullscreen"]')
   if (fullscreenBtn) {
-    fullscreenBtn.addEventListener('click', () => {
+    fullscreenBtn.addEventListener('click', async () => {
       const sel = items.find((it) => it.id === pfState.selected)
       if (!sel) return
-      
+
+      // Preuve fichier image : le plein écran affiche la VRAIE photo.
+      let photoUrl = sel.photoUrl || null
+      if (!photoUrl && sel.fromServer && sel.hasFile && sel.serverId && String(sel.mimeType || '').startsWith('image/')) {
+        try {
+          const { getProofFile } = await import('./tasks.js')
+          const file = await getProofFile(sel.serverId)
+          photoUrl = `data:${file.mimeType || 'image/*'};base64,${file.dataBase64}`
+          sel.photoUrl = photoUrl
+          const wrap = container.querySelector('.pf-detail__preview-wrap .pf-preview--photo')
+          if (wrap && !wrap.querySelector('img')) {
+            wrap.insertAdjacentHTML('afterbegin', `<img src="${photoUrl}" alt="Aperçu de la preuve" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;" />`)
+          }
+        } catch { /* aperçu stylisé de secours */ }
+      }
+
       const modalHtml = `
         <div class="pf-modal-overlay" id="pfModalOverlay">
           <div class="pf-modal-card">
@@ -445,7 +547,7 @@ function bindPreuvesEvents(container, items, tasks) {
             </div>
             <div class="pf-modal-body">
               <div class="pf-modal-preview">
-                ${pfPreviewHtml(sel.variant)}
+                ${pfPreviewHtml(sel.variant, photoUrl)}
               </div>
               <div class="pf-modal-meta">
                 <span class="pf-badge pf-badge--${sel.status.badge}">${sel.status.label}</span>

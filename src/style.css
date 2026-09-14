@@ -5100,6 +5100,384 @@ input:focus-visible,
   font-family: inherit;
 }
 
+/* ---------- Retards Vue ---------- */
+/* Cartes, graphiques et tableaux reprennent les variables communes
+   (--bg-elevated, --border, --accent, badges…) et les mêmes tailles de
+   police compactes que la rubrique Progression, pour une harmonie totale. */
+.retards-container {
+  max-width: 100%;
+}
+
+.retards-header {
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.retards-title {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0;
+  color: var(--text);
+}
+
+.retards-subtitle {
+  font-size: 12px;
+  margin: 2px 0 0;
+  color: var(--text-muted);
+}
+
+/* KPI : mêmes cartes que la progression, légèrement compactées. */
+.retards-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.retards-stat-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: var(--radius);
+}
+
+[data-theme='dark'] .retards-stat-card {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+}
+
+[data-theme='light'] .retards-stat-card {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+}
+
+.retards-stats .stat-number {
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1.2;
+}
+
+.retards-stats .stat-label {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.retards-stats .stat-percent {
+  font-size: 10px;
+  color: var(--badge-todo-text);
+  margin-top: 1px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 150px;
+}
+
+/* Graphiques : mêmes encadrés que .progression-chart. */
+.retards-charts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.retards-chart {
+  border-radius: 12px;
+  padding: 14px;
+  min-height: 280px;
+}
+
+[data-theme='dark'] .retards-chart {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+}
+
+[data-theme='light'] .retards-chart {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+}
+
+.retards-chart h3 {
+  font-size: 13px;
+  font-weight: 600;
+  margin: 0 0 10px;
+  color: var(--text);
+}
+
+.retards-chart canvas {
+  width: 100% !important;
+  height: 240px !important;
+}
+
+/* Tableau des retards. */
+.retards-table-card {
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 18px;
+}
+
+[data-theme='dark'] .retards-table-card {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+}
+
+[data-theme='light'] .retards-table-card {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+}
+
+.retards-table-card h3 {
+  font-size: 13px;
+  font-weight: 600;
+  margin: 0 0 10px;
+  color: var(--text);
+}
+
+.retards-table-wrap {
+  overflow-x: auto;
+}
+
+.retards-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.retards-table th {
+  text-align: left;
+  font-size: 10.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.retards-table td {
+  padding: 8px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  vertical-align: middle;
+}
+
+.retards-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.retards-table tbody tr:hover {
+  background: var(--bg-hover);
+}
+
+.retards-table__task {
+  font-weight: 600;
+}
+
+.retards-table__due,
+.retards-table__delay {
+  white-space: nowrap;
+}
+
+.retards-table__delay {
+  font-weight: 700;
+  color: var(--badge-todo-text);
+}
+
+.retards-table__empty {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 18px 8px !important;
+}
+
+/* Badges de priorité : mêmes teintes que les badges de tâches. */
+.retards-prio {
+  display: inline-block;
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.retards-prio--high {
+  background: var(--badge-todo-bg);
+  color: var(--badge-todo-text);
+}
+
+.retards-prio--medium {
+  background: var(--badge-doing-bg);
+  color: var(--badge-doing-text);
+}
+
+.retards-prio--low {
+  background: var(--chip-bg, var(--bg-hover));
+  color: var(--text-muted);
+}
+
+/* Carte conseil : réutilise .summary-card de la progression. */
+.retards-bottom {
+  display: flex;
+}
+
+.retards-bottom .summary-card {
+  flex: 1;
+}
+
+.retards-bottom .summary-message {
+  font-size: 12px;
+}
+
+/* --- Colonne latérale de la vue retards (maquette) ----------------------
+   Grille deux colonnes : contenu principal + aside avec 3 cartes
+   (« À propos du retard », « Rappel important », « Un petit effort… »). */
+.retards-container {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 20px;
+  align-items: start;
+}
+
+.retards-main {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.retards-aside {
+  position: sticky;
+  top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.aside-card {
+  background: var(--bg-elevated, #fff);
+  border: 1px solid var(--border, #e6eaf1);
+  border-radius: var(--radius, 10px);
+  padding: 16px 18px;
+  box-shadow: var(--shadow);
+}
+
+.aside-card h4 {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.aside-card p {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--text-muted, #6b7689);
+}
+
+/* Carte « À propos du retard » : bleu doux */
+.aside-card--info {
+  border-color: rgba(37, 99, 235, 0.25);
+  background: linear-gradient(160deg, rgba(37, 99, 235, 0.1), rgba(37, 99, 235, 0.03)),
+    var(--bg-elevated, #fff);
+}
+.aside-card--info h4 {
+  color: #2563eb;
+}
+:root[data-theme='dark'] .aside-card--info {
+  border-color: rgba(108, 140, 255, 0.35);
+  background: linear-gradient(160deg, rgba(108, 140, 255, 0.14), rgba(108, 140, 255, 0.04)),
+    var(--bg-elevated, #1a1d26);
+}
+:root[data-theme='dark'] .aside-card--info h4 {
+  color: #6c8cff;
+}
+
+/* Carte « Rappel important » : orange doux + bouton d'action */
+.aside-card--warning {
+  border-color: rgba(217, 119, 6, 0.3);
+  background: linear-gradient(160deg, rgba(245, 158, 11, 0.12), rgba(245, 158, 11, 0.03)),
+    var(--bg-elevated, #fff);
+}
+.aside-card--warning h4 {
+  color: #b45309;
+}
+:root[data-theme='dark'] .aside-card--warning {
+  border-color: rgba(251, 191, 36, 0.35);
+  background: linear-gradient(160deg, rgba(251, 191, 36, 0.12), rgba(251, 191, 36, 0.04)),
+    var(--bg-elevated, #1a1d26);
+}
+:root[data-theme='dark'] .aside-card--warning h4 {
+  color: #fbbf24;
+}
+
+.aside-btn {
+  margin-top: 12px;
+  width: 100%;
+  padding: 9px 14px;
+  border: none;
+  border-radius: 8px;
+  background: var(--accent, #2563eb);
+  color: var(--accent-contrast, #fff);
+  font-family: var(--font);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter 0.15s ease, transform 0.1s ease;
+}
+.aside-btn:hover {
+  filter: brightness(1.08);
+}
+.aside-btn:active {
+  transform: scale(0.98);
+}
+
+/* Carte « Un petit effort aujourd'hui… » : vert doux */
+.aside-card--motivation {
+  border-color: rgba(22, 163, 74, 0.3);
+  background: linear-gradient(160deg, rgba(34, 197, 94, 0.12), rgba(34, 197, 94, 0.03)),
+    var(--bg-elevated, #fff);
+}
+.aside-card--motivation h4 {
+  color: #15803d;
+}
+:root[data-theme='dark'] .aside-card--motivation {
+  border-color: rgba(99, 217, 154, 0.35);
+  background: linear-gradient(160deg, rgba(99, 217, 154, 0.12), rgba(99, 217, 154, 0.04)),
+    var(--bg-elevated, #1a1d26);
+}
+:root[data-theme='dark'] .aside-card--motivation h4 {
+  color: #63d99a;
+}
+
+/* Responsive : aside sous le contenu principal sur écran étroit */
+@media (max-width: 1100px) {
+  .retards-container {
+    grid-template-columns: 1fr;
+  }
+  .retards-aside {
+    position: static;
+  }
+}
+
+
+@media (max-width: 720px) {
+  .retards-charts,
+  .retards-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .retards-table th,
+  .retards-table td {
+    padding: 6px 4px;
+  }
+}
+
 .pf-detail__main-btn:hover {
   transform: translateY(-1px);
   box-shadow: 0 4px 12px color-mix(in srgb, var(--accent) 30%, transparent);

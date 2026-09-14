@@ -19,7 +19,17 @@ import {
 } from './modules/progression.js'
 import { applyTheme } from './modules/theme.js'
 import {
+  computeRetardsStats,
+  renderRetardsBarChart,
+  renderRetardsDonutChart,
+  renderRetardsTable,
+  retardsMessage,
+  formatDelay,
+} from './modules/retards.js'
+import {
   bindTaskEvents,
+  openProofAddMenu,
+  openProofFilePicker,
   renderBell,
   bindBellMenu,
   renderReminders,
@@ -42,7 +52,7 @@ import {
   renderTasksTable,
   renderTasksSummary,
 } from './modules/ui.js'
-import { renderPreuves } from './modules/preuves.js'
+import { renderPreuves, syncUserProofs } from './modules/preuves.js'
 import { initAlarms } from './modules/alarms.js'
 import { getSession, login, register, signOut } from './modules/auth.js'
 
@@ -88,6 +98,7 @@ const viewEls = {
   tasks: document.getElementById('viewTasks'),
   reminders: document.getElementById('viewReminders'),
   progression: document.getElementById('viewProgression'),
+  retards: document.getElementById('viewRetards'),
   preuves: document.getElementById('viewPreuves'),
 }
 const viewTitles = {
@@ -95,6 +106,7 @@ const viewTitles = {
   tasks: 'Mes tâches',
   reminders: 'Rappel',
   progression: 'Progression',
+  retards: 'Retards',
   preuves: 'Preuves',
 }
 const reminderListEl = document.getElementById('reminderList')
@@ -224,6 +236,15 @@ const reminderDeleteFullBtn = document.getElementById('reminderDeleteFullBtn')
 const reminderDeleteDismissBtn = document.getElementById('reminderDeleteDismissBtn')
 const reminderDeleteCancelBtn = document.getElementById('reminderDeleteCancelBtn')
 
+// Petite fenêtre « Ajouter une preuve » (rubrique Mes tâches) : mêmes
+// classes/id-pattern que la fenêtre « Que faire de ce rappel ? ».
+const proofAddOverlay = document.getElementById('proofAddOverlay')
+const proofAddTextEl = document.getElementById('proofAddText')
+const proofAddFileBtn = document.getElementById('proofAddFileBtn')
+const proofAddPhotoBtn = document.getElementById('proofAddPhotoBtn')
+const proofAddSimpleBtn = document.getElementById('proofAddSimpleBtn')
+const proofAddCancelBtn = document.getElementById('proofAddCancelBtn')
+
 const SUN_ICON = `<svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="4"/><line x1="10" y1="1.5" x2="10" y2="3.5"/><line x1="10" y1="16.5" x2="10" y2="18.5"/><line x1="1.5" y1="10" x2="3.5" y2="10"/><line x1="16.5" y1="10" x2="18.5" y2="10"/><line x1="4" y1="4" x2="5.4" y2="5.4"/><line x1="14.6" y1="14.6" x2="16" y2="16"/><line x1="4" y1="16" x2="5.4" y2="14.6"/><line x1="14.6" y1="5.4" x2="16" y2="4"/></svg>`
 const MOON_ICON = `<svg viewBox="0 0 20 20" width="16" height="16" fill="currentColor"><path d="M15.8 12.4A6.5 6.5 0 017.6 4.2a6.5 6.5 0 108.2 8.2z"/></svg>`
 
@@ -247,7 +268,7 @@ let dashFilter = 'all'
 // Filtres rapides de la rubrique « Mes tâches » (maquette) + pagination.
 let tasksPage = 1
 const TASKS_PAGE_SIZE = 6
-let tasksQuickSort = 'due-asc'
+let tasksQuickSort = 'default'
 let tasksQuickPriority = 'all'
 let tasksQuickStatus = 'all'
 let tasksPeriod = 'week'
@@ -422,11 +443,13 @@ async function render() {
 
   let visibleTasks = allTasks
   // Filtre statut : onglets/cartes d'abord, sinon select des filtres rapides.
+  // Le résultat doit correspondre EXACTEMENT au nombre de la carte :
+  // aucun épinglage, la tâche qui change de statut quitte aussitôt la liste.
   const statusKey = statusFilter || (tasksQuickStatus !== 'all' ? tasksQuickStatus : null)
   if (statusKey) {
     visibleTasks = statusKey === 'delayed'
-      ? visibleTasks.filter(isLate)
-      : visibleTasks.filter((t) => t.status === statusKey || pinnedIds.has(t.id))
+      ? visibleTasks.filter((t) => isLate(t))
+      : visibleTasks.filter((t) => t.status === statusKey)
   }
   // Filtre priorité (filtres rapides).
   if (tasksQuickPriority !== 'all') {
@@ -466,8 +489,11 @@ async function render() {
       (t) => t.title.toLowerCase().includes(trimmedQuery) || (t.description || '').toLowerCase().includes(trimmedQuery)
     )
   }
-  // Tri : le select « Trier par » des filtres rapides prime sur le menu.
-  const effectiveSort = tasksQuickSort === 'due-asc' ? 'due' : tasksQuickSort === 'default' ? sortMode : tasksQuickSort
+  // Tri : le select « Trier par » des filtres rapides et le bouton « Trier »
+  // pilotent le même tri (4 choix : Par défaut / Urgence / Priorité /
+  // Titre A → Z) ; on les resynchronise à chaque rendu.
+  const effectiveSort = tasksQuickSort
+  syncTasksSortControls(effectiveSort)
   visibleTasks = sortTasks(visibleTasks, effectiveSort, now)
   let tasksEmptyMessage
   if (visibleTasks.length === 0) {
@@ -544,8 +570,52 @@ async function render() {
     renderProgressionTodayStats(todayStats)
   }
 
-  // Preuves : historique des preuves par tâche
+  // Retards
+  if (currentView === 'retards') {
+    const retardsStats = computeRetardsStats(allTasks)
+    const el = (id) => document.getElementById(id)
+
+    const subEl = el('retardsSubtitle')
+    if (subEl) {
+      subEl.textContent = retardsStats.count === 0
+        ? 'Aucune tâche en retard'
+        : `${retardsStats.count} tâche(s) en retard sur ${retardsStats.total}`
+    }
+
+    const countEl = el('retardsStatCount')
+    if (countEl) countEl.textContent = retardsStats.count
+    const countPctEl = el('retardsStatCountPercent')
+    if (countPctEl) countPctEl.textContent = `${retardsStats.countPercent}% du total`
+    const totalEl = el('retardsStatTotal')
+    if (totalEl) totalEl.textContent = `${retardsStats.totalHours.toFixed(1).replace('.', ',')} h`
+    const avgEl = el('retardsStatAvg')
+    if (avgEl) avgEl.textContent = `${retardsStats.avgHours.toFixed(1).replace('.', ',')} h`
+    const worstEl = el('retardsStatWorst')
+    if (worstEl) worstEl.textContent = retardsStats.worst ? formatDelay(retardsStats.worst.delayMs) : '—'
+    const worstTaskEl = el('retardsStatWorstTask')
+    if (worstTaskEl) worstTaskEl.textContent = retardsStats.worst ? retardsStats.worst.title || '' : ''
+
+    renderRetardsBarChart(el('retardsBarChart'), retardsStats.delayed)
+    renderRetardsDonutChart(el('retardsDonutChart'), retardsStats.delayed)
+    renderRetardsTable(el('retardsTableBody'), retardsStats.delayed)
+    const msgEl = el('retardsMessage')
+    if (msgEl) msgEl.textContent = retardsMessage(retardsStats)
+
+    // Badge du compteur dans la sidebar.
+    const navCountEl = el('retardsNavCount')
+    if (navCountEl) {
+      navCountEl.textContent = retardsStats.count
+      navCountEl.hidden = retardsStats.count === 0
+    }
+  }
+
+  // Preuves : VRAIES preuves du serveur (fichiers importés) + démos.
+  // syncUserProofs() ne touche ni au HTML ni au CSS : mêmes cartes.
   if (preuvesListEl) {
+    if (!render.__proofsSynced) {
+      render.__proofsSynced = true
+      syncUserProofs().then(() => render())
+    }
     renderPreuves(preuvesListEl, allTasks)
   }
 
@@ -588,6 +658,12 @@ navButtons.forEach((btn) => {
     render()
   })
 })
+
+// Bouton « Voir mes preuves » (vue retards)
+const retardsViewProofsBtn = document.getElementById('retardsViewProofsBtn')
+if (retardsViewProofsBtn) {
+  retardsViewProofsBtn.addEventListener('click', () => setView('preuves'))
+}
 
 // --- Progression : filtres temporels ---
 if (progressionContainer) {
@@ -694,8 +770,103 @@ taskForm.addEventListener('submit', async (event) => {
   render()
 })
 
+// --- Ajout de preuve : petite fenêtre + import de fichier -----------------
+// Dans la rubrique « Mes tâches », le clic sur « Ajouter une preuve »
+// (option du menu « … ») ouvre une PETITE FENÊTRE modale (même pattern que
+// « Que faire de ce rappel ? ») qui propose les 3 choix à l'utilisateur :
+// 1) « Importer un fichier ou une photo » → l'explorateur de fichiers
+//    (ou la galerie) s'ouvre, l'utilisateur sélectionne un fichier qui est
+//    soumis comme preuve ;
+// 2) « Prendre une photo » → l'appareil photo sur mobile ;
+// 3) « Preuve simple » → horodatage seul (comportement historique).
+// Une fois soumise, la preuve apparaît automatiquement dans la rubrique
+// « Preuves » (cartes existantes, aucun changement d'interface/design).
+let pendingProofAddId = null
+
+async function openProofAddDialog(id) {
+  const task = await findTask(id)
+  if (!task || !proofAddOverlay) return
+  pendingProofAddId = id
+  proofAddTextEl.textContent = `« ${task.title} » — choisissez comment ajouter votre preuve.`
+  proofAddOverlay.hidden = false
+}
+
+function closeProofAddDialog() {
+  pendingProofAddId = null
+  if (proofAddOverlay) proofAddOverlay.hidden = true
+}
+
+async function submitProofFile(id, filePayload) {
+  const task = await findTask(id)
+  if (!task) return
+  await provideProof(id, filePayload)
+  render.__proofsSynced = false
+  await syncUserProofs()
+  render()
+  if (currentView !== 'preuves') {
+    window.alert(`Preuve ajoutée à « ${task.title} » : retrouvez-la dans la rubrique Preuves.`)
+  } else {
+    render()
+  }
+}
+
+async function submitSimpleProof(id) {
+  const task = await findTask(id)
+  if (!task) return
+  await provideProof(id)
+  render()
+}
+
+// Ponts utilisés par le mini-menu (dashboard) et la petite fenêtre
+// (Mes tâches, …) d'ui.js (sans import circulaire).
+window.__doliProofFileHandler = submitProofFile
+window.__doliProofSimpleHandler = submitSimpleProof
+window.__doliProofDialogHandler = openProofAddDialog
+
+// Ouvre le mini-menu ancré sur le bouton cliqué (arité 3 détectée par ui.js).
+// Le mini-menu (dashboard) et la petite fenêtre (Mes tâches, …) partagent le
+// même import de fichier : window.__doliProofFileHandler.
+function openProofMenuAction(id, anchorBtn) {
+  if (!anchorBtn || !anchorBtn.getBoundingClientRect) {
+    submitSimpleProof(id)
+    return
+  }
+  openProofAddMenu(anchorBtn, id, { onSimpleProof: submitSimpleProof })
+}
+
+onEl(proofAddFileBtn, 'click', () => {
+  if (!pendingProofAddId) return
+  const id = pendingProofAddId
+  closeProofAddDialog()
+  openProofFilePicker(id, false)
+})
+onEl(proofAddPhotoBtn, 'click', () => {
+  if (!pendingProofAddId) return
+  const id = pendingProofAddId
+  closeProofAddDialog()
+  openProofFilePicker(id, true)
+})
+onEl(proofAddSimpleBtn, 'click', async () => {
+  if (!pendingProofAddId) return
+  const id = pendingProofAddId
+  closeProofAddDialog()
+  await submitSimpleProof(id)
+})
+onEl(proofAddCancelBtn, 'click', closeProofAddDialog)
+onEl(proofAddOverlay, 'click', (event) => {
+  if (event.target === proofAddOverlay) closeProofAddDialog()
+})
+
 // --- Fournir une preuve depuis une carte du dashboard --------------------
-async function provideProofAction(id) {
+async function provideProofAction(id, anchorBtn, opts) {
+  if (opts && opts.openMenu) {
+    openProofMenuAction(id, anchorBtn)
+    return
+  }
+  if (anchorBtn && anchorBtn.getBoundingClientRect) {
+    openProofMenuAction(id, anchorBtn)
+    return
+  }
   const task = await findTask(id)
   if (!task) return
   await provideProof(id)
@@ -807,13 +978,22 @@ const taskActions = {
   async onSetStatus(id, status) {
     const task = await findTask(id)
     if (!task) return
-    if (statusFilter && task.status === statusFilter) pinnedIds.add(id)
     await setStatus(id, status)
     if (status === STATUS.DONE && task.status !== STATUS.DONE) triggerConfetti()
     render()
   },
   onEdit: goToTask,
-  async onProvideProof(id) {
+  // 3 arguments = appel via le mini-menu « Ajouter une preuve » (ui.js) :
+  // on ouvre la petite fenêtre (import fichier/photo + preuve simple).
+  async onProvideProof(id, anchorBtn, opts) {
+    if (opts && opts.openMenu) {
+      openProofMenuAction(id, anchorBtn)
+      return
+    }
+    if (anchorBtn && anchorBtn.getBoundingClientRect) {
+      openProofMenuAction(id, anchorBtn)
+      return
+    }
     const task = await findTask(id)
     if (!task) return
     await provideProof(id)
@@ -847,27 +1027,37 @@ onEl(taskSearchInput, 'input', () => {
 })
 
 // Cartes de comptage + onglets : clic = filtre statut (maquette).
+// Correctif : le clic doit afficher EXACTEMENT le nombre indiqué sur la
+// carte. Les compteurs sont calculés sur toutes les tâches, donc on lève
+// les autres filtres qui réduisaient la liste en silence (recherche,
+// priorité, période — « Cette semaine » par défaut — + pagination).
+// Un second clic sur la carte/onglet actif réinitialise vers « Toutes ».
+function applyTasksStatusFilter(key) {
+  const nextKey = key === 'all' ? 'all' : key
+  const isToggleOff = nextKey !== 'all' && statusFilter === nextKey
+  const finalKey = isToggleOff || nextKey === 'all' ? 'all' : nextKey
+  statusFilter = finalKey === 'all' ? null : finalKey
+  tasksQuickStatus = finalKey
+  tasksQuickPriority = 'all'
+  tasksPeriod = 'all'
+  searchQuery = ''
+  tasksPage = 1
+  pinnedIds.clear()
+  if (taskQuickStatusEl) taskQuickStatusEl.value = finalKey
+  if (taskQuickPriorityEl) taskQuickPriorityEl.value = 'all'
+  if (taskPeriodFilterEl) taskPeriodFilterEl.value = 'all'
+  if (taskSearchInput) taskSearchInput.value = ''
+  render()
+}
 if (tasksCountsEl) tasksCountsEl.addEventListener('click', (event) => {
   const btn = event.target.closest('[data-count-key]')
   if (!btn) return
-  const key = btn.dataset.countKey
-  statusFilter = key === 'all' ? null : key
-  if (taskQuickStatusEl) taskQuickStatusEl.value = key === 'all' ? 'all' : key
-  tasksQuickStatus = key === 'all' ? 'all' : key
-  tasksPage = 1
-  pinnedIds.clear()
-  render()
+  applyTasksStatusFilter(btn.dataset.countKey)
 })
 if (tasksTabsEl) tasksTabsEl.addEventListener('click', (event) => {
   const tab = event.target.closest('[data-status-tab]')
   if (!tab) return
-  const key = tab.dataset.statusTab
-  statusFilter = key === 'all' ? null : key
-  if (taskQuickStatusEl) taskQuickStatusEl.value = key === 'all' ? 'all' : key
-  tasksQuickStatus = key === 'all' ? 'all' : key
-  tasksPage = 1
-  pinnedIds.clear()
-  render()
+  applyTasksStatusFilter(tab.dataset.statusTab)
 })
 
 // Pagination (maquette : 6 par page, numéros 1 2 3 4).
@@ -891,6 +1081,9 @@ if (tasksPageNumsEl) tasksPageNumsEl.addEventListener('click', (event) => {
 // Filtres rapides (panneau latéral) : tri / priorité / statut / période.
 onEl(taskQuickSortEl, 'change', () => {
   tasksQuickSort = taskQuickSortEl.value
+  // Le select et le menu « Trier » pilotent le même tri : le dernier choix
+  // gagne (mêmes 4 valeurs), l'autre est resynchronisé dans render().
+  sortMode = 'default'
   tasksPage = 1
   render()
 })
@@ -912,22 +1105,28 @@ onEl(taskPeriodFilterEl, 'change', () => {
   render()
 })
 onEl(taskResetFiltersBtn, 'click', () => {
+  resetTasksFilters()
+})
+
+// Réinitialisation centrale : panneau latéral + menu « Trier » +
+// cartes/onglets reviennent à l'état par défaut (semaine en cours).
+function resetTasksFilters() {
   searchQuery = ''
   sortMode = 'default'
   statusFilter = null
   tasksPage = 1
-  tasksQuickSort = 'due-asc'
+  tasksQuickSort = 'default'
   tasksQuickPriority = 'all'
   tasksQuickStatus = 'all'
   tasksPeriod = 'week'
   pinnedIds.clear()
   if (taskSearchInput) taskSearchInput.value = ''
-  if (taskQuickSortEl) taskQuickSortEl.value = 'due-asc'
+  if (taskQuickSortEl) taskQuickSortEl.value = 'default'
   if (taskQuickPriorityEl) taskQuickPriorityEl.value = 'all'
   if (taskQuickStatusEl) taskQuickStatusEl.value = 'all'
   if (taskPeriodFilterEl) taskPeriodFilterEl.value = 'week'
   render()
-})
+}
 
 // Cloche de l'en-tête « Mes tâches » : ouvre le menu des retards.
 onEl(tasksBellBtn, 'click', () => {
@@ -944,8 +1143,25 @@ onEl(tasksPrivacyBtn, 'click', () => {
   window.alert('Vos données restent sur votre compte : seul vous pouvez voir vos tâches, vos preuves et vos statistiques.')
 })
 
-// Le bouton affiche toujours "Trier" (pas la valeur sélectionnée) ; toutes
-// les options, y compris "Par défaut", apparaissent dans le menu déroulant.
+// Menu « Trier » (à côté de la recherche) : 4 ordres d'affichage —
+// Par défaut / Urgence / Priorité / Titre (A → Z). Le choix reporte le tri
+// dans le select « Trier par » des filtres rapides et réordonne la liste.
+function syncTasksSortControls(effectiveSort) {
+  if (taskQuickSortEl && taskQuickSortEl.querySelector(`option[value="${effectiveSort}"]`)) {
+    if (taskQuickSortEl.value !== effectiveSort) taskQuickSortEl.value = effectiveSort
+  }
+  if (taskSortMenu) {
+    taskSortMenu
+      .querySelectorAll('[data-sort]')
+      .forEach((opt) => opt.classList.toggle('is-current', opt.dataset.sort === effectiveSort))
+  }
+  if (taskSortBtn) {
+    const labels = { default: 'Trier', urgency: 'Trier : Urgence', priority: 'Trier : Priorité', title: 'Trier : Titre' }
+    const base = labels[effectiveSort] || labels.default
+    const textNode = Array.from(taskSortBtn.childNodes).find((n) => n.nodeType === 3 && n.textContent.trim().length > 0)
+    if (textNode) textNode.textContent = ` ${base} `
+  }
+}
 function closeSortMenu() {
   if (!taskSortMenu || !taskSortBtn) return
   taskSortMenu.hidden = true
@@ -965,10 +1181,13 @@ document.addEventListener('click', (event) => {
 if (taskSortMenu) taskSortMenu.addEventListener('click', (event) => {
   const option = event.target.closest('[data-sort]')
   if (!option) return
-  sortMode = option.dataset.sort
-  taskSortMenu
-    .querySelectorAll('.sort-picker__option')
-    .forEach((opt) => opt.classList.toggle('is-current', opt === option))
+  // Le menu reprend la main : on reporte son choix dans le select des
+  // filtres rapides, sinon le select l'écraserait au rendu.
+  sortMode = 'default'
+  const sortKey = option.dataset.sort
+  tasksQuickSort = sortKey
+  if (taskQuickSortEl) taskQuickSortEl.value = tasksQuickSort
+  tasksPage = 1
   closeSortMenu()
   render()
 })
