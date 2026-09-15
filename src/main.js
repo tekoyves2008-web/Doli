@@ -161,7 +161,6 @@ const taskSearchInput = document.getElementById('taskSearchInput')
 const taskSortBtn = document.getElementById('taskSortBtn')
 const taskSortMenu = document.getElementById('taskSortMenu')
 const tasksCountsEl = document.getElementById('tasksCounts')
-const tasksTabsEl = document.getElementById('tasksTabs')
 const tasksTodayDateEl = document.getElementById('tasksTodayDate')
 const tasksTodayWeekdayEl = document.getElementById('tasksTodayWeekday')
 const tasksBellCountEl = document.getElementById('tasksBellCount')
@@ -427,7 +426,6 @@ async function render() {
   // « Statut » des filtres rapides quand aucun onglet n'est actif.
   const activeTasksFilter = statusFilter || (tasksQuickStatus !== 'all' ? tasksQuickStatus : 'all')
   renderTasksCounts(tasksCountsEl, tasksCounts, activeTasksFilter)
-  renderTasksTabs(tasksTabsEl, tasksCounts, activeTasksFilter)
   if (tasksTodayDateEl) {
     const d = new Date()
     tasksTodayDateEl.textContent = d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })
@@ -1088,11 +1086,6 @@ if (tasksCountsEl) tasksCountsEl.addEventListener('click', (event) => {
   const btn = event.target.closest('[data-count-key]')
   if (!btn) return
   applyTasksStatusFilter(btn.dataset.countKey)
-})
-if (tasksTabsEl) tasksTabsEl.addEventListener('click', (event) => {
-  const tab = event.target.closest('[data-status-tab]')
-  if (!tab) return
-  applyTasksStatusFilter(tab.dataset.statusTab)
 })
 
 // Pagination (maquette : 6 par page, numéros 1 2 3 4).

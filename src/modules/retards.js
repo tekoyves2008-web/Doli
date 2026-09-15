@@ -207,12 +207,15 @@ export function renderRetardsBarChart(canvas, days) {
   const niceMax = Math.ceil(maxVal / 2) * 2
   const padLeft = 36
   const padBottom = 30
-  const padTop = 14
+  // padTop élargi : la caption « Heures » est dessinée AU-DESSUS des
+  // graduations (jamais par-dessus la première, ex. « 4 »).
+  const padTop = 22
   const chartWidth = width - padLeft - 14
   const chartHeight = height - padBottom - padTop
   const slot = items.length ? chartWidth / items.length : chartWidth
   const barWidth = Math.min(slot * 0.52, 40)
 
+  // Graduations : valeurs simples, l'unité est portée par la caption « Heures ».
   ctx.font = '10.5px Inter, sans-serif'
   for (let i = 0; i <= 4; i++) {
     const value = (niceMax / 4) * i
@@ -226,12 +229,13 @@ export function renderRetardsBarChart(canvas, days) {
     ctx.fillStyle = muted
     ctx.textAlign = 'right'
     ctx.textBaseline = 'middle'
-    ctx.fillText(`${Math.round(value)}h`, padLeft - 8, y)
+    ctx.fillText(`${Math.round(value)}`, padLeft - 8, y)
   }
+  // Caption d'axe au-dessus de la zone des graduations (pas de chevauchement).
   ctx.fillStyle = muted
   ctx.textAlign = 'left'
   ctx.textBaseline = 'middle'
-  ctx.fillText('Heures', 2, padTop - 2)
+  ctx.fillText('Heures', 2, 10)
 
   items.forEach((day, index) => {
     const onTime = day.onTime || 0
