@@ -2089,6 +2089,15 @@ input:focus-visible,
 .mtasks2-count--todo .mtasks2-count__num { color: #64748b; }
 .mtasks2-count--todo .mtasks2-count__icon { color: #64748b; background: #f1f5f9; }
 
+/* Mode sombre : pastilles des 5 cartes de comptage alignées sur le rendu
+   de la rubrique Retards (.retards-kpi__icon) → fond translucide coloré
+   (au lieu des pastels clairs qui jurent sur fond sombre) + icône éclaircie. */
+[data-theme='dark'] .mtasks2-count--total .mtasks2-count__icon { color: #60a5fa; background: rgba(59, 130, 246, 0.14); }
+[data-theme='dark'] .mtasks2-count--done .mtasks2-count__icon { color: #4ade80; background: rgba(34, 197, 94, 0.14); }
+[data-theme='dark'] .mtasks2-count--doing .mtasks2-count__icon { color: #fbbf24; background: rgba(245, 158, 11, 0.14); }
+[data-theme='dark'] .mtasks2-count--late .mtasks2-count__icon { color: #f87171; background: rgba(239, 68, 68, 0.14); }
+[data-theme='dark'] .mtasks2-count--todo .mtasks2-count__icon { color: #94a3b8; background: rgba(148, 163, 184, 0.14); }
+
 /* Onglets + recherche + Filtrer (maquette : une seule rangée) */
 .mtasks2__toolbar {
   display: flex;
@@ -5339,7 +5348,7 @@ input:focus-visible,
    petites cartes blanches arrondies, lisibles, laissant l'espace au contenu. */
 .retards-container {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 260px;
+  grid-template-columns: minmax(0, 1fr) 230px;
   gap: 16px;
   align-items: start;
 }
@@ -5353,74 +5362,80 @@ input:focus-visible,
 
 .retards-aside {
   position: sticky;
-  top: 16px;
+  /* Figée sous la barre supérieure collante (~56px) : les 3 cartes
+     « À propos du retard », « Rappel important » et « Un petit effort… »
+     restent immobiles pendant le défilement de la liste des retards. */
+  top: 76px;
+  align-self: start;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
   min-width: 0;
 }
 
 .aside-card {
   position: relative;
   overflow: hidden;
-  background: var(--bg-elevated, #fff);
+  background: #fff;
   border: 1px solid var(--border, #edf0f6);
   border-radius: 12px;
-  padding: 12px 13px;
-  box-shadow: 0 1px 3px rgba(16, 24, 40, 0.05);
+  padding: 16px;
 }
 
 .aside-card h4 {
-  margin: 0 0 6px;
-  font-size: 11.5px;
-  font-weight: 800;
-  letter-spacing: 0.01em;
+  margin: 0 0 12px;
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0;
   line-height: 1.35;
   display: flex;
   align-items: center;
-  gap: 7px;
+  gap: 6px;
 }
 
 .aside-card h4::before {
   content: '';
   flex: 0 0 auto;
-  width: 22px;
-  height: 22px;
-  border-radius: 7px;
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
   display: inline-flex;
   background-repeat: no-repeat;
   background-position: center;
-  background-size: 13px 13px;
+  background-size: 12px 12px;
 }
 
 .aside-card p {
-  margin: 0;
+  margin: 0 0 8px;
   font-size: 11.5px;
-  line-height: 1.5;
-  color: var(--text-muted, #6b7689);
+  line-height: 1.55;
+  color: #475569;
 }
+[data-theme='dark'] .aside-card { background: var(--bg-elevated); }
+[data-theme='dark'] .aside-card p { color: var(--text-muted); }
 
-.aside-strong { font-weight: 800; margin: 8px 0 5px; font-size: 11.5px; color: var(--text, #1e2430); }
-.aside-checks { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 5px; font-size: 11px; line-height: 1.45; color: var(--text-muted, #6b7689); }
-.aside-checks li { position: relative; padding-left: 19px; }
-.aside-checks li::before { content: '✓'; position: absolute; left: 0; top: 0; color: #2563eb; font-weight: 800; font-size: 11px; }
+.aside-strong { font-weight: 800; margin: 10px 0 6px; font-size: 11px; color: var(--text, #1e2430); }
+.aside-checks { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 7px; font-size: 10.5px; line-height: 1.5; color: var(--text-muted, #6b7689); }
+.aside-checks li { position: relative; padding-left: 17px; }
+.aside-checks li::before { content: '✓'; position: absolute; left: 0; top: 0; color: #2563eb; font-weight: 800; font-size: 10.5px; }
 
-/* Carte « À propos du retard » : bleu doux, compacte mais un peu plus haute */
+/* Carte « À propos du retard » : bleu doux, la plus développée des trois */
 .aside-card--info {
   border-color: rgba(37, 99, 235, 0.18);
   background: linear-gradient(165deg, rgba(37, 99, 235, 0.08), rgba(37, 99, 235, 0.02) 55%),
     var(--bg-elevated, #fff);
-  padding: 15px 13px 17px;
+  padding: 24px 12px 25px;
 }
-.aside-card--info h4 { color: #1d4ed8; margin-bottom: 7px; }
-.aside-card--info > p:first-of-type { padding-bottom: 2px; }
+.aside-card--info h4 { color: #1d4ed8; margin-bottom: 10px; }
+.aside-card--info > p:first-of-type { padding-bottom: 4px; line-height: 1.85; }
 /* Bloc « Pris en compte dans : » bien séparé du texte du haut */
 .aside-card--info .aside-strong {
-  margin: 13px 0 7px;
-  padding-top: 11px;
+  margin: 20px 0 11px;
+  padding-top: 17px;
   border-top: 1px dashed rgba(37, 99, 235, 0.28);
 }
-.aside-card--info .aside-checks { gap: 6px; }
+.aside-card--info .aside-checks { gap: 13px; }
+.aside-card--info .aside-checks li { line-height: 1.65; }
 .aside-card--info h4::before {
   background-color: rgba(37, 99, 235, 0.12);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232563eb' stroke-width='2.4' stroke-linecap='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M12 11v5M12 8h.01'/%3E%3C/svg%3E");
@@ -5456,9 +5471,9 @@ input:focus-visible,
 :root[data-theme='dark'] .aside-card--warning h4 { color: #a5b4fc; }
 
 .aside-btn {
-  margin-top: 10px;
+  margin-top: 11px;
   width: 100%;
-  padding: 7px 12px;
+  padding: 8px 12px;
   border: none;
   border-radius: 8px;
   background: var(--accent, #2563eb);
@@ -5490,7 +5505,7 @@ input:focus-visible,
   background-color: rgba(34, 197, 94, 0.14);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2315803d' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8 21h8M12 17v4M7 4h10v6a5 5 0 0 1-10 0V4Z'/%3E%3Cpath d='M7 6H4a1 1 0 0 0-1 1c0 2.5 2 4 4 4M17 6h3a1 1 0 0 1 1 1c0 2.5-2 4-4 4'/%3E%3C/svg%3E");
 }
-.aside-card--motivation p { font-weight: 600; color: var(--text-muted, #5b6678); font-size: 11px; }
+.aside-card--motivation p { font-weight: 600; color: var(--text-muted, #5b6678); font-size: 10.5px; }
 :root[data-theme='dark'] .aside-card--motivation {
   border-color: rgba(99, 217, 154, 0.3);
   background: linear-gradient(165deg, rgba(99, 217, 154, 0.11), rgba(99, 217, 154, 0.03)),
@@ -5559,38 +5574,76 @@ input:focus-visible,
   gap: 14px;
   margin-bottom: 16px;
 }
+/* KPI Retards : même mise en forme que les cartes de comptage « Mes tâches »
+   (.mtasks2-count) — colonne label+icône / grand nombre coloré / sous-titre. */
 .retards-kpi {
   display: flex;
-  align-items: center;
-  gap: 12px;
-  text-align: left;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 14px;
   border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 14px;
-  background: var(--bg-elevated);
+  border-radius: 12px;
+  background: #fff;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
   color: var(--text);
+  transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
 }
+[data-theme='dark'] .retards-kpi { background: var(--bg-elevated); }
+.retards-kpi:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+.retards-kpi__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+.retards-kpi__label {
+  font-size: 11px;
+  color: #475569;
+  font-weight: 600;
+}
+[data-theme='dark'] .retards-kpi__label { color: var(--text-muted); }
 .retards-kpi__icon {
-  width: 38px;
-  height: 38px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
-  display: grid;
-  place-items: center;
-  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
-.retards-kpi--rose { background: #fff1f2; border-color: #fecdd3; }
-.retards-kpi--rose .retards-kpi__icon { background: #fee2e2; color: #ef4444; }
-.retards-kpi--blue { background: #eff6ff; border-color: #bfdbfe; }
-.retards-kpi--blue .retards-kpi__icon { background: #dbeafe; color: #2563eb; }
-.retards-kpi--amber { background: #fffbeb; border-color: #fde68a; }
-.retards-kpi--amber .retards-kpi__icon { background: #fef3c7; color: #d97706; }
-.retards-kpi--green { background: #f0fdf4; border-color: #bbf7d0; }
-.retards-kpi--green .retards-kpi__icon { background: #dcfce7; color: #16a34a; }
-.retards-kpi__body { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
-.retards-kpi__label { font-size: 11.5px; font-weight: 600; color: var(--text-muted); }
-.retards-kpi__value { font-family: 'Plus Jakarta Sans', Inter, system-ui, sans-serif; font-size: 22px; font-weight: 800; letter-spacing: -0.02em; }
-.retards-kpi__sub { font-size: 11px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.retards-kpi__chev { font-size: 14px; color: var(--text-muted); }
+.retards-kpi__value {
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.retards-kpi__sub {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.retards-kpi--rose .retards-kpi__value { color: #dc2626; }
+.retards-kpi--rose .retards-kpi__icon { color: #dc2626; background: #fee2e2; }
+.retards-kpi--blue .retards-kpi__value { color: #2563eb; }
+.retards-kpi--blue .retards-kpi__icon { color: #2563eb; background: #dbeafe; }
+.retards-kpi--amber .retards-kpi__value { color: #d97706; }
+.retards-kpi--amber .retards-kpi__icon { color: #d97706; background: #fef3c7; }
+.retards-kpi--green .retards-kpi__value { color: #16a34a; }
+.retards-kpi--green .retards-kpi__icon { color: #16a34a; background: #dcfce7; }
+[data-theme='dark'] .retards-kpi--rose .retards-kpi__icon { color: #f87171; background: rgba(239,68,68,0.14); }
+[data-theme='dark'] .retards-kpi--blue .retards-kpi__icon { color: #60a5fa; background: rgba(59,130,246,0.14); }
+[data-theme='dark'] .retards-kpi--amber .retards-kpi__icon { color: #fbbf24; background: rgba(245,158,11,0.14); }
+[data-theme='dark'] .retards-kpi--green .retards-kpi__icon { color: #4ade80; background: rgba(34,197,94,0.14); }
 .retards-charts2 {
   display: grid;
   grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
@@ -5617,11 +5670,24 @@ input:focus-visible,
   .retards-donut-row { grid-template-columns: 1fr; justify-items: center; }
   .retards-donut-legend { width: 100%; }
 }
-.retards-donut-legend { display: flex; flex-direction: column; gap: 10px; }
-.retards-leg { display: grid; grid-template-columns: auto 1fr auto; gap: 8px; align-items: center; font-size: 11.5px; }
-.retards-leg__dot { width: 10px; height: 10px; border-radius: 50%; }
-.retards-leg__label { font-weight: 600; }
-.retards-leg__val { font-weight: 700; }
+.retards-donut-legend { display: flex; flex-direction: column; gap: 9px; min-width: 0; }
+.retards-leg {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 8px;
+  align-items: center;
+  font-size: 11px;              /* aligné sur .retards-legend de la rubrique */
+  line-height: 1.3;
+  font-variant-numeric: tabular-nums;
+}
+.retards-leg__dot { width: 9px; height: 9px; border-radius: 50%; flex: none; box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.12); }
+.retards-leg__label { font-weight: 600; letter-spacing: 0.1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.retards-leg__val { font-weight: 700; white-space: nowrap; }
+.retards-leg__val em { font-style: normal; font-weight: 500; color: var(--text-muted); margin-left: 4px; }
+.retards-leg--empty { opacity: 0.45; }
+@media (max-width: 560px) {
+  .retards-donut-legend { gap: 8px; }
+}
 .retards-table-card2 { margin-bottom: 8px; }
 .retards-table2 { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 12px; }
 .retards-table2 thead th { text-align: left; font-size: 10.5px; font-weight: 600; color: var(--text-muted); padding: 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }
@@ -5631,21 +5697,26 @@ input:focus-visible,
 .retards-table2 .c-num { width: 38px; color: var(--text-muted); font-weight: 700; }
 .retards-table2 .c-act { width: 56px; text-align: right; }
 .retards-t2__title { display: flex; align-items: center; gap: 9px; font-weight: 600; min-width: 170px; }
-.retards-t2__ico { width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center; font-size: 12px; flex: none; }
+.retards-t2__ico { width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; font-size: 16px; flex: none; line-height: 1; }
+.retards-t2__svg { width: 16px; height: 16px; display: block; }
 .retards-t2__ico--urgent { background: #fee2e2; color: #dc2626; }
 .retards-t2__ico--high { background: #ffedd5; color: #ea580c; }
 .retards-t2__ico--medium { background: #dbeafe; color: #2563eb; }
 .retards-t2__ico--low { background: #dcfce7; color: #16a34a; }
-.retards-pill { display: inline-block; padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; white-space: nowrap; }
-.retards-pill--urgent { background: #fee2e2; color: #dc2626; }
-.retards-pill--high { background: #ffedd5; color: #c2410c; }
-.retards-pill--medium { background: #dbeafe; color: #1d4ed8; }
-.retards-pill--low { background: #dcfce7; color: #15803d; }
+/* Badges priorité / statut : même style que « Mes tâches » (.mtask__priority)
+   → pastille transparente, point de couleur + texte coloré. */
+.retards-pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; white-space: nowrap; }
+.retards-pill::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: currentColor; flex: none; }
+.retards-pill--urgent { color: #dc2626; }
+.retards-pill--high { color: #d97706; }
+.retards-pill--medium { color: #16a34a; }
+.retards-pill--low { color: #2563eb; }
 .retards-t2__date { white-space: nowrap; line-height: 1.45; font-weight: 600; }
 .retards-t2__date span { color: var(--text-muted); font-weight: 500; }
 .retards-t2__delay { color: #ef4444; font-weight: 800; white-space: nowrap; }
-.retards-status { display: inline-block; padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; background: #eef2ff; color: #4f46e5; white-space: nowrap; }
-.retards-status--todo { background: #f1f5f9; color: #64748b; }
+.retards-status { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; white-space: nowrap; color: var(--badge-doing-text, #4f46e5); }
+.retards-status::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: currentColor; flex: none; }
+.retards-status--todo { color: #94a3b8; }
 .retards-more { border: 1px solid transparent; background: transparent; color: var(--text-muted); font-size: 14px; letter-spacing: 1px; padding: 4px 8px; border-radius: 8px; }
 .retards-more:hover { background: var(--bg-hover); color: var(--text); }
 .retards-table2__empty { text-align: center; color: var(--text-muted); padding: 22px 10px; }
@@ -5674,10 +5745,18 @@ input:focus-visible,
 }
 .retards-floatmenu button:hover { background: var(--bg-hover); }
 .retards-floatmenu button.is-danger { color: #dc2626; }
-:root[data-theme='dark'] .retards-kpi--rose { background: rgba(239,68,68,0.10); border-color: rgba(239,68,68,0.35); }
-:root[data-theme='dark'] .retards-kpi--blue { background: rgba(59,130,246,0.10); border-color: rgba(59,130,246,0.35); }
-:root[data-theme='dark'] .retards-kpi--amber { background: rgba(245,158,11,0.10); border-color: rgba(245,158,11,0.35); }
-:root[data-theme='dark'] .retards-kpi--green { background: rgba(34,197,94,0.10); border-color: rgba(34,197,94,0.35); }
+
+/* Liste des tâches en retard : adaptation au thème sombre.
+   Même logique que les KPI ci-dessus : fonds translucides (teinte à ~12-14 %),
+   textes en teinte claire, bordures subtiles — lisibles sur fond sombre. */
+:root[data-theme='dark'] .retards-t2__ico--urgent { background: rgba(239,68,68,0.14); color: #f87171; }
+:root[data-theme='dark'] .retards-t2__ico--high { background: rgba(249,115,22,0.14); color: #fb923c; }
+:root[data-theme='dark'] .retards-t2__ico--medium { background: rgba(59,130,246,0.14); color: #60a5fa; }
+:root[data-theme='dark'] .retards-t2__ico--low { background: rgba(34,197,94,0.14); color: #4ade80; }
+/* Priorité & statut : mêmes couleurs que « Mes tâches », valables dans les
+   deux thèmes → aucun override sombre nécessaire. */
+:root[data-theme='dark'] .retards-t2__delay { color: #f87171; }
+:root[data-theme='dark'] .retards-floatmenu button.is-danger { color: #f87171; }
 .pf-detail__main-btn:hover {
 }
 

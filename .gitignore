@@ -23,6 +23,7 @@ server/*.db
 # Fichiers temporaires
 ocr_out.txt
 backups_before_restore/
+archives/
 
 # Editor directories and files
 .vscode/*

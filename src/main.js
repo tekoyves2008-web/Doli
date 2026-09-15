@@ -572,12 +572,16 @@ async function render() {
     renderProgressionTodayStats(todayStats)
   }
 
-  // Retards (maquette : 4 KPI + évolution + liste numérotée)
+  // Retards (maquette : 4 KPI + évolution + liste numérotée).
+  // IMPORTANT : render() est appelé toutes les 15 s et au démarrage alors
+  // que la section Retards est cachée (hidden) → les canvas mesurent 0px.
+  // On met donc à jour les KPI + la LISTE à chaque render (ce sont de vrais
+  // éléments HTML, pas de problème de taille), et on ne redessine les
+  // GRAPHIQUES que quand la section est visible.
   if (currentView === 'retards') {
     const retardsStats = computeRetardsStats(allTasks)
     const retardsEvo = computeRetardsEvolution(allTasks)
     const el = (id) => document.getElementById(id)
-
     const set = (id, text) => {
       const n = el(id)
       if (n) n.textContent = text
@@ -589,16 +593,17 @@ async function render() {
     set('retardsKpiRate', formatRateFR(retardsStats.delayRate))
     set('retardsKpiWorst', retardsStats.worst ? formatDelay(retardsStats.worst.delayMs) : '—')
     set('retardsKpiWorstSub', retardsStats.worst ? `Tâche : ${retardsStats.worst.title || 'Sans titre'}` : 'Aucune tâche en retard')
-
-    renderRetardsBarChart(el('retardsBarChart'), retardsEvo)
-    renderRetardsDonutChart(el('retardsDonutChart'), retardsStats.delayed)
+    // Liste des VRAIES tâches en retard : toujours à jour, même cachée.
     renderRetardsTable(el('retardsTableBody'), retardsStats.delayed)
-
-    // Badge du compteur dans la sidebar.
     const navCountEl = el('retardsNavCount')
     if (navCountEl) {
       navCountEl.textContent = retardsStats.count
       navCountEl.hidden = retardsStats.count === 0
+    }
+    // Graphiques (canvas) : seulement si la section est visible.
+    if (viewEls.retards && !viewEls.retards.hidden) {
+      renderRetardsBarChart(el('retardsBarChart'), retardsEvo)
+      renderRetardsDonutChart(el('retardsDonutChart'), retardsStats.delayed)
     }
   }
 
@@ -616,6 +621,35 @@ async function render() {
 }
 
 // --- Navigation entre vues ---------------------------------------------
+function renderRetardsNow(allTasks) {
+  const retardsStats = computeRetardsStats(allTasks)
+  const retardsEvo = computeRetardsEvolution(allTasks)
+  const el = (id) => document.getElementById(id)
+
+  const set = (id, text) => {
+    const n = el(id)
+    if (n) n.textContent = text
+  }
+  set('retardsKpiCount', String(retardsStats.count))
+  set('retardsKpiCountSub', `sur ${retardsStats.total} tâches au total`)
+  set('retardsKpiTotal', formatHoursFlat(retardsStats.totalHours))
+  set('retardsKpiTotalSub', `sur ${Math.round(retardsStats.totalPlannedHours)} h prévues`)
+  set('retardsKpiRate', formatRateFR(retardsStats.delayRate))
+  set('retardsKpiWorst', retardsStats.worst ? formatDelay(retardsStats.worst.delayMs) : '—')
+  set('retardsKpiWorstSub', retardsStats.worst ? `Tâche : ${retardsStats.worst.title || 'Sans titre'}` : 'Aucune tâche en retard')
+
+  renderRetardsBarChart(el('retardsBarChart'), retardsEvo)
+  renderRetardsDonutChart(el('retardsDonutChart'), retardsStats.delayed)
+  renderRetardsTable(el('retardsTableBody'), retardsStats.delayed)
+
+  // Badge du compteur dans la sidebar.
+  const navCountEl = el('retardsNavCount')
+  if (navCountEl) {
+    navCountEl.textContent = retardsStats.count
+    navCountEl.hidden = retardsStats.count === 0
+  }
+}
+
 function setView(view) {
   currentView = view
   Object.entries(viewEls).forEach(([key, el]) => {
@@ -623,6 +657,14 @@ function setView(view) {
   })
   if (viewTitles[view]) viewTitleEl.textContent = viewTitles[view]
   navButtons.forEach((btn) => btn.classList.toggle('is-active', btn.dataset.view === view))
+  // La rubrique Retards dessine sur canvas : quand sa section était cachée
+  // (hidden), les canvas mesuraient 0px et restaient vides. On re-rend donc
+  // une fois la section visible pour obtenir les VRAIES tailles.
+  if (view === 'retards') {
+    requestAnimationFrame(() => {
+      getAllTasks().then(renderRetardsNow).catch(() => {})
+    })
+  }
 }
 
 // --- Tiroir de la sidebar (téléphone : ☰ en haut, sidebar masquée sinon) --
