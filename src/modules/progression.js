@@ -88,7 +88,13 @@ export function computeProgressionStats(tasks, days = 7) {
   const periodTasks = filterInPeriod(tasks, days)
   const { done, doing, todo, delayed } = countByCategory(periodTasks)
   const total = periodTasks.length
-  const notDone = todo
+  // « Non exécutée » compte TOUTES les tâches au statut « Non exécutée »,
+  // y compris celles qui ont dépassé leur échéance : une tâche jamais
+  // démarrée et en retard apparaît donc logiquement à la fois dans
+  // « En retard » et dans sa case « Non exécutée » (la case « En retard »
+  // reste réservée aux retards). Les catégories des autres cases restent
+  // disjointes ; seul « Non exécutée » recouvre « En retard ».
+  const notDone = periodTasks.filter((t) => t.status === STATUS.TODO).length
   const avgProgress = averageProgress(periodTasks)
 
   return {

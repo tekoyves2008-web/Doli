@@ -4069,6 +4069,14 @@ input:focus-visible,
   border: 1px solid #e0e0e0;
   border-radius: var(--radius);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  /* Réaction au curseur identique aux cartes de comptage de « Mes tâches »
+     (.mtasks2-count) et aux KPI de « Retards » (.retards-kpi). */
+  transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.progression-stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
 }
 
 [data-theme='dark'] .progression-stat-card {
@@ -4083,41 +4091,64 @@ input:focus-visible,
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
+/* Pastille des 5 cartes de progression : même rendu que les cartes de
+   comptage de « Mes tâches » (.mtasks2-count__icon) et les KPI de
+   « Retards » (.retards-kpi__icon) — ronde 28 px, pictogramme SVG au trait
+   fin héritant la couleur, fond teinté par état (translucide en sombre). */
 .stat-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 10px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 20px;
   flex-shrink: 0;
 }
 
 .stat-icon--list {
-  background: #3a3f48;
-  color: #6c8cff;
+  color: #2563eb;
+  background: #dbeafe;
 }
 
 .stat-icon--done {
-  background: #163322;
-  color: #63d99a;
+  color: #16a34a;
+  background: #dcfce7;
 }
 
 .stat-icon--doing {
-  background: #3a2c15;
-  color: #ffb75c;
+  color: #d97706;
+  background: #fef3c7;
 }
 
 .stat-icon--delay {
-  background: #3a1f22;
-  color: #ff8b8b;
+  color: #dc2626;
+  background: #fee2e2;
 }
 
 .stat-icon--notdone {
-  background: #2b2f3a;
-  color: #9199a6;
+  color: #64748b;
+  background: #f1f5f9;
 }
+
+/* Mode sombre : fonds translucides + icônes éclaircies, alignés sur les
+   cartes de comptage de « Mes tâches » et les KPI de « Retards ». */
+[data-theme='dark'] .stat-icon--list { color: #60a5fa; background: rgba(59, 130, 246, 0.14); }
+[data-theme='dark'] .stat-icon--done { color: #4ade80; background: rgba(34, 197, 94, 0.14); }
+[data-theme='dark'] .stat-icon--doing { color: #fbbf24; background: rgba(245, 158, 11, 0.14); }
+[data-theme='dark'] .stat-icon--delay { color: #f87171; background: rgba(239, 68, 68, 0.14); }
+[data-theme='dark'] .stat-icon--notdone { color: #94a3b8; background: rgba(148, 163, 184, 0.14); }
+
+/* Nombre coloré par état, comme (.mtasks2-count__num). */
+.progression-stat-card .stat-icon--list ~ .stat-content .stat-number { color: #2563eb; }
+.progression-stat-card .stat-icon--done ~ .stat-content .stat-number { color: #16a34a; }
+.progression-stat-card .stat-icon--doing ~ .stat-content .stat-number { color: #d97706; }
+.progression-stat-card .stat-icon--delay ~ .stat-content .stat-number { color: #dc2626; }
+.progression-stat-card .stat-icon--notdone ~ .stat-content .stat-number { color: #64748b; }
+[data-theme='dark'] .progression-stat-card .stat-icon--list ~ .stat-content .stat-number { color: #60a5fa; }
+[data-theme='dark'] .progression-stat-card .stat-icon--done ~ .stat-content .stat-number { color: #4ade80; }
+[data-theme='dark'] .progression-stat-card .stat-icon--doing ~ .stat-content .stat-number { color: #fbbf24; }
+[data-theme='dark'] .progression-stat-card .stat-icon--delay ~ .stat-content .stat-number { color: #f87171; }
+[data-theme='dark'] .progression-stat-card .stat-icon--notdone ~ .stat-content .stat-number { color: #94a3b8; }
 
 .stat-content {
   flex: 1;
