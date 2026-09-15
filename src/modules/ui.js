@@ -1548,13 +1548,12 @@ export function renderTasksTable(container, tasks, emptyMessage) {
       const endHM = fmtTimeShort(task.dueDate)
       const dayLabel = fmtDayShort(task.startTime || task.dueDate)
       // Pastille évocatrice (comme dans la rubrique Retard) : icône déduite
-      // du titre/description, teintée par le statut/priorité de l'avatar.
-      // La coche reste réservée aux tâches exécutées.
+      // du titre/description. Fond de la pastille selon l'état : vert =
+      // exécutée, orange = en cours, gris = non exécutée, rouge = en retard,
+      // sinon la priorité.
       const motif = taskMotif(task)
-      const avatarCls = task.status === STATUS.DONE ? 'done' : sit.cls === 'late' ? 'late' : priority === 'high' ? 'urgent' : priority
-      const avatarIcon = task.status === STATUS.DONE
-        ? `<svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4.5,10.5 8,14 15.5,6"/></svg>`
-        : motif.icon
+      const avatarCls = task.status === STATUS.DONE ? 'done' : task.status === STATUS.DOING ? 'doing' : task.status === STATUS.TODO ? 'todo' : sit.cls === 'late' ? 'late' : priority === 'high' ? 'urgent' : priority
+      const avatarIcon = motif.icon
       const actionBtn = task.status === STATUS.DOING
         ? '<button type="button" class="mtask__btn mtask__btn--primary" data-action="provide-proof"><svg viewBox="0 0 20 20" width="10" height="10" fill="currentColor"><polygon points="6,4 16,10 6,16"/></svg> Continuer</button>'
         : task.status === STATUS.TODO
@@ -1563,7 +1562,7 @@ export function renderTasksTable(container, tasks, emptyMessage) {
       return `
       <article class="task mtasks2-row mtask--${task.status}${overdueRow}" data-id="${task.id}">
         <div class="mtasks2-cell mtasks2-cell--task">
-          <span class="mtasks2-avatar mtasks2-avatar--${avatarCls}" title="${task.status === STATUS.DONE ? 'Exécutée' : escapeHtml(motif.hint)}" aria-hidden="true">${avatarIcon}</span>
+          <span class="mtasks2-avatar mtasks2-avatar--${avatarCls}" title="${escapeHtml(motif.hint)}${task.status === STATUS.DONE ? ' — Exécutée' : ''}" aria-hidden="true">${avatarIcon}</span>
           <span class="mtasks2-task-text">
             <span class="mtask__title">${escapeHtml(task.title)}</span>
             <span class="mtask__kind">${taskKindLabel(task)}</span>

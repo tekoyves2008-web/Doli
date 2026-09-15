@@ -2324,6 +2324,8 @@ input:focus-visible,
 }
 .mtasks2-avatar--urgent { background: #ef4444; }
 .mtasks2-avatar--high { background: #f59e0b; }
+.mtasks2-avatar--doing { background: #f59e0b; }
+.mtasks2-avatar--todo { background: #64748b; }
 .mtasks2-avatar--medium { background: #22c55e; }
 .mtasks2-avatar--low { background: #64748b; }
 .mtasks2-avatar--done { background: #22c55e; }
