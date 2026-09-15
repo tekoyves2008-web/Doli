@@ -5,6 +5,7 @@
 
 import { STATUS } from './tasks.js'
 import { computeTaskProgress } from './progression.js'
+import { taskMotif } from './retards.js'
 
 const STATUS_LABEL = {
   [STATUS.TODO]: 'Non exécutée',
@@ -1354,15 +1355,6 @@ function effectivePriority(task) {
   return 'medium'
 }
 
-// Avatar rond coloré de la ligne (maquette) : icône selon priorité.
-const TASK_AVATAR_ICON = {
-  urgent: `<svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="12" height="14" rx="2"/><line x1="7" y1="7.5" x2="13" y2="7.5"/><line x1="7" y1="11" x2="13" y2="11"/></svg>`,
-  high: `<svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l-1.5-6L11 5.5 13 3l2 2.5L11.5 9z"/><line x1="4.5" y1="17" x2="9" y2="17"/></svg>`,
-  medium: `<svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="4.5,10.5 8,14 15.5,6"/></svg>`,
-  normal: `<svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="4.5,10.5 8,14 15.5,6"/></svg>`,
-  low: `<svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3.5" y="5" width="13" height="10" rx="2"/><line x1="3.5" y1="8" x2="16.5" y2="8"/><line x1="6.5" y1="3.5" x2="6.5" y2="6.5"/><line x1="13.5" y1="3.5" x2="13.5" y2="6.5"/></svg>`,
-}
-
 // « 10:00 » court pour la période prévue des lignes.
 function fmtTimeShort(value) {
   if (!value) return '—'
@@ -1555,10 +1547,14 @@ export function renderTasksTable(container, tasks, emptyMessage) {
       const startHM = fmtTimeShort(task.startTime)
       const endHM = fmtTimeShort(task.dueDate)
       const dayLabel = fmtDayShort(task.startTime || task.dueDate)
+      // Pastille évocatrice (comme dans la rubrique Retard) : icône déduite
+      // du titre/description, teintée par le statut/priorité de l'avatar.
+      // La coche reste réservée aux tâches exécutées.
+      const motif = taskMotif(task)
       const avatarCls = task.status === STATUS.DONE ? 'done' : sit.cls === 'late' ? 'late' : priority === 'high' ? 'urgent' : priority
       const avatarIcon = task.status === STATUS.DONE
         ? `<svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4.5,10.5 8,14 15.5,6"/></svg>`
-        : TASK_AVATAR_ICON[priority] || TASK_AVATAR_ICON.medium
+        : motif.icon
       const actionBtn = task.status === STATUS.DOING
         ? '<button type="button" class="mtask__btn mtask__btn--primary" data-action="provide-proof"><svg viewBox="0 0 20 20" width="10" height="10" fill="currentColor"><polygon points="6,4 16,10 6,16"/></svg> Continuer</button>'
         : task.status === STATUS.TODO
@@ -1567,7 +1563,7 @@ export function renderTasksTable(container, tasks, emptyMessage) {
       return `
       <article class="task mtasks2-row mtask--${task.status}${overdueRow}" data-id="${task.id}">
         <div class="mtasks2-cell mtasks2-cell--task">
-          <span class="mtasks2-avatar mtasks2-avatar--${avatarCls}">${avatarIcon}</span>
+          <span class="mtasks2-avatar mtasks2-avatar--${avatarCls}" title="${task.status === STATUS.DONE ? 'Exécutée' : escapeHtml(motif.hint)}" aria-hidden="true">${avatarIcon}</span>
           <span class="mtasks2-task-text">
             <span class="mtask__title">${escapeHtml(task.title)}</span>
             <span class="mtask__kind">${taskKindLabel(task)}</span>
@@ -1833,7 +1829,7 @@ export function renderDashActivity(el, tasks) {
     if (task.completedAt) events.push({ ts: task.completedAt, cls: 'done', text: `Vous avez terminé la tâche « ${title} »` })
   })
   events.sort((a, b) => new Date(b.ts) - new Date(a.ts))
-  const top = events.slice(0, 4)
+  const top = events.slice(0, 6)
   if (top.length === 0) {
     el.innerHTML = '<p class="dash-minilist__empty">Aucune activité pour le moment.</p>'
     return
