@@ -1,4 +1,4 @@
-﻿/* style.css
+/* style.css
    Toute l'apparence de Doli. Les deux thèmes sont définis comme deux
    jeux de variables CSS (custom properties) sur [data-theme="dark"]
    et [data-theme="light"]. Le reste du fichier n'utilise jamais de
@@ -5334,12 +5334,13 @@ input:focus-visible,
 }
 
 /* --- Colonne latérale de la vue retards (maquette) ----------------------
-   Grille deux colonnes : contenu principal + aside avec 3 cartes
-   (« À propos du retard », « Rappel important », « Un petit effort… »). */
+   Grille deux colonnes : contenu principal + aside compact (3 mini-cartes)
+   Fidèle à la référence « Mes tâches » : colonne droite étroite ~260px,
+   petites cartes blanches arrondies, lisibles, laissant l'espace au contenu. */
 .retards-container {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 300px;
-  gap: 20px;
+  grid-template-columns: minmax(0, 1fr) 260px;
+  gap: 16px;
   align-items: start;
 }
 
@@ -5347,7 +5348,7 @@ input:focus-visible,
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
 }
 
 .retards-aside {
@@ -5355,105 +5356,147 @@ input:focus-visible,
   top: 16px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
+  min-width: 0;
 }
 
 .aside-card {
+  position: relative;
+  overflow: hidden;
   background: var(--bg-elevated, #fff);
-  border: 1px solid var(--border, #e6eaf1);
-  border-radius: var(--radius, 10px);
-  padding: 16px 18px;
-  box-shadow: var(--shadow);
+  border: 1px solid var(--border, #edf0f6);
+  border-radius: 12px;
+  padding: 12px 13px;
+  box-shadow: 0 1px 3px rgba(16, 24, 40, 0.05);
 }
 
 .aside-card h4 {
-  margin: 0 0 8px;
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
+  margin: 0 0 6px;
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  line-height: 1.35;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.aside-card h4::before {
+  content: '';
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  border-radius: 7px;
+  display: inline-flex;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 13px 13px;
 }
 
 .aside-card p {
   margin: 0;
-  font-size: 12.5px;
-  line-height: 1.55;
+  font-size: 11.5px;
+  line-height: 1.5;
   color: var(--text-muted, #6b7689);
 }
 
-/* Carte « À propos du retard » : bleu doux */
+.aside-strong { font-weight: 800; margin: 8px 0 5px; font-size: 11.5px; color: var(--text, #1e2430); }
+.aside-checks { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 5px; font-size: 11px; line-height: 1.45; color: var(--text-muted, #6b7689); }
+.aside-checks li { position: relative; padding-left: 19px; }
+.aside-checks li::before { content: '✓'; position: absolute; left: 0; top: 0; color: #2563eb; font-weight: 800; font-size: 11px; }
+
+/* Carte « À propos du retard » : bleu doux, compacte mais un peu plus haute */
 .aside-card--info {
-  border-color: rgba(37, 99, 235, 0.25);
-  background: linear-gradient(160deg, rgba(37, 99, 235, 0.1), rgba(37, 99, 235, 0.03)),
+  border-color: rgba(37, 99, 235, 0.18);
+  background: linear-gradient(165deg, rgba(37, 99, 235, 0.08), rgba(37, 99, 235, 0.02) 55%),
     var(--bg-elevated, #fff);
+  padding: 15px 13px 17px;
 }
-.aside-card--info h4 {
-  color: #2563eb;
+.aside-card--info h4 { color: #1d4ed8; margin-bottom: 7px; }
+.aside-card--info > p:first-of-type { padding-bottom: 2px; }
+/* Bloc « Pris en compte dans : » bien séparé du texte du haut */
+.aside-card--info .aside-strong {
+  margin: 13px 0 7px;
+  padding-top: 11px;
+  border-top: 1px dashed rgba(37, 99, 235, 0.28);
+}
+.aside-card--info .aside-checks { gap: 6px; }
+.aside-card--info h4::before {
+  background-color: rgba(37, 99, 235, 0.12);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232563eb' stroke-width='2.4' stroke-linecap='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M12 11v5M12 8h.01'/%3E%3C/svg%3E");
 }
 :root[data-theme='dark'] .aside-card--info {
-  border-color: rgba(108, 140, 255, 0.35);
-  background: linear-gradient(160deg, rgba(108, 140, 255, 0.14), rgba(108, 140, 255, 0.04)),
+  border-color: rgba(108, 140, 255, 0.3);
+  background: linear-gradient(165deg, rgba(108, 140, 255, 0.12), rgba(108, 140, 255, 0.03)),
     var(--bg-elevated, #1a1d26);
 }
-:root[data-theme='dark'] .aside-card--info h4 {
-  color: #6c8cff;
-}
+:root[data-theme='dark'] .aside-card--info h4 { color: #8ea2ff; }
 
-/* Carte « Rappel important » : orange doux + bouton d'action */
+/* Carte « Rappel important » : violet doux comme la maquette + bouton */
+.aside-card--rappel,
 .aside-card--warning {
-  border-color: rgba(217, 119, 6, 0.3);
-  background: linear-gradient(160deg, rgba(245, 158, 11, 0.12), rgba(245, 158, 11, 0.03)),
+  border-color: rgba(99, 102, 241, 0.22);
+  background: linear-gradient(165deg, rgba(99, 102, 241, 0.09), rgba(99, 102, 241, 0.02) 60%),
     var(--bg-elevated, #fff);
 }
-.aside-card--warning h4 {
-  color: #b45309;
+.aside-card--rappel h4,
+.aside-card--warning h4 { color: #4f46e5; }
+.aside-card--rappel h4::before,
+.aside-card--warning h4::before {
+  background-color: rgba(99, 102, 241, 0.13);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234f46e5' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z'/%3E%3C/svg%3E");
 }
+:root[data-theme='dark'] .aside-card--rappel,
 :root[data-theme='dark'] .aside-card--warning {
-  border-color: rgba(251, 191, 36, 0.35);
-  background: linear-gradient(160deg, rgba(251, 191, 36, 0.12), rgba(251, 191, 36, 0.04)),
+  border-color: rgba(129, 140, 248, 0.32);
+  background: linear-gradient(165deg, rgba(129, 140, 248, 0.12), rgba(129, 140, 248, 0.03)),
     var(--bg-elevated, #1a1d26);
 }
-:root[data-theme='dark'] .aside-card--warning h4 {
-  color: #fbbf24;
-}
+:root[data-theme='dark'] .aside-card--rappel h4,
+:root[data-theme='dark'] .aside-card--warning h4 { color: #a5b4fc; }
 
 .aside-btn {
-  margin-top: 12px;
+  margin-top: 10px;
   width: 100%;
-  padding: 9px 14px;
+  padding: 7px 12px;
   border: none;
   border-radius: 8px;
   background: var(--accent, #2563eb);
   color: var(--accent-contrast, #fff);
   font-family: var(--font);
-  font-size: 12.5px;
-  font-weight: 600;
+  font-size: 11.5px;
+  font-weight: 700;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
   transition: filter 0.15s ease, transform 0.1s ease;
 }
-.aside-btn:hover {
-  filter: brightness(1.08);
-}
-.aside-btn:active {
-  transform: scale(0.98);
-}
+.aside-btn:hover { filter: brightness(1.08); }
+.aside-btn:active { transform: scale(0.98); }
+.aside-btn--violet { background: #6366f1; border-color: #6366f1; color: #fff; width: 100%; justify-content: center; }
+.aside-btn--violet:hover { background: #4f46e5; }
 
-/* Carte « Un petit effort aujourd'hui… » : vert doux */
+/* Carte « Un petit effort aujourd'hui… » : verte, mini-bandeau motivation */
 .aside-card--motivation {
-  border-color: rgba(22, 163, 74, 0.3);
-  background: linear-gradient(160deg, rgba(34, 197, 94, 0.12), rgba(34, 197, 94, 0.03)),
+  border-color: rgba(22, 163, 74, 0.2);
+  background: linear-gradient(165deg, rgba(34, 197, 94, 0.1), rgba(34, 197, 94, 0.02) 60%),
     var(--bg-elevated, #fff);
+  text-align: left;
 }
-.aside-card--motivation h4 {
-  color: #15803d;
+.aside-card--motivation h4 { color: #15803d; }
+.aside-card--motivation h4::before {
+  background-color: rgba(34, 197, 94, 0.14);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2315803d' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8 21h8M12 17v4M7 4h10v6a5 5 0 0 1-10 0V4Z'/%3E%3Cpath d='M7 6H4a1 1 0 0 0-1 1c0 2.5 2 4 4 4M17 6h3a1 1 0 0 1 1 1c0 2.5-2 4-4 4'/%3E%3C/svg%3E");
 }
+.aside-card--motivation p { font-weight: 600; color: var(--text-muted, #5b6678); font-size: 11px; }
 :root[data-theme='dark'] .aside-card--motivation {
-  border-color: rgba(99, 217, 154, 0.35);
-  background: linear-gradient(160deg, rgba(99, 217, 154, 0.12), rgba(99, 217, 154, 0.04)),
+  border-color: rgba(99, 217, 154, 0.3);
+  background: linear-gradient(165deg, rgba(99, 217, 154, 0.11), rgba(99, 217, 154, 0.03)),
     var(--bg-elevated, #1a1d26);
 }
-:root[data-theme='dark'] .aside-card--motivation h4 {
-  color: #63d99a;
-}
+:root[data-theme='dark'] .aside-card--motivation h4 { color: #63d99a; }
 
 /* Responsive : aside sous le contenu principal sur écran étroit */
 @media (max-width: 1100px) {
@@ -5489,8 +5532,8 @@ input:focus-visible,
   margin-bottom: 16px;
 }
 .retards-pagehead__icon {
-  width: 46px;
-  height: 46px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   display: grid;
   place-items: center;
@@ -5501,13 +5544,13 @@ input:focus-visible,
 .retards-pagehead__title {
   margin: 0;
   font-family: 'Plus Jakarta Sans', Inter, system-ui, sans-serif;
-  font-size: 30px;
-  font-weight: 800;
-  letter-spacing: -0.02em;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
 }
 .retards-pagehead__sub {
   margin: 4px 0 0;
-  font-size: 13.5px;
+  font-size: 12.5px;
   color: var(--text-muted);
 }
 .retards-kpis {
@@ -5545,9 +5588,9 @@ input:focus-visible,
 .retards-kpi--green .retards-kpi__icon { background: #dcfce7; color: #16a34a; }
 .retards-kpi__body { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
 .retards-kpi__label { font-size: 11.5px; font-weight: 600; color: var(--text-muted); }
-.retards-kpi__value { font-family: 'Plus Jakarta Sans', Inter, system-ui, sans-serif; font-size: 23px; font-weight: 800; letter-spacing: -0.02em; }
+.retards-kpi__value { font-family: 'Plus Jakarta Sans', Inter, system-ui, sans-serif; font-size: 22px; font-weight: 800; letter-spacing: -0.02em; }
 .retards-kpi__sub { font-size: 11px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.retards-kpi__chev { font-size: 20px; color: var(--text-muted); }
+.retards-kpi__chev { font-size: 14px; color: var(--text-muted); }
 .retards-charts2 {
   display: grid;
   grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
@@ -5562,8 +5605,8 @@ input:focus-visible,
   min-width: 0;
 }
 .retards-card__head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
-.retards-card__head h3 { margin: 0; font-family: 'Plus Jakarta Sans', Inter, system-ui, sans-serif; font-size: 14.5px; font-weight: 800; }
-.retards-legend { display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--text-muted); }
+.retards-card__head h3 { margin: 0; font-family: 'Plus Jakarta Sans', Inter, system-ui, sans-serif; font-size: 13px; font-weight: 700; }
+.retards-legend { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-muted); }
 .retards-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
 .retards-dot--red { background: #ef4444; }
 .retards-dot--grey { background: #d1d5db; margin-left: 8px; }
@@ -5575,20 +5618,20 @@ input:focus-visible,
   .retards-donut-legend { width: 100%; }
 }
 .retards-donut-legend { display: flex; flex-direction: column; gap: 10px; }
-.retards-leg { display: grid; grid-template-columns: auto 1fr auto; gap: 8px; align-items: center; font-size: 12px; }
+.retards-leg { display: grid; grid-template-columns: auto 1fr auto; gap: 8px; align-items: center; font-size: 11.5px; }
 .retards-leg__dot { width: 10px; height: 10px; border-radius: 50%; }
 .retards-leg__label { font-weight: 600; }
 .retards-leg__val { font-weight: 700; }
 .retards-table-card2 { margin-bottom: 8px; }
-.retards-table2 { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 12.5px; }
-.retards-table2 thead th { text-align: left; font-size: 11px; font-weight: 600; color: var(--text-muted); padding: 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+.retards-table2 { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 12px; }
+.retards-table2 thead th { text-align: left; font-size: 10.5px; font-weight: 600; color: var(--text-muted); padding: 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }
 .retards-table2 tbody td { padding: 12px 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
 .retards-table2 tbody tr:last-child td { border-bottom: none; }
 .retards-table2 tbody tr:hover { background: var(--bg-hover); }
 .retards-table2 .c-num { width: 38px; color: var(--text-muted); font-weight: 700; }
 .retards-table2 .c-act { width: 56px; text-align: right; }
 .retards-t2__title { display: flex; align-items: center; gap: 9px; font-weight: 600; min-width: 170px; }
-.retards-t2__ico { width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center; font-size: 13px; flex: none; }
+.retards-t2__ico { width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center; font-size: 12px; flex: none; }
 .retards-t2__ico--urgent { background: #fee2e2; color: #dc2626; }
 .retards-t2__ico--high { background: #ffedd5; color: #ea580c; }
 .retards-t2__ico--medium { background: #dbeafe; color: #2563eb; }
@@ -5603,16 +5646,10 @@ input:focus-visible,
 .retards-t2__delay { color: #ef4444; font-weight: 800; white-space: nowrap; }
 .retards-status { display: inline-block; padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; background: #eef2ff; color: #4f46e5; white-space: nowrap; }
 .retards-status--todo { background: #f1f5f9; color: #64748b; }
-.retards-more { border: 1px solid transparent; background: transparent; color: var(--text-muted); font-size: 16px; letter-spacing: 1px; padding: 4px 8px; border-radius: 8px; }
+.retards-more { border: 1px solid transparent; background: transparent; color: var(--text-muted); font-size: 14px; letter-spacing: 1px; padding: 4px 8px; border-radius: 8px; }
 .retards-more:hover { background: var(--bg-hover); color: var(--text); }
 .retards-table2__empty { text-align: center; color: var(--text-muted); padding: 22px 10px; }
-.aside-strong { font-weight: 800; margin: 12px 0 6px; }
-.aside-checks { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 7px; font-size: 12.5px; }
-.aside-checks li { position: relative; padding-left: 22px; }
-.aside-checks li::before { content: '✓'; position: absolute; left: 0; top: 0; color: #2563eb; font-weight: 800; }
-.aside-card--rappel { border-color: rgba(99,102,241,0.30); }
-.aside-btn--violet { background: #6366f1; border-color: #6366f1; color: #fff; width: 100%; justify-content: center; }
-.aside-btn--violet:hover { background: #4f46e5; }
+/* (règles aside compactes définies plus haut — ne pas dupliquer ici) */
 .retards-floatmenu {
   z-index: 90;
   min-width: 190px;

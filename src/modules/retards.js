@@ -197,7 +197,7 @@ export function renderRetardsBarChart(canvas, days) {
   const slot = items.length ? chartWidth / items.length : chartWidth
   const barWidth = Math.min(slot * 0.52, 40)
 
-  ctx.font = '11px Inter, sans-serif'
+  ctx.font = '10.5px Inter, sans-serif'
   for (let i = 0; i <= 4; i++) {
     const value = (niceMax / 4) * i
     const y = padTop + chartHeight - (value / niceMax) * chartHeight
@@ -291,7 +291,7 @@ export function renderRetardsDonutChart(canvas, delayed) {
     ctx.arc(centerX, centerY, radius - thick / 2, 0, 2 * Math.PI)
     ctx.stroke()
     ctx.fillStyle = text
-    ctx.font = "800 26px 'Plus Jakarta Sans', Inter, sans-serif"
+    ctx.font = "800 22px 'Plus Jakarta Sans', Inter, sans-serif"
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
     ctx.fillText('0', centerX, centerY - 12)
@@ -319,7 +319,7 @@ export function renderRetardsDonutChart(canvas, delayed) {
 
   // Total au centre.
   ctx.fillStyle = text
-  ctx.font = "800 28px 'Plus Jakarta Sans', Inter, sans-serif"
+  ctx.font = "800 22px 'Plus Jakarta Sans', Inter, sans-serif"
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
   ctx.fillText(String(total), centerX, centerY - 12)
