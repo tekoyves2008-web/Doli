@@ -20,11 +20,13 @@ import {
 import { applyTheme } from './modules/theme.js'
 import {
   computeRetardsStats,
+  computeRetardsEvolution,
   renderRetardsBarChart,
   renderRetardsDonutChart,
   renderRetardsTable,
-  retardsMessage,
   formatDelay,
+  formatHoursFlat,
+  formatRateFR,
 } from './modules/retards.js'
 import {
   bindTaskEvents,
@@ -570,36 +572,27 @@ async function render() {
     renderProgressionTodayStats(todayStats)
   }
 
-  // Retards
+  // Retards (maquette : 4 KPI + évolution + liste numérotée)
   if (currentView === 'retards') {
     const retardsStats = computeRetardsStats(allTasks)
+    const retardsEvo = computeRetardsEvolution(allTasks)
     const el = (id) => document.getElementById(id)
 
-    const subEl = el('retardsSubtitle')
-    if (subEl) {
-      subEl.textContent = retardsStats.count === 0
-        ? 'Aucune tâche en retard'
-        : `${retardsStats.count} tâche(s) en retard sur ${retardsStats.total}`
+    const set = (id, text) => {
+      const n = el(id)
+      if (n) n.textContent = text
     }
+    set('retardsKpiCount', String(retardsStats.count))
+    set('retardsKpiCountSub', `sur ${retardsStats.total} tâches au total`)
+    set('retardsKpiTotal', formatHoursFlat(retardsStats.totalHours))
+    set('retardsKpiTotalSub', `sur ${Math.round(retardsStats.totalPlannedHours)} h prévues`)
+    set('retardsKpiRate', formatRateFR(retardsStats.delayRate))
+    set('retardsKpiWorst', retardsStats.worst ? formatDelay(retardsStats.worst.delayMs) : '—')
+    set('retardsKpiWorstSub', retardsStats.worst ? `Tâche : ${retardsStats.worst.title || 'Sans titre'}` : 'Aucune tâche en retard')
 
-    const countEl = el('retardsStatCount')
-    if (countEl) countEl.textContent = retardsStats.count
-    const countPctEl = el('retardsStatCountPercent')
-    if (countPctEl) countPctEl.textContent = `${retardsStats.countPercent}% du total`
-    const totalEl = el('retardsStatTotal')
-    if (totalEl) totalEl.textContent = `${retardsStats.totalHours.toFixed(1).replace('.', ',')} h`
-    const avgEl = el('retardsStatAvg')
-    if (avgEl) avgEl.textContent = `${retardsStats.avgHours.toFixed(1).replace('.', ',')} h`
-    const worstEl = el('retardsStatWorst')
-    if (worstEl) worstEl.textContent = retardsStats.worst ? formatDelay(retardsStats.worst.delayMs) : '—'
-    const worstTaskEl = el('retardsStatWorstTask')
-    if (worstTaskEl) worstTaskEl.textContent = retardsStats.worst ? retardsStats.worst.title || '' : ''
-
-    renderRetardsBarChart(el('retardsBarChart'), retardsStats.delayed)
+    renderRetardsBarChart(el('retardsBarChart'), retardsEvo)
     renderRetardsDonutChart(el('retardsDonutChart'), retardsStats.delayed)
     renderRetardsTable(el('retardsTableBody'), retardsStats.delayed)
-    const msgEl = el('retardsMessage')
-    if (msgEl) msgEl.textContent = retardsMessage(retardsStats)
 
     // Badge du compteur dans la sidebar.
     const navCountEl = el('retardsNavCount')
@@ -1230,6 +1223,86 @@ const reminderTaskActions = {
   onDelete: openReminderDeleteChoice,
 }
 if (reminderListEl) bindTaskEvents(reminderListEl, reminderTaskActions)
+
+// --- Retards : KPI cliquables + menu « … » du tableau ---------------------
+// Les KPI sont des <button data-goto> : défilement vers les graphiques ou
+// la liste, comme les liens du dashboard.
+document.querySelectorAll('.retards-kpi[data-goto]').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    const target = btn.dataset.goto === 'charts'
+      ? document.getElementById('retardsChartsAnchor')
+      : document.getElementById('retardsTableAnchor')
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  })
+})
+
+// Menu « … » de la liste des retards : le tableau est généré par
+// renderRetardsTable (lignes <tr data-id>, pas de classe .task), donc la
+// délégation générique bindTaskEvents ne s'y applique pas. Ce listener
+// dédié ouvre la consultation au clic sur la ligne, et un petit menu
+// (Voir / Modifier / Preuve / Supprimer) au clic sur « … ».
+const retardsTableBodyEl = document.getElementById('retardsTableBody')
+let retardsMenuEl = null
+function closeRetardsMenu() {
+  if (retardsMenuEl) {
+    retardsMenuEl.remove()
+    retardsMenuEl = null
+  }
+}
+document.addEventListener('click', (event) => {
+  if (retardsMenuEl && !event.target.closest('.retards-floatmenu') && !event.target.closest('[data-retard-menu]')) closeRetardsMenu()
+})
+document.addEventListener('scroll', () => closeRetardsMenu(), true)
+if (retardsTableBodyEl) retardsTableBodyEl.addEventListener('click', async (event) => {
+  const menuBtn = event.target.closest('[data-retard-menu]')
+  const row = event.target.closest('tr[data-id]')
+  if (!row) return
+  const id = row.dataset.id
+  if (menuBtn) {
+    event.stopPropagation()
+    if (retardsMenuEl && retardsMenuEl.dataset.forId === id) {
+      closeRetardsMenu()
+      return
+    }
+    closeRetardsMenu()
+    const menu = document.createElement('div')
+    menu.className = 'retards-floatmenu'
+    menu.dataset.forId = id
+    menu.innerHTML = `
+      <button type="button" data-rm="view">Voir les détails</button>
+      <button type="button" data-rm="edit">Modifier</button>
+      <button type="button" data-rm="proof">Ajouter une preuve</button>
+      <button type="button" data-rm="delete" class="is-danger">Supprimer</button>`
+    document.body.appendChild(menu)
+    const r = menuBtn.getBoundingClientRect()
+    menu.style.top = `${Math.round(r.bottom + 6 + window.scrollY)}px`
+    menu.style.right = `${Math.max(8, Math.round(window.innerWidth - r.right))}px`
+    menu.style.position = 'absolute'
+    retardsMenuEl = menu
+    menu.addEventListener('click', async (ev) => {
+      const opt = ev.target.closest('[data-rm]')
+      if (!opt) return
+      const action = opt.dataset.rm
+      closeRetardsMenu()
+      if (action === 'view' || action === 'edit') {
+        const task = await findTask(id)
+        if (task) openModal(task)
+      } else if (action === 'proof') {
+        if (window.__doliProofDialogHandler) window.__doliProofDialogHandler(id)
+      } else if (action === 'delete') {
+        const task = await findTask(id)
+        if (!task) return
+        const ok = window.confirm(`Supprimer la tâche "${task.title}" ?`)
+        if (!ok) return
+        await deleteTask(id)
+        render()
+      }
+    })
+    return
+  }
+  const task = await findTask(id)
+  if (task) openModal(task)
+})
 
 // --- Cloche des tâches en retard ----------------------------------------
 // Un overlay invisible mais bloquant empêche toute interaction avec le
