@@ -299,11 +299,15 @@ export function renderReminders(container, reminders, now) {
   const tb = container || document.getElementById('reminderList')
   if (!tb) return
   const list = Array.isArray(reminders) ? reminders : []
-  const ref = now instanceof Date ? now : new Date()
+  // BUG CORRIGE : `now` pouvait arriver comme timestamp (nombre) ou etre
+  // absent ; ref est toujours une vraie Date ici.
+  const ref = now instanceof Date ? now : (typeof now === 'number' ? new Date(now) : new Date())
   const rows = list.map((r) => {
     const t = r.task || r
-    const raw = r.target ? new Date(r.target) : (t.dueDate ? new Date(t.dueDate) : (t.startTime ? new Date(t.startTime) : null))
-    const target = raw && !Number.isNaN(raw.getTime()) ? raw : null
+    // r.target est deja une Date (construite dans main.js) ; sinon on
+    // retombe sur les vraies dates de la tache.
+    const raw = r.target instanceof Date ? r.target : (r.target ? new Date(r.target) : (t.dueDate ? new Date(t.dueDate) : (t.startTime ? new Date(t.startTime) : null)))
+    const target = raw instanceof Date && !Number.isNaN(raw.getTime()) ? raw : null
     // Un rappel reel a toujours une date ; sans date on n'affiche pas de ligne.
     if (!target) return ''
     const isToday = sameDay(target, ref)

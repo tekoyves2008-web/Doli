@@ -546,26 +546,38 @@ async function render() {
   // Résumé de la journée (panneau latéral) : mêmes données, nouveau rendu.
   renderTasksSummary(tasksSummaryEl, allTasks)
 
-  // Rappel (donnees reelles) : seules les taches qui ont une vraie date
-  // (debut ou echeance) et non terminees sont des rappels. Les taches sans
-  // aucune date n'ont aucun moment de rappel : elles sont exclues.
+  // Rappel (donnees reelles) : toute tache non terminee AVEC une vraie date
+  // (debut ou echeance) est un rappel. Les taches sans aucune date n'ont
+  // aucun moment de rappel : exclues. Les taches terminees sortent des
+  // rappels (sauf filtre "Executees" qui les reintegre plus bas).
+  // BUG CORRIGE : `now` est un timestamp (nombre). L'ancien code appelait
+  // isSameDay(date, now) avec ce nombre -> now.getFullYear n'existe pas ->
+  // TypeError qui stoppait tout le rendu (tableau vide). On utilise nowDate.
+  const nowDate = new Date(now)
+  // Nettoie la liste noire : les id de taches supprimees restaient en
+  // localStorage et pouvaient masquer de futurs rappels par erreur.
+  for (const id of [...dismissedReminderIds]) {
+    if (!allTasks.some((t) => String(t.id) === String(id))) dismissedReminderIds.delete(id)
+  }
+  saveDismissedReminderIds()
   const remWithTarget = (r) => {
-    const start = r.startTime ? new Date(r.startTime) : null
-    const due = r.dueDate ? new Date(r.dueDate) : null
-    const pick = due || start || null
-    return pick && !Number.isNaN(pick.getTime()) ? pick : null
+    const startRaw = r.startTime ? new Date(r.startTime) : null
+    const dueRaw = r.dueDate ? new Date(r.dueDate) : null
+    const start = startRaw && !Number.isNaN(startRaw.getTime()) ? startRaw : null
+    const due = dueRaw && !Number.isNaN(dueRaw.getTime()) ? dueRaw : null
+    return due || start || null
   }
   const remAll = allTasks
     .filter((t) => t.status !== STATUS.DONE && !isDismissedReminder(t.id))
     .filter((t) => remWithTarget(t) !== null)
   const isSameDay = (a, b) => a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate()
-  const startOfWeek = new Date(now); startOfWeek.setHours(0, 0, 0, 0); startOfWeek.setDate(startOfWeek.getDate() - ((startOfWeek.getDay() + 6) % 7))
+  const startOfWeek = new Date(nowDate); startOfWeek.setHours(0, 0, 0, 0); startOfWeek.setDate(startOfWeek.getDate() - ((startOfWeek.getDay() + 6) % 7))
   const endOfWeek = new Date(startOfWeek); endOfWeek.setDate(endOfWeek.getDate() + 7)
   // Logique temporelle stricte : aujourd'hui = echeance/debut le jour meme
   // (y compris deja passees aujourd'hui) ; a venir = date future stricte.
-  const remToday = remAll.filter((t) => isSameDay(remWithTarget(t), now))
+  const remToday = remAll.filter((t) => isSameDay(remWithTarget(t), nowDate))
   const remWeek = remAll.filter((t) => { const d = remWithTarget(t); return d >= startOfWeek && d < endOfWeek })
-  const remUpcoming = remAll.filter((t) => remWithTarget(t) > now)
+  const remUpcoming = remAll.filter((t) => remWithTarget(t).getTime() > now)
   const remDoing = remAll.filter((t) => t.status === STATUS.DOING)
   let remShown = remTab === 'today' ? remToday : remTab === 'week' ? remWeek : remTab === 'upcoming' ? remUpcoming : remAll
   if (remStatusFilter !== 'all') remShown = remShown.filter((t) => t.status === remStatusFilter)
@@ -580,18 +592,20 @@ async function render() {
       .filter((t) => remWithTarget(t) !== null)
       .filter((t) => {
         const d = remWithTarget(t)
-        if (remTab === 'today') return isSameDay(d, now)
+        if (remTab === 'today') return isSameDay(d, nowDate)
         if (remTab === 'week') return d >= startOfWeek && d < endOfWeek
-        if (remTab === 'upcoming') return d > now
+        if (remTab === 'upcoming') return d.getTime() > now
         return true
       })
       .map((t) => ({ task: t, kind: 'due', target: remWithTarget(t) }))
     reminders.push(...doneWithDate)
     reminders.sort((a, b) => a.target - b.target)
   }
-  renderReminders(reminderListEl, reminders, now)
-  reminderNavCountEl.hidden = remAll.length === 0
-  reminderNavCountEl.textContent = remAll.length
+  renderReminders(reminderListEl, reminders, nowDate)
+  if (reminderNavCountEl) {
+    reminderNavCountEl.hidden = remAll.length === 0
+    reminderNavCountEl.textContent = remAll.length
+  }
   const setTxt = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v }
   const withDateN = allTasks.filter((t) => remWithTarget(t) !== null).length
   const doneN = allTasks.filter((t) => t.status === STATUS.DONE).length
@@ -602,13 +616,13 @@ async function render() {
   const rate = withDateN ? Math.round((allTasks.filter((t) => t.status === STATUS.DONE && remWithTarget(t) !== null).length / withDateN) * 100) : 0
   setTxt('rappelKpiRate', `${rate} %`)
   setTxt('remCountAll', remAll.length); setTxt('remCountToday', remToday.length); setTxt('remCountWeek', remWeek.length); setTxt('remCountUpcoming', remUpcoming.length)
-  const yest = new Date(now); yest.setDate(now.getDate() - 1)
+  const yest = new Date(nowDate); yest.setDate(nowDate.getDate() - 1)
   const yestN = remAll.filter((t) => isSameDay(remWithTarget(t), yest)).length
   const diff = remToday.length - yestN
   setTxt('rappelKpiTodaySub', diff === 0 ? 'stable par rapport a hier' : `${diff > 0 ? '+' : ''}${diff} par rapport a hier`)
   setTxt('rappelKpiRateSub', rate >= 50 ? `+${Math.max(0, rate - 40)} % par rapport a la semaine derniere` : 'En progression')
   const dateEl = document.getElementById('rappelTodayDate')
-  if (dateEl) dateEl.textContent = now.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+  if (dateEl) dateEl.textContent = nowDate.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
   const todayList = document.getElementById('rappelTodayList')
   if (todayList) {
     const dots = ['#ef4444', '#2563eb', '#10b981', '#7c3aed', '#f59e0b']
@@ -1101,6 +1115,12 @@ const taskActions = {
     const task = await findTask(id)
     if (!task) return
     await setStatus(id, status)
+    // Une tâche rouverte (non exécutée / en cours) redevient logiquement un
+    // rappel : on lève son éventuel masquage.
+    if (status !== STATUS.DONE) {
+      dismissedReminderIds.delete(String(id))
+      saveDismissedReminderIds()
+    }
     if (status === STATUS.DONE && task.status !== STATUS.DONE) triggerConfetti()
     render()
   },
