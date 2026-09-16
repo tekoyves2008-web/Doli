@@ -1,10 +1,11 @@
 // check.mjs
-// Contrôle automatique entre src/main.js et index.html.
+// Contrôle automatique entre index.html et TOUS les fichiers src/.
+// (main.js + modules/ui.js, modules/auth.js, ...).
 //
-// Protège du bug du 09/09/2026 : une variable utilisée sans être déclarée
-// (ou un getElementById absent du HTML utilisé sans garde) faisait planter
-// main.js au chargement -> le listener du login n'était jamais attaché ->
-// le formulaire se soumettait de façon native -> URL "http://localhost:5173/?".
+// Protège du bug du 09/09/2026 : getElementById d'un ID absent du HTML,
+// ou variable utilisée sans déclaration, fait planter le script au chargement
+// -> le listener du login n'est jamais attaché -> formulaire soumis nativement
+// -> URL "http://localhost:5173/?".
 //
 // Usage :  node check.mjs    (ou  npm run check)
 // Exit code : 0 si tout va bien, 1 si un risque de plantage est détecté.
@@ -14,8 +15,8 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url))
-const mainPath = path.join(ROOT, 'src', 'main.js')
 const htmlPath = path.join(ROOT, 'index.html')
+const MODULE_DIR = path.join(ROOT, 'src', 'modules')
 
 const errors = []
 const warnings = []

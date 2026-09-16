@@ -940,21 +940,25 @@ export function bindBellMenu(menuEl, onSelect) {
 }
 
 // --- Progression : affichage des statistiques ---
+// Résistant au changement de structure : le HTML a été redessiné
+// (.pg2-...) mais cette fonction garde les IDs « progressionStat* ».
+// Chaque getElementById est protégé pour éviter tout crash si l'ID
+// disparaît du template HTML.
 export function renderProgressionStats(stats, period) {
-  document.getElementById('progressionStatTotal').textContent = stats.total
-  document.getElementById('progressionStatTotalPercent').textContent = '100%'
-  
-  document.getElementById('progressionStatDone').textContent = stats.done
-  document.getElementById('progressionStatDonePercent').textContent = `${stats.donePercent}%`
-  
-  document.getElementById('progressionStatDoing').textContent = stats.doing
-  document.getElementById('progressionStatDoingPercent').textContent = `${stats.doingPercent}%`
-  
-  document.getElementById('progressionStatDelay').textContent = stats.delayed
-  document.getElementById('progressionStatDelayPercent').textContent = `${stats.delayPercent}%`
-  
-  document.getElementById('progressionStatNotDone').textContent = stats.notDone
-  document.getElementById('progressionStatNotDonePercent').textContent = `${stats.notDonePercent}%`
+  const set = (id, text) => {
+    const el = document.getElementById(id)
+    if (el) el.textContent = text
+  }
+  set('progressionStatTotal', stats.total)
+  set('progressionStatTotalPercent', '100%')
+  set('progressionStatDone', stats.done)
+  set('progressionStatDonePercent', `${stats.donePercent}%`)
+  set('progressionStatDoing', stats.doing)
+  set('progressionStatDoingPercent', `${stats.doingPercent}%`)
+  set('progressionStatDelay', stats.delayed)
+  set('progressionStatDelayPercent', `${stats.delayPercent}%`)
+  set('progressionStatNotDone', stats.notDone)
+  set('progressionStatNotDonePercent', `${stats.notDonePercent}%`)
 }
 
 function prepareCanvasForHiDpi(canvas) {
@@ -1351,13 +1355,36 @@ export function renderProgressionTodayStats(todayStats) {
 }
 
 // --- Progression : bind des filtres ---
-// --- Progression : bind des filtres avec dropdown ---
+// --- Progression : bind des filtres (nouveau format .pg2__seg-btn) ---
+// Le HTML a été redessiné : les boutons sont maintenant visibles directement
+// (.pg2__seg-btn[data-period]) au lieu d'un dropdown avec #progressionFilterMenu.
+// Anciens IDs (progressionFilterBtn / progressionFilterMenu / period-menu-item)
+// ont disparu → getElementById renvoie null → crash bloquant le listener de
+// login. Cette version est résistante au changement de structure HTML.
 export function bindProgressionFilters(container, onFilterChange) {
+  if (!container) return
+
+  // Nouveau format : boutons segmentés .pg2__seg-btn
+  const segButtons = container.querySelectorAll('.pg2__seg-btn')
+  if (segButtons.length > 0) {
+    segButtons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        segButtons.forEach((b) => b.classList.remove('is-active'))
+        btn.classList.add('is-active')
+        const period = parseInt(btn.dataset.period, 10)
+        if (!Number.isNaN(period)) onFilterChange(period)
+      })
+    })
+    return
+  }
+
+  // Fallback : ancien format dropdown (par sécurité, au cas où l'HTML
+  // serait revert ou utilisé dans un autre contexte).
   const filterBtn = document.getElementById('progressionFilterBtn')
   const filterMenu = document.getElementById('progressionFilterMenu')
+  if (!filterMenu) return
   const filterItems = filterMenu.querySelectorAll('.period-menu-item')
 
-  // Ouvrir/fermer le dropdown
   if (filterBtn) {
     filterBtn.addEventListener('click', (e) => {
       e.stopPropagation()
@@ -1367,45 +1394,30 @@ export function bindProgressionFilters(container, onFilterChange) {
     })
   }
 
-  // Gerer les clics sur les items du menu
   filterItems.forEach((item) => {
     item.addEventListener('click', (e) => {
       e.stopPropagation()
       const period = parseInt(item.dataset.period)
-      
-      // Mettre à jour l'état actif
       filterItems.forEach((i) => i.classList.remove('is-active'))
       item.classList.add('is-active')
-      
-      // Mettre à jour le sous-titre avec la période sélectionnée
-      const periodLabels = {
-        1: 'Aujourd\'hui',
-        7: 'Cette semaine',
-        14: '2 dernières semaines',
-        30: 'Ce mois',
-        90: '3 derniers mois',
-        180: '6 derniers mois',
-        365: 'Cette année'
-      }
       const subtitleEl = document.querySelector('.progression-subtitle')
       if (subtitleEl) {
-        subtitleEl.textContent = periodLabels[period] || 'Aujourd\'hui'
+        const periodLabels = {
+          1: "Aujourd'hui", 7: 'Cette semaine', 14: '2 dernières semaines',
+          30: 'Ce mois', 90: '3 derniers mois', 180: '6 derniers mois', 365: 'Cette année'
+        }
+        subtitleEl.textContent = periodLabels[period] || "Aujourd'hui"
       }
-      
-      // Fermer le menu
       filterMenu.hidden = true
-      filterBtn.setAttribute('aria-expanded', 'false')
-      
-      // Appeler le callback
+      if (filterBtn) filterBtn.setAttribute('aria-expanded', 'false')
       onFilterChange(period)
     })
   })
 
-  // Fermer le dropdown quand on clique ailleurs
   document.addEventListener('click', (e) => {
     if (!e.target.closest('.progression-period-selector')) {
       filterMenu.hidden = true
-      filterBtn.setAttribute('aria-expanded', 'false')
+      if (filterBtn) filterBtn.setAttribute('aria-expanded', 'false')
     }
   })
 }
