@@ -1,0 +1,57 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>sonde</title>
+  </head>
+  <body>
+    <iframe id="f" src="/index.html" style="width: 1280px; height: 900px; border: 0"></iframe>
+    <pre id="out">running…</pre>
+    <script type="module">
+      const out = document.getElementById('out')
+      const f = document.getElementById('f')
+      const logs = []
+      await new Promise((r) => f.addEventListener('load', r, { once: true }))
+      await new Promise((r) => setTimeout(r, 2000))
+      const w = f.contentWindow
+      const d = f.contentDocument
+      w.addEventListener('error', (e) => logs.push('ERREUR PAGE: ' + e.message))
+      w.addEventListener('unhandledrejection', (e) => logs.push('REJET: ' + e.reason))
+      const step = (name, fn) => {
+        try {
+          logs.push(name + ' -> ' + JSON.stringify(fn()))
+        } catch (e) {
+          logs.push(name + ' !! ' + e.name + ': ' + e.message)
+        }
+      }
+      step('app-shell masqué', () => d.querySelector('.app-shell').hasAttribute('hidden'))
+      d.querySelector('.login-screen')?.setAttribute('hidden', '')
+      d.querySelector('.app-shell')?.removeAttribute('hidden')
+      step('clic « Nouvelle tâche »', () => {
+        d.getElementById('addTaskBtn').click()
+        const o = d.getElementById('taskModalOverlay')
+        const r = o.getBoundingClientRect()
+        return { hidden: o.hidden, display: w.getComputedStyle(o).display, w: r.width, h: r.height }
+      })
+      step('contrôle Priorité', () => {
+        const c = d.querySelector('.doli-select__control')
+        const r = c.getBoundingClientRect()
+        return { present: !!c, w: r.width, h: r.height, libelle: d.querySelector('.doli-select__value').textContent }
+      })
+      step('clic sur Priorité', () => {
+        d.querySelector('.doli-select__control').click()
+        const l = d.querySelector('.doli-select__list')
+        const r = l.getBoundingClientRect()
+        return {
+          hidden: l.hidden,
+          dansBody: l.parentElement === d.body,
+          display: w.getComputedStyle(l).display,
+          w: r.width,
+          h: r.height,
+          top: Math.round(r.top),
+        }
+      })
+      out.textContent = logs.join('\n')
+    </script>
+  </body>
+</html>

@@ -3373,12 +3373,181 @@ input:focus-visible,
 #taskModalOverlay .task-form__field select {
   padding: 11px 14px;
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.06);
+  /* background-color (et non le raccourci) : le chevron SVG du menu déroulant est
+     ainsi préservé par les règles suivantes. */
+  background-color: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.14);
   color: var(--text);
   font-size: 13px;
   font-weight: 500;
   transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+/* -----------------------------------------------------------------------
+   Menu déroulant de la priorité : forme soignée, couleurs de la fenêtre.
+   `appearance: none` retire la flèche native (difforme selon l'OS) au profit
+   d'un chevron SVG tracé au trait, rigoureusement centré ; le fond combine un
+   fin dégradé translucide et le chevron, qui s'accentue au survol et au focus.
+   `color-scheme: dark` peint la liste native en sombre, et les `option`
+   reprennent explicitement le bleu nuit de la fenêtre pour les navigateurs qui
+   les stylent (Chrome / Edge / Firefox sous Windows).
+   ----------------------------------------------------------------------- */
+#taskModalOverlay .task-form__field select {
+  /* Chevron vectoriel inline : rendu identique sur tous les systèmes. */
+  --chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-opacity='0.55' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5.5 9l6.5 6.5L18.5 9'/%3E%3C/svg%3E");
+  --chevron-hi: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239db1ff' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5.5 9l6.5 6.5L18.5 9'/%3E%3C/svg%3E");
+  color-scheme: dark;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  padding-right: 42px;                 /* réserve la place du chevron */
+  cursor: pointer;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  background-color: rgba(255, 255, 255, 0.06);
+  background-image:
+    var(--chevron),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
+  background-repeat: no-repeat, no-repeat;
+  background-position: right 14px center, 0 0;
+  background-size: 15px 15px, 100% 100%;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);   /* reflet discret */
+}
+#taskModalOverlay .task-form__field select:hover,
+#taskModalOverlay .task-form__field select:focus {
+  background-image:
+    var(--chevron-hi),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.11), rgba(255, 255, 255, 0.05));
+}
+/* Liste déroulante : mêmes teintes que la fenêtre, entrées aérées. */
+#taskModalOverlay .task-form__field select option {
+  padding: 9px 14px;
+  background-color: #12141d;   /* cœur du dégradé de la fenêtre */
+  color: #ffffff;              /* couleur de texte de la fenêtre */
+  font-size: 13px;
+  line-height: 1.5;
+}
+#taskModalOverlay .task-form__field select option:checked {
+  background-color: #1f2740;   /* teinte accent : la priorité choisie ressort */
+  color: #ffffff;
+}
+/* --- Menu déroulant maison (composant doli-select) --------------------
+   Le popup d'un <select> étant peint par le système, on dessine la liste
+   nous-mêmes : un panneau « mini-fenêtre » aux bornes arrondies, reprenant
+   le dégradé bleu nuit et le liseré accent de la fenêtre. */
+#taskModalOverlay .task-form__field select.doli-select__native {
+  display: none;   /* le <select> reste la source de vérité, mais invisible */
+}
+#taskModalOverlay .doli-select {
+  width: 100%;
+}
+#taskModalOverlay .doli-select__control {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  padding: 11px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 12px;            /* même galbe que les autres champs */
+  background-color: rgba(255, 255, 255, 0.06);
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+}
+#taskModalOverlay .doli-select__control:hover {
+  border-color: rgba(255, 255, 255, 0.28);
+  background-color: rgba(255, 255, 255, 0.09);
+}
+#taskModalOverlay .doli-select[data-open='true'] .doli-select__control,
+#taskModalOverlay .doli-select__control:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(108, 140, 255, 0.18);
+}
+#taskModalOverlay .doli-select__value {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+#taskModalOverlay .doli-select__chev {
+  display: inline-flex;
+  flex: none;
+  color: rgba(255, 255, 255, 0.55);
+  transition: color 0.15s ease, transform 0.18s ease;
+}
+#taskModalOverlay .doli-select__chev svg { width: 15px; height: 15px; display: block; }
+#taskModalOverlay .doli-select__control:hover .doli-select__chev { color: #9db1ff; }
+#taskModalOverlay .doli-select[data-open='true'] .doli-select__chev {
+  color: #9db1ff;
+  transform: rotate(180deg);
+}
+/* Champ verrouillé (mode consultation) : rendu « désactivé » conservé. */
+#taskModalOverlay .doli-select[data-disabled='true'] { opacity: 0.55; }
+#taskModalOverlay .doli-select[data-disabled='true'] .doli-select__control {
+  cursor: not-allowed;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+/* Le panneau vit hors de la fenêtre (position fixe) : styles non scopés. */
+.doli-select__list {
+  position: fixed;
+  z-index: 45;                    /* juste au-dessus de la fenêtre (40) */
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  max-height: 264px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 18px;            /* bornes arrondies, comme la fenêtre */
+  background: linear-gradient(165deg, #1a2030 0%, #12141d 55%, #0e1017 100%);
+  box-shadow: 0 18px 42px rgba(3, 6, 18, 0.62), 0 0 0 1px rgba(108, 140, 255, 0.14);
+  color: #ffffff;
+  font-size: 12.5px;
+  animation: doliSelectIn 0.14s ease;
+}
+.doli-select__list[data-dir='up'] { animation-name: doliSelectUp; }
+.doli-select__list::-webkit-scrollbar { width: 8px; }
+.doli-select__list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+}
+.doli-select__list::-webkit-scrollbar-track { background: transparent; }
+.doli-select__opt {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: 11px;
+  color: rgba(255, 255, 255, 0.86);
+  cursor: pointer;
+  transition: background-color 0.12s ease, color 0.12s ease;
+}
+.doli-select__opt[data-active='true'] {
+  background-color: rgba(255, 255, 255, 0.09);
+  color: #ffffff;
+}
+.doli-select__opt[data-selected='true'] {
+  color: #ffffff;
+  font-weight: 700;
+  background-color: rgba(108, 140, 255, 0.14);
+}
+.doli-select__tick { display: none; color: var(--accent); }
+.doli-select__opt[data-selected='true'] .doli-select__tick { display: inline-flex; }
+.doli-select__tick svg { width: 13px; height: 13px; display: block; }
+@keyframes doliSelectIn {
+  from { opacity: 0; transform: translateY(-6px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes doliSelectUp {
+  from { opacity: 0; transform: translateY(6px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 #taskModalOverlay .task-form__field input:hover,
 #taskModalOverlay .task-form__field select:hover {
@@ -3386,7 +3555,9 @@ input:focus-visible,
 }
 #taskModalOverlay .task-form__field input:focus,
 #taskModalOverlay .task-form__field select:focus {
-  background: rgba(255, 255, 255, 0.09);
+  /* background-color (et non le raccourci background) : le chevron SVG du menu
+     déroulant reste affiché quand le champ a le focus. */
+  background-color: rgba(255, 255, 255, 0.09);
   border-color: var(--accent);
   box-shadow: 0 0 0 3px rgba(108, 140, 255, 0.22);
   outline: none;
@@ -5880,6 +6051,26 @@ input:focus-visible,
 }
 .retards-card__head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
 .retards-card__head h3 { margin: 0; font-family: 'Plus Jakarta Sans', Inter, system-ui, sans-serif; font-size: 13px; font-weight: 700; }
+/* Motif évocateur devant les titres de cartes (« Évolution des retards ») :
+   même ADN que .retards-pagehead__icon — pastille ronde en dégradé rose,
+   glyphe de la couleur du retard, déclinée pour les deux thèmes. */
+.retards-card__title { display: inline-flex; align-items: center; gap: 9px; }
+.retards-card__icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  flex: none;
+  color: #ef4444;
+  background: linear-gradient(160deg, #fecaca, #fca5a5);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.45);
+}
+[data-theme='dark'] .retards-card__icon {
+  color: #fca5a5;
+  background: linear-gradient(160deg, rgba(239, 68, 68, 0.24), rgba(248, 113, 113, 0.14));
+  box-shadow: inset 0 0 0 1px rgba(248, 113, 113, 0.22);
+}
 .retards-legend { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-muted); }
 .retards-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
 .retards-dot--red { background: #ef4444; }
@@ -5891,23 +6082,50 @@ input:focus-visible,
   .retards-donut-row { grid-template-columns: 1fr; justify-items: center; }
   .retards-donut-legend { width: 100%; }
 }
-.retards-donut-legend { display: flex; flex-direction: column; gap: 9px; min-width: 0; }
+.retards-donut-legend { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
 .retards-leg {
   display: grid;
-  grid-template-columns: auto 1fr auto;
-  gap: 8px;
+  /* 3 colonnes sur une seule ligne : statut (écrit en texte) · espace souple ·
+     pourcentage. Le libellé est dimensionné en « auto » : il s'écrit toujours en
+     entier, jamais tronqué, et le pourcentage reste aligné d'une ligne à l'autre. */
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  column-gap: 10px;
   align-items: center;
   font-size: 11px;              /* aligné sur .retards-legend de la rubrique */
   line-height: 1.3;
   font-variant-numeric: tabular-nums;
 }
-.retards-leg__dot { width: 9px; height: 9px; border-radius: 50%; flex: none; box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.12); }
-.retards-leg__label { font-weight: 600; letter-spacing: 0.1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.retards-leg__val { font-weight: 700; white-space: nowrap; }
-.retards-leg__val em { font-style: normal; font-weight: 500; color: var(--text-muted); margin-left: 4px; }
+/* Le statut est écrit EN TEXTE, dans la couleur de sa priorité : le point
+   coloré est remplacé par le libellé lui-même — plus rien à décoder. */
+.retards-leg__label {
+  grid-column: 1;
+  justify-self: start;
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+  color: var(--leg-color, var(--text));
+}
+/* Nombre de tâches retiré : seule la part de chaque priorité est affichée
+   (pourcentage), en colonne fixe alignée à droite pour s'empiler proprement.
+   Le nombre de tâches reste disponible dans l'infobulle de la ligne. */
+.retards-leg__pct {
+  grid-column: 3;
+  justify-self: end;
+  min-width: 38px;
+  font-style: normal;
+  font-weight: 600;
+  font-size: 10.5px;
+  letter-spacing: 0.01em;
+  color: var(--text-muted);
+  text-align: right;
+}
+/* La légende se lit sur une seule ligne : statut écrit en texte · pourcentage.
+   Le nombre de tâches reste disponible dans l'infobulle de chaque ligne. */
+[data-theme='dark'] .retards-leg__label { color: color-mix(in srgb, var(--leg-color, #94a3b8) 60%, #ffffff); }
 .retards-leg--empty { opacity: 0.45; }
 @media (max-width: 560px) {
-  .retards-donut-legend { gap: 8px; }
+  .retards-donut-legend { gap: 10px; }
 }
 .retards-table-card2 { margin-bottom: 8px; }
 .retards-table2 { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 12px; }

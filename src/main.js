@@ -56,6 +56,7 @@ import {
 } from './modules/ui.js'
 import { renderPreuves, syncUserProofs } from './modules/preuves.js'
 import { initAlarms } from './modules/alarms.js'
+import { enhanceDoliSelect } from './modules/doliSelect.js'
 import { getSession, login, register, signOut } from './modules/auth.js'
 
 const STATUS_FILTER_LABEL = {
@@ -705,6 +706,11 @@ if (progressionContainer) {
     render()
   })
 }
+
+// Le <select> natif est conservé (source de vérité de la valeur et de
+// l'état désactivé) : on l'habille simplement d'un panneau maison arrondi,
+// fidèle à l'identité de la fenêtre.
+enhanceDoliSelect(taskPriorityField)
 
 // --- Modal d'ajout / modification --------------------------------------
 // Trois états : consultation (lecture seule), édition, création.

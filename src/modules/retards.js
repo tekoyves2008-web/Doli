@@ -379,7 +379,7 @@ function renderDonutLegend(groups, total) {
       const pct = total > 0 ? Math.round((g.count / total) * 100) : 0
       // Priorités à zéro atténuées : lecture claire, rendu plus léger.
       const emptyCls = g.count === 0 ? ' retards-leg--empty' : ''
-      return `<div class="retards-leg${emptyCls}" title="${escapeHtml(g.label)} : ${g.count} tâche(s) en retard (${pct} %)"><span class="retards-leg__dot" style="background:${g.color}"></span><span class="retards-leg__label">${escapeHtml(g.label)}</span><span class="retards-leg__val">${g.count}<em>${pct} %</em></span></div>`
+      return `<div class="retards-leg${emptyCls}" title="${escapeHtml(g.label)} : ${g.count} tâche(s) en retard (${pct} %)"><span class="retards-leg__label" style="--leg-color:${g.color}">${escapeHtml(g.label)}</span><em class="retards-leg__pct">${pct} %</em></div>`
     })
     .join('')
 }

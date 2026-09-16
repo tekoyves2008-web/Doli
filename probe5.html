@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="fr" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet" />
-    <title>Doli — Gestionnaire de tâches</title>
+    <title>Doli â€” Gestionnaire de tÃ¢ches</title>
   </head>
   <body>
     <svg class="defs-only" aria-hidden="true">
@@ -36,7 +36,7 @@
         <div class="login-card__icon"><svg width="32" height="32"><use href="#doliMark"/></svg></div>
 
         <div id="loginPanel">
-          <h1>Connecte-toi à Doli</h1>
+          <h1>Connecte-toi Ã  Doli</h1>
           <form id="loginForm" class="auth-form">
             <label class="task-form__field">Email
               <input type="email" id="loginEmail" required />
@@ -52,11 +52,11 @@
             <button type="submit" class="login-card__submit">Se connecter</button>
           </form>
           <p id="loginError" class="login-card__error" hidden></p>
-          <p class="login-card__switch">Pas encore de compte ? <button type="button" id="showRegisterBtn" class="login-card__link">Créer un compte</button></p>
+          <p class="login-card__switch">Pas encore de compte ? <button type="button" id="showRegisterBtn" class="login-card__link">CrÃ©er un compte</button></p>
         </div>
 
         <div id="registerPanel" hidden>
-          <h1>Créer un compte Doli</h1>
+          <h1>CrÃ©er un compte Doli</h1>
           <form id="registerForm" class="auth-form">
             <label class="task-form__field">Nom
               <input type="text" id="registerName" required />
@@ -80,10 +80,10 @@
                 </button>
               </div>
             </label>
-            <button type="submit" class="login-card__submit">Créer mon compte</button>
+            <button type="submit" class="login-card__submit">CrÃ©er mon compte</button>
           </form>
           <p id="registerError" class="login-card__error" hidden></p>
-          <p class="login-card__switch">Déjà un compte ? <button type="button" id="showLoginBtn" class="login-card__link">Se connecter</button></p>
+          <p class="login-card__switch">DÃ©jÃ  un compte ? <button type="button" id="showLoginBtn" class="login-card__link">Se connecter</button></p>
         </div>
       </div>
     </div>
@@ -99,7 +99,7 @@
           </button>
           <button type="button" class="sidebar-nav__item" data-view="tasks">
             <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="4" cy="5" r="1.3"/><circle cx="4" cy="10" r="1.3"/><circle cx="4" cy="15" r="1.3"/><line x1="8" y1="5" x2="17" y2="5"/><line x1="8" y1="10" x2="17" y2="10"/><line x1="8" y1="15" x2="17" y2="15"/></svg>
-            <span class="sidebar-nav__label">Mes tâches</span>
+            <span class="sidebar-nav__label">Mes tÃ¢ches</span>
           </button>
           <button type="button" class="sidebar-nav__item" data-view="reminders">
             <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="11" r="6"/><line x1="10" y1="11" x2="10" y2="7.5"/><line x1="10" y1="11" x2="12.5" y2="12.5"/><line x1="4" y1="3" x2="6" y2="5"/><line x1="16" y1="3" x2="14" y2="5"/></svg>
@@ -146,11 +146,11 @@
               <span id="accountName" class="account-row__name"></span>
               <span class="account-row__status"><span class="account-row__dot"></span>En ligne</span>
             </span>
-            <button type="button" id="logoutBtn" class="account-row__logout" aria-label="Se déconnecter" title="Se déconnecter">
+            <button type="button" id="logoutBtn" class="account-row__logout" aria-label="Se dÃ©connecter" title="Se dÃ©connecter">
               <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4H4v12h4"/><path d="M13 14l4-4-4-4"/><line x1="17" y1="10" x2="7" y2="10"/></svg>
             </button>
           </div>
-          <button type="button" id="themeToggleBtn" class="theme-toggle-discreet" aria-label="Changer de thème"></button>
+          <button type="button" id="themeToggleBtn" class="theme-toggle-discreet" aria-label="Changer de thÃ¨me"></button>
         </div>
       </aside>
       <div id="sidebarOverlay" class="sidebar-overlay" hidden></div>
@@ -162,7 +162,7 @@
           </button>
           <h2 id="viewTitle">Dashboard</h2>
           <div class="bell">
-            <button type="button" id="bellBtn" class="bell__btn" aria-label="Tâches en retard">
+            <button type="button" id="bellBtn" class="bell__btn" aria-label="TÃ¢ches en retard">
               <svg viewBox="0 0 20 20" width="16" height="16" fill="currentColor"><path d="M10 2a1 1 0 011 1v.6a5.5 5.5 0 014.5 5.4v2.6l1.2 2.1a.8.8 0 01-.7 1.3H4a.8.8 0 01-.7-1.3L4.5 11.6V9a5.5 5.5 0 014.5-5.4V3a1 1 0 011-1zM8.3 17a1.8 1.8 0 003.4 0h-3.4z"/></svg>
               <span id="bellCount" class="bell__count" hidden></span>
             </button>
@@ -176,7 +176,7 @@
             <div class="dash__header">
               <div>
                 <h2 class="dash__greeting" id="dashGreeting">Bonjour !</h2>
-                <p class="dash__subtitle">Voici un aperçu clair de votre activité aujourd'hui.</p>
+                <p class="dash__subtitle">Voici un aperÃ§u clair de votre activitÃ© aujourd'hui.</p>
               </div>
               <div class="dash__header-side">
                 <span class="dash__date">
@@ -185,7 +185,7 @@
                 </span>
                 <button type="button" id="addTaskBtn" class="mtasks__add-btn">
                   <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="10" y1="4" x2="10" y2="16"/><line x1="4" y1="10" x2="16" y2="10"/></svg>
-                  Nouvelle tâche
+                  Nouvelle tÃ¢che
                 </button>
               </div>
             </div>
@@ -194,41 +194,41 @@
               <div class="dash-card dash-kpi dash-kpi--progress">
                 <h4 class="dash-card__kicker">Progression globale</h4>
                 <div class="dash-kpi__ring stats__circle" id="dashProgressRing" style="--percent:0"><span id="dashProgressPct">0 %</span></div>
-                <span class="dash-kpi__delta" id="dashProgressDelta">— % par rapport à hier</span>
+                <span class="dash-kpi__delta" id="dashProgressDelta">â€” % par rapport Ã  hier</span>
               </div>
               <div class="dash-card dash-kpi dash-kpi--late">
-                <h4 class="dash-card__kicker">Tâches en retard</h4>
-                <span class="dash-kpi__sub dash-kpi__sub--alert" id="dashLateSub">À rattraper au plus vite</span>
+                <h4 class="dash-card__kicker">TÃ¢ches en retard</h4>
+                <span class="dash-kpi__sub dash-kpi__sub--alert" id="dashLateSub">Ã€ rattraper au plus vite</span>
                 <div class="dash-bignum dash-bignum--late" id="dashLateCount">0</div>
-                <button type="button" id="dashViewLate" class="dash-link">Voir les tâches →</button>
+                <button type="button" id="dashViewLate" class="dash-link">Voir les tÃ¢ches â†’</button>
               </div>
               <div class="dash-card dash-kpi dash-kpi--done">
-                <h4 class="dash-card__kicker">Tâches terminées</h4>
+                <h4 class="dash-card__kicker">TÃ¢ches terminÃ©es</h4>
                 <span class="dash-kpi__sub">Cette semaine</span>
                 <div class="dash-bignum" id="dashDoneWeek">0</div>
-                <button type="button" id="dashViewDone" class="dash-link">Voir les tâches →</button>
+                <button type="button" id="dashViewDone" class="dash-link">Voir les tÃ¢ches â†’</button>
               </div>
               <div class="dash-card dash-kpi">
                 <h4 class="dash-card__kicker">Performance</h4>
                 <div class="dash-kpi__ring stats__circle" id="dashPerformance" style="--percent:0"><span id="dashPerformancePct">0 %</span></div>
                 <span class="dash-kpi__delta">Score actuel</span>
-                <span class="dash-kpi__sub">Votre score dépend de votre progression et de votre performance</span>
+                <span class="dash-kpi__sub">Votre score dÃ©pend de votre progression et de votre performance</span>
               </div>
             </div>
 
             <div class="dash__midrow">
             <div class="dash__kpis dash__kpis--secondary">
               <div class="dash-card dash-kpi dash-kpi--dist">
-                <h4 class="dash-card__kicker">Répartition des tâches</h4>
+                <h4 class="dash-card__kicker">RÃ©partition des tÃ¢ches</h4>
                 <div class="dash-kpi__dist">
-                  <div class="dash-donut" id="dashDonut"><span class="dash-donut__hole"><strong id="dashDonutTotal">0</strong><em>tâches</em></span></div>
+                  <div class="dash-donut" id="dashDonut"><span class="dash-donut__hole"><strong id="dashDonutTotal">0</strong><em>tÃ¢ches</em></span></div>
                   <ul class="dash-legend" id="dashLegend"></ul>
                 </div>
                 <span class="dash-kpi__delta" id="dashDistTotal"></span>
               </div>
               <div class="dash-card dash-kpi dash-kpi--perf">
-                <h4 class="dash-card__kicker">Performance : résumé</h4>
-                <p class="dash-perf-intro">Vue d'ensemble sur la qualité d'exécution de vos tâches : respect des délais et gravité des retards.</p>
+                <h4 class="dash-card__kicker">Performance : rÃ©sumÃ©</h4>
+                <p class="dash-perf-intro">Vue d'ensemble sur la qualitÃ© d'exÃ©cution de vos tÃ¢ches : respect des dÃ©lais et gravitÃ© des retards.</p>
                 <div class="dash-kpi__perf">
                   <ul id="dashPerfList" class="dash-perf-list"></ul>
                   <div id="dashPerfBars" class="dash-perf-bars"></div>
@@ -238,30 +238,30 @@
               <div class="dash-card dash-kpi dash-kpi--learn">
                 <h4 class="dash-card__title">Comprendre mes statistiques</h4>
                 <ul class="dash-learn-list">
-                  <li>Retards et gravité</li>
-                  <li>Priorités et influence</li>
+                  <li>Retards et gravitÃ©</li>
+                  <li>PrioritÃ©s et influence</li>
                 </ul>
-                <button type="button" id="dashLearnStats" class="dash-link">Expliquer mes statistiques →</button>
+                <button type="button" id="dashLearnStats" class="dash-link">Expliquer mes statistiques â†’</button>
               </div>
             </div>
               <div class="dash-card dash-tasks">
                 <div class="dash-card__head">
-                  <h4 class="dash-card__title">Mes tâches</h4>
+                  <h4 class="dash-card__title">Mes tÃ¢ches</h4>
                   <div id="dashTabs" class="mtasks__tabs"></div>
                 </div>
                 <div class="dash-card__filters">
                   <div class="tasks-search">
                     <svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="9" cy="9" r="6"/><line x1="13.5" y1="13.5" x2="18" y2="18"/></svg>
-                    <input type="search" id="dashSearchInput" placeholder="Rechercher une tâche..." aria-label="Rechercher une tâche" />
+                    <input type="search" id="dashSearchInput" placeholder="Rechercher une tÃ¢che..." aria-label="Rechercher une tÃ¢che" />
                   </div>
                   <div class="sort-picker">
                     <button type="button" id="dashSortBtn" class="mtasks__apply" aria-haspopup="true" aria-expanded="false">Filtrer</button>
                     <div id="dashSortMenu" class="sort-picker__menu" hidden>
-                      <button type="button" class="sort-picker__option is-current" data-sort="default">Par défaut</button>
+                      <button type="button" class="sort-picker__option is-current" data-sort="default">Par dÃ©faut</button>
                       <button type="button" class="sort-picker__option" data-sort="urgency">Urgence</button>
-                      <button type="button" class="sort-picker__option" data-sort="priority">Priorité</button>
-                      <button type="button" class="sort-picker__option" data-sort="due">Échéance</button>
-                      <button type="button" class="sort-picker__option" data-sort="title">Titre (A → Z)</button>
+                      <button type="button" class="sort-picker__option" data-sort="priority">PrioritÃ©</button>
+                      <button type="button" class="sort-picker__option" data-sort="due">Ã‰chÃ©ance</button>
+                      <button type="button" class="sort-picker__option" data-sort="title">Titre (A â†’ Z)</button>
                     </div>
                   </div>
                 </div>
@@ -273,26 +273,26 @@
                 </div>
 
                 <div class="dash-card__links">
-                  <button type="button" id="dashViewAll" class="dash-link">Voir toutes les tâches →</button>
-                  <button type="button" id="dashViewDetails" class="dash-link">Voir tous les détails →</button>
+                  <button type="button" id="dashViewAll" class="dash-link">Voir toutes les tÃ¢ches â†’</button>
+                  <button type="button" id="dashViewDetails" class="dash-link">Voir tous les dÃ©tails â†’</button>
                 </div>
               </div>
 
               <div class="dash__col-side">
                 <div class="dash-card">
-                  <h4 class="dash-card__title">Prochaines échéances</h4>
+                  <h4 class="dash-card__title">Prochaines Ã©chÃ©ances</h4>
                   <div id="dashUpcoming" class="dash-minilist"></div>
-                  <button type="button" id="dashViewUpcoming" class="dash-link">Voir toutes les échéances →</button>
+                  <button type="button" id="dashViewUpcoming" class="dash-link">Voir toutes les Ã©chÃ©ances â†’</button>
                 </div>
                 <div class="dash-card">
-                  <h4 class="dash-card__title">Activité récente</h4>
+                  <h4 class="dash-card__title">ActivitÃ© rÃ©cente</h4>
                   <div id="dashActivity" class="dash-activity"></div>
-                  <button type="button" id="dashViewActivity" class="dash-link">Voir toute l'activité →</button>
+                  <button type="button" id="dashViewActivity" class="dash-link">Voir toute l'activitÃ© â†’</button>
                 </div>
               </div>
             </div>
 
-            <p class="dash-quote">« La discipline aujourd'hui, c'est la liberté demain. Restez concentré et continuez à avancer ! »</p>
+            <p class="dash-quote">Â« La discipline aujourd'hui, c'est la libertÃ© demain. Restez concentrÃ© et continuez Ã  avancer ! Â»</p>
 
             <button type="button" id="addTaskBtn2" hidden></button>
             <div class="dashboard-legacy" hidden>
@@ -320,8 +320,8 @@
             <div class="mtasks2__main">
               <div class="mtasks2__header">
                 <div class="mtasks2__header-text">
-                  <h2>Mes tâches</h2>
-                  <p>Gérez, suivez et accomplissez toutes vos tâches au quotidien.</p>
+                  <h2>Mes tÃ¢ches</h2>
+                  <p>GÃ©rez, suivez et accomplissez toutes vos tÃ¢ches au quotidien.</p>
                 </div>
                 <div class="mtasks2__header-side">
                   <button type="button" id="tasksBellBtn" class="mtasks2__bell" aria-label="Notifications">
@@ -330,11 +330,11 @@
                   </button>
                   <span class="mtasks2__date">
                     <svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="3" y="4" width="14" height="13" rx="2"/><line x1="3" y1="8" x2="17" y2="8"/><line x1="7" y1="2" x2="7" y2="5"/><line x1="13" y1="2" x2="13" y2="5"/></svg>
-                    <span><strong id="tasksTodayDate">—</strong><em id="tasksTodayWeekday"></em></span>
+                    <span><strong id="tasksTodayDate">â€”</strong><em id="tasksTodayWeekday"></em></span>
                   </span>
                   <button type="button" id="addTaskBtn3" class="mtasks__add-btn mtasks2__add-btn">
                     <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="10" y1="4" x2="10" y2="16"/><line x1="4" y1="10" x2="16" y2="10"/></svg>
-                    Nouvelle tâche
+                    Nouvelle tÃ¢che
                   </button>
                 </div>
               </div>
@@ -345,21 +345,21 @@
                 <div class="mtasks2__toolbar-right">
                   <div class="tasks-search mtasks2__search">
                     <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="9" cy="9" r="6"/><line x1="13.5" y1="13.5" x2="18" y2="18"/></svg>
-                    <input type="search" id="taskSearchInput" placeholder="Rechercher une tâche..." aria-label="Rechercher une tâche" />
+                    <input type="search" id="taskSearchInput" placeholder="Rechercher une tÃ¢che..." aria-label="Rechercher une tÃ¢che" />
                   </div>
-                  <!-- Bouton « Trier » : menu de tri (ordre d'affichage),
-                       même structure que le dashboard pour l'ancrage du
-                       menu et la fermeture au clic extérieur. -->
+                  <!-- Bouton Â« Trier Â» : menu de tri (ordre d'affichage),
+                       mÃªme structure que le dashboard pour l'ancrage du
+                       menu et la fermeture au clic extÃ©rieur. -->
                   <div class="sort-picker">
                     <button type="button" id="taskSortBtn" class="mtasks2__filter-btn" aria-haspopup="true" aria-expanded="false">
                       <svg viewBox="0 0 20 20" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="3" y1="5" x2="17" y2="5"/><line x1="6" y1="10" x2="14" y2="10"/><line x1="9" y1="15" x2="11" y2="15"/></svg>
                       Trier
                     </button>
                     <div id="taskSortMenu" class="sort-picker__menu" hidden>
-                      <button type="button" class="sort-picker__option is-current" data-sort="default">Par défaut</button>
+                      <button type="button" class="sort-picker__option is-current" data-sort="default">Par dÃ©faut</button>
                       <button type="button" class="sort-picker__option" data-sort="urgency">Urgence</button>
-                      <button type="button" class="sort-picker__option" data-sort="priority">Priorité</button>
-                      <button type="button" class="sort-picker__option" data-sort="title">Titre (A → Z)</button>
+                      <button type="button" class="sort-picker__option" data-sort="priority">PrioritÃ©</button>
+                      <button type="button" class="sort-picker__option" data-sort="title">Titre (A â†’ Z)</button>
                     </div>
                   </div>
                 </div>
@@ -367,7 +367,7 @@
 
               <div class="mtasks2__tablewrap">
                 <div class="mtasks2__colhead" aria-hidden="true">
-                  <span>Tâche</span><span>Priorité</span><span>Période prévue</span><span>Avancement</span><span>Situation</span><span>Actions</span>
+                  <span>TÃ¢che</span><span>PrioritÃ©</span><span>PÃ©riode prÃ©vue</span><span>Avancement</span><span>Situation</span><span>Actions</span>
                 </div>
                 <div id="taskList" class="mtasks2__list" aria-live="polite"></div>
               </div>
@@ -375,33 +375,33 @@
               <div class="mtasks2__pagination">
                 <span id="tasksPageInfo" class="mtasks2__page-info"></span>
                 <div class="mtasks2__page-btns">
-                  <button type="button" id="tasksPrevBtn" class="mtasks2__page-btn">‹ Précédent</button>
+                  <button type="button" id="tasksPrevBtn" class="mtasks2__page-btn">â€¹ PrÃ©cÃ©dent</button>
                   <span id="tasksPageNums" class="mtasks2__page-nums"></span>
-                  <button type="button" id="tasksNextBtn" class="mtasks2__page-btn">Suivant ›</button>
+                  <button type="button" id="tasksNextBtn" class="mtasks2__page-btn">Suivant â€º</button>
                 </div>
               </div>
-              <!-- Bouton d'ajout de la vue « Mes tâches » (version stable 01/09) :
-                   existe dans main.js via tasksAddRowEl ; gardé invisible car
-                   l'ajout passe par le bouton d'en-tête (#addTaskBtn3). -->
+              <!-- Bouton d'ajout de la vue Â« Mes tÃ¢ches Â» (version stable 01/09) :
+                   existe dans main.js via tasksAddRowEl ; gardÃ© invisible car
+                   l'ajout passe par le bouton d'en-tÃªte (#addTaskBtn3). -->
               <div id="tasksAddRow" hidden><button type="button" id="addTaskBtn3b" hidden></button></div>
             </div>
 
             <aside class="mtasks2__side">
               <div class="mtasks2__card">
-                <h3 class="mtasks2__card-title">Résumé de la journée</h3>
+                <h3 class="mtasks2__card-title">RÃ©sumÃ© de la journÃ©e</h3>
                 <div id="tasksSummary" class="mtasks2__summary"></div>
               </div>
               <div class="mtasks2__card">
                 <h3 class="mtasks2__card-title">Filtres rapides</h3>
                 <label class="mtasks2__field">Trier par
                   <select id="taskQuickSort" class="mtasks2__select">
-                    <option value="default">Par défaut</option>
+                    <option value="default">Par dÃ©faut</option>
                     <option value="urgency">Urgence</option>
-                    <option value="priority">Priorité</option>
-                    <option value="title">Titre (A → Z)</option>
+                    <option value="priority">PrioritÃ©</option>
+                    <option value="title">Titre (A â†’ Z)</option>
                   </select>
                 </label>
-                <label class="mtasks2__field">Priorité
+                <label class="mtasks2__field">PrioritÃ©
                   <select id="taskQuickPriority" class="mtasks2__select">
                     <option value="all">Toutes</option>
                     <option value="high">Urgente / Haute</option>
@@ -413,13 +413,13 @@
                   <select id="taskQuickStatus" class="mtasks2__select">
                     <option value="all">Tous les statuts</option>
                     <option value="doing">En cours</option>
-                    <option value="done">Terminées</option>
+                    <option value="done">TerminÃ©es</option>
                     <option value="delayed">En retard</option>
-                    <option value="todo">Non exécutées</option>
+                    <option value="todo">Non exÃ©cutÃ©es</option>
                   </select>
                 </label>
-                <label class="mtasks2__field">Période
-                  <select id="taskPeriodFilter" class="mtasks2__select" aria-label="Période">
+                <label class="mtasks2__field">PÃ©riode
+                  <select id="taskPeriodFilter" class="mtasks2__select" aria-label="PÃ©riode">
                     <option value="week">Cette semaine</option>
                     <option value="all">Tout le temps</option>
                     <option value="today">Aujourd'hui</option>
@@ -428,16 +428,16 @@
                 </label>
                 <button type="button" id="taskResetFiltersBtn" class="mtasks2__reset">
                   <svg viewBox="0 0 20 20" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10a6 6 0 0110.5-4M16 10a6 6 0 01-10.5 4"/><polyline points="14.5,2.5 14.5,6 11,6"/><polyline points="5.5,17.5 5.5,14 9,14"/></svg>
-                  Réinitialiser les filtres
+                  RÃ©initialiser les filtres
                 </button>
               </div>
               <div class="mtasks2__card mtasks2__card--info">
                 <h3 class="mtasks2__card-title mtasks2__card-title--blue">
                   <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2l7 3v5c0 4.5-3 7.5-7 8.5-4-1-7-4-7-8.5V5z"/><polyline points="7,10 9,12 13,8"/></svg>
-                  Confidentialité garantie
+                  ConfidentialitÃ© garantie
                 </h3>
-                <p>Seul vous pouvez voir vos tâches, vos preuves et vos données.</p>
-                <button type="button" class="dash-link" id="tasksPrivacyBtn">En savoir plus sur la confidentialité</button>
+                <p>Seul vous pouvez voir vos tÃ¢ches, vos preuves et vos donnÃ©es.</p>
+                <button type="button" class="dash-link" id="tasksPrivacyBtn">En savoir plus sur la confidentialitÃ©</button>
               </div>
             </aside>
           </div>
@@ -452,7 +452,7 @@
             <div class="progression-header">
               <div class="progression-period-selector">
                 <button type="button" id="progressionFilterBtn" class="progression-period-btn">
-                  Période d'analyse
+                  PÃ©riode d'analyse
                   <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 10 13 14 9"/></svg>
                 </button>
                 <div id="progressionFilterMenu" class="progression-period-menu" hidden>
@@ -476,7 +476,7 @@
                 <div class="stat-icon stat-icon--list" aria-hidden="true"><svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="12" height="14" rx="2"/><line x1="7" y1="7" x2="13" y2="7"/><line x1="7" y1="10.2" x2="13" y2="10.2"/><line x1="7" y1="13.5" x2="11" y2="13.5"/></svg></div>
                 <div class="stat-content">
                   <div id="progressionStatTotal" class="stat-number">0</div>
-                  <div class="stat-label">Tâches prévues</div>
+                  <div class="stat-label">TÃ¢ches prÃ©vues</div>
                   <div id="progressionStatTotalPercent" class="stat-percent">100%</div>
                 </div>
               </div>
@@ -485,7 +485,7 @@
                 <div class="stat-icon stat-icon--done" aria-hidden="true"><svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7.5"/><polyline points="7,10.2 9.3,12.5 13.4,7.6"/></svg></div>
                 <div class="stat-content">
                   <div id="progressionStatDone" class="stat-number">0</div>
-                  <div class="stat-label">Tâches exécutées</div>
+                  <div class="stat-label">TÃ¢ches exÃ©cutÃ©es</div>
                   <div id="progressionStatDonePercent" class="stat-percent">0%</div>
                 </div>
               </div>
@@ -512,7 +512,7 @@
                 <div class="stat-icon stat-icon--notdone" aria-hidden="true"><svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="10" cy="10" r="7.5"/><line x1="7.6" y1="10" x2="7.6" y2="10"/><line x1="12.4" y1="10" x2="12.4" y2="10"/></svg></div>
                 <div class="stat-content">
                   <div id="progressionStatNotDone" class="stat-number">0</div>
-                  <div class="stat-label">Non exécutée</div>
+                  <div class="stat-label">Non exÃ©cutÃ©e</div>
                   <div id="progressionStatNotDonePercent" class="stat-percent">0%</div>
                 </div>
               </div>
@@ -520,7 +520,7 @@
             
             <div class="progression-charts">
               <div class="progression-chart">
-                <h3 id="progressionDistributionTitle">Répartition des tâches</h3>
+                <h3 id="progressionDistributionTitle">RÃ©partition des tÃ¢ches</h3>
                 <canvas id="progressionDayDistributionChart" width="400" height="300"></canvas>
               </div>
               
@@ -532,19 +532,19 @@
             
             <div class="progression-bottom">
               <div class="progression-chart progression-chart--trend">
-                <h3 id="progressionTrendTitle">Évolution de la progression</h3>
+                <h3 id="progressionTrendTitle">Ã‰volution de la progression</h3>
                 <canvas id="progressionTrendChart" width="800" height="250"></canvas>
               </div>
               
               <div class="progression-summary">
                 <div class="summary-card">
                   <div class="summary-icon-wrapper">
-                    <div class="summary-icon">✓</div>
+                    <div class="summary-icon">âœ“</div>
                   </div>
                   <div class="summary-content">
                     <h4 id="progressionSummaryTitle">Bilan du jour</h4>
                     <div id="progressionTodayPercent" class="summary-big">0%</div>
-                    <div id="progressionTodayLabel" class="summary-label">de tâches exécutées</div>
+                    <div id="progressionTodayLabel" class="summary-label">de tÃ¢ches exÃ©cutÃ©es</div>
                     <div id="progressionProgressBar" class="progress-bar"></div>
                     <div id="progressionMessage" class="summary-message"></div>
                   </div>
@@ -563,44 +563,44 @@
                 </div>
                 <div>
                   <h2 class="retards-pagehead__title">Retards</h2>
-                  <p id="retardsSubtitle" class="retards-pagehead__sub">Suivez les tâches qui accusent un retard et analysez leur impact sur votre progression.</p>
+                  <p id="retardsSubtitle" class="retards-pagehead__sub">Suivez les tÃ¢ches qui accusent un retard et analysez leur impact sur votre progression.</p>
                 </div>
               </div>
 
               <div class="retards-kpis">
                 <button type="button" class="retards-kpi retards-kpi--rose" data-goto="table">
-                  <span class="retards-kpi__top"><span class="retards-kpi__label">Tâches en retard</span><span class="retards-kpi__icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><polyline points="12 7.5 12 12 15 13.8"/></svg></span></span>
+                  <span class="retards-kpi__top"><span class="retards-kpi__label">TÃ¢ches en retard</span><span class="retards-kpi__icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><polyline points="12 7.5 12 12 15 13.8"/></svg></span></span>
                   <span id="retardsKpiCount" class="retards-kpi__value">0</span>
-                  <span id="retardsKpiCountSub" class="retards-kpi__sub">sur 0 tâches au total</span>
+                  <span id="retardsKpiCountSub" class="retards-kpi__sub">sur 0 tÃ¢ches au total</span>
                 </button>
                 <button type="button" class="retards-kpi retards-kpi--blue" data-goto="table">
-                  <span class="retards-kpi__top"><span class="retards-kpi__label">Retard total cumulé</span><span class="retards-kpi__icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13.5" r="7.5"/><path d="M12 10v3.5l2.5 2.5"/><path d="M9.5 2.5h5"/></svg></span></span>
+                  <span class="retards-kpi__top"><span class="retards-kpi__label">Retard total cumulÃ©</span><span class="retards-kpi__icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13.5" r="7.5"/><path d="M12 10v3.5l2.5 2.5"/><path d="M9.5 2.5h5"/></svg></span></span>
                   <span id="retardsKpiTotal" class="retards-kpi__value">0 h 00</span>
-                  <span id="retardsKpiTotalSub" class="retards-kpi__sub">sur 0 h prévues</span>
+                  <span id="retardsKpiTotalSub" class="retards-kpi__sub">sur 0 h prÃ©vues</span>
                 </button>
                 <button type="button" class="retards-kpi retards-kpi--amber" data-goto="charts">
                   <span class="retards-kpi__top"><span class="retards-kpi__label">Taux de retard</span><span class="retards-kpi__icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M9.3 9.2a2.7 2.7 0 0 1 5.2.8c0 1.8-2.6 2.1-2.6 3.5"/><circle cx="11.9" cy="17" r="0.4" fill="currentColor"/></svg></span></span>
                   <span id="retardsKpiRate" class="retards-kpi__value">0 %</span>
-                  <span class="retards-kpi__sub">de la durée totale prévue</span>
+                  <span class="retards-kpi__sub">de la durÃ©e totale prÃ©vue</span>
                 </button>
                 <button type="button" class="retards-kpi retards-kpi--green" data-goto="table">
-                  <span class="retards-kpi__top"><span class="retards-kpi__label">Plus longue durée de retard</span><span class="retards-kpi__icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><line x1="3.5" y1="10" x2="20.5" y2="10"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="16" y1="3" x2="16" y2="7"/></svg></span></span>
-                  <span id="retardsKpiWorst" class="retards-kpi__value">—</span>
-                  <span id="retardsKpiWorstSub" class="retards-kpi__sub">Aucune tâche en retard</span>
+                  <span class="retards-kpi__top"><span class="retards-kpi__label">Plus longue durÃ©e de retard</span><span class="retards-kpi__icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><line x1="3.5" y1="10" x2="20.5" y2="10"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="16" y1="3" x2="16" y2="7"/></svg></span></span>
+                  <span id="retardsKpiWorst" class="retards-kpi__value">â€”</span>
+                  <span id="retardsKpiWorstSub" class="retards-kpi__sub">Aucune tÃ¢che en retard</span>
                 </button>
               </div>
 
             <div id="retardsChartsAnchor" class="retards-charts2">
               <div class="retards-card retards-evol">
                 <div class="retards-card__head">
-                  <h3 class="retards-card__title"><span class="retards-card__icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 5.6 13.5 14.1 8.5 9.1 2 15.6"/><path d="M15.8 5.6H22v6.2"/><path d="M2.4 19.6h19.2"/></svg></span>Évolution des retards</h3>
-                  <div class="retards-legend"><span class="retards-dot retards-dot--red"></span>Retard<span class="retards-dot retards-dot--grey"></span>À l'heure</div>
+                  <h3 class="retards-card__title"><span class="retards-card__icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 5.6 13.5 14.1 8.5 9.1 2 15.6"/><path d="M15.8 5.6H22v6.2"/><path d="M2.4 19.6h19.2"/></svg></span>Ã‰volution des retards</h3>
+                  <div class="retards-legend"><span class="retards-dot retards-dot--red"></span>Retard<span class="retards-dot retards-dot--grey"></span>Ã€ l'heure</div>
                 </div>
                 <canvas id="retardsBarChart" width="640" height="300"></canvas>
               </div>
 
               <div class="retards-card retards-donut-card">
-                <div class="retards-card__head"><h3>Répartition des retards</h3></div>
+                <div class="retards-card__head"><h3>RÃ©partition des retards</h3></div>
                 <div class="retards-donut-row">
                   <canvas id="retardsDonutChart" width="300" height="300"></canvas>
                   <div id="retardsDonutLegend" class="retards-donut-legend"></div>
@@ -609,16 +609,16 @@
             </div>
 
             <div id="retardsTableAnchor" class="retards-card retards-table-card2">
-              <div class="retards-card__head"><h3>Liste des tâches en retard</h3></div>
+              <div class="retards-card__head"><h3>Liste des tÃ¢ches en retard</h3></div>
               <div class="retards-table-wrap">
                 <table class="retards-table2">
                   <thead>
                     <tr>
-                      <th class="c-num">N°</th>
-                      <th>Titre de la tâche</th>
-                      <th>Priorité</th>
-                      <th>Date prévue</th>
-                      <th>Date réelle de début</th>
+                      <th class="c-num">NÂ°</th>
+                      <th>Titre de la tÃ¢che</th>
+                      <th>PrioritÃ©</th>
+                      <th>Date prÃ©vue</th>
+                      <th>Date rÃ©elle de dÃ©but</th>
                       <th>Retard</th>
                       <th>Statut</th>
                       <th class="c-act">Actions</th>
@@ -632,8 +632,8 @@
 
             <aside class="retards-aside">
               <div class="aside-card aside-card--info">
-                <h4>À propos du retard</h4>
-                <p>Retard calculé entre l'heure prévue et l'heure réelle.</p>
+                <h4>Ã€ propos du retard</h4>
+                <p>Retard calculÃ© entre l'heure prÃ©vue et l'heure rÃ©elle.</p>
                 <p class="aside-strong">Pris en compte dans :</p>
                 <ul class="aside-checks">
                   <li>Progression globale</li>
@@ -644,15 +644,15 @@
 
               <div class="aside-card aside-card--rappel">
                 <h4>Rappel important</h4>
-                <p>Passer en « En cours » ou « Exécutée » nécessite une preuve.</p>
+                <p>Passer en Â« En cours Â» ou Â« ExÃ©cutÃ©e Â» nÃ©cessite une preuve.</p>
                 <button type="button" id="retardsViewProofsBtn" class="aside-btn aside-btn--violet">
-                  Voir mes preuves <span aria-hidden="true">›</span>
+                  Voir mes preuves <span aria-hidden="true">â€º</span>
                 </button>
               </div>
 
               <div class="aside-card aside-card--motivation">
-                <h4>Un petit effort aujourd'hui…</h4>
-                <p>… fait une grande différence demain !</p>
+                <h4>Un petit effort aujourd'huiâ€¦</h4>
+                <p>â€¦ fait une grande diffÃ©rence demain !</p>
               </div>
             </aside>
           </div>
@@ -667,7 +667,7 @@
 
     <div id="taskModalOverlay" class="modal-overlay" hidden>
       <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-        <h3 id="modalTitle">Nouvelle tâche</h3>
+        <h3 id="modalTitle">Nouvelle tÃ¢che</h3>
         <form id="taskForm">
           <input type="hidden" id="taskId" />
           <label class="task-form__field">Titre
@@ -676,13 +676,13 @@
           <label class="task-form__field">Description
             <input type="text" id="taskDesc" maxlength="240" />
           </label>
-          <label class="task-form__field">Début
+          <label class="task-form__field">DÃ©but
             <input type="datetime-local" id="taskStart" />
           </label>
-          <label class="task-form__field">Échéance
+          <label class="task-form__field">Ã‰chÃ©ance
             <input type="datetime-local" id="taskDue" />
           </label>
-          <label class="task-form__field">Priorité
+          <label class="task-form__field">PrioritÃ©
             <select id="taskPriority">
               <option value="low">Basse</option>
               <option value="medium" selected>Moyenne</option>
@@ -704,7 +704,7 @@
         <h3 id="reminderDeleteTitle">Que faire de ce rappel ?</h3>
         <p id="reminderDeleteText" class="modal__text"></p>
         <div class="modal__actions modal__actions--stack">
-          <button type="button" id="reminderDeleteFullBtn" class="modal__action--danger">Supprimer définitivement la tâche</button>
+          <button type="button" id="reminderDeleteFullBtn" class="modal__action--danger">Supprimer dÃ©finitivement la tÃ¢che</button>
           <button type="button" id="reminderDeleteDismissBtn" class="modal__action--neutral">Retirer seulement du Rappel</button>
           <button type="button" id="reminderDeleteCancelBtn">Annuler</button>
         </div>
@@ -728,10 +728,10 @@
       <div class="modal modal--compact" role="dialog" aria-modal="true" aria-labelledby="settingsEditTitle">
         <h3 id="settingsEditTitle">Objectif hebdomadaire</h3>
         <form id="settingsEditForm">
-          <label class="task-form__field" id="settingsEditField1Label">Nombre de tâches par semaine
+          <label class="task-form__field" id="settingsEditField1Label">Nombre de tÃ¢ches par semaine
             <input type="number" id="settingsEditField1" min="1" required />
           </label>
-          <label class="task-form__field" id="settingsEditField2Label" hidden>Deuxième palier
+          <label class="task-form__field" id="settingsEditField2Label" hidden>DeuxiÃ¨me palier
             <input type="number" id="settingsEditField2" min="1" />
           </label>
           <div class="modal__actions">
@@ -743,5 +743,7 @@
     </div>
 
     <script type="module" src="/src/main.js"></script>
-  </body>
+  <script type="module" src="/probe5-runner.js"></script>
+</body>
 </html>
+

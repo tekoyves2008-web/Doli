@@ -743,5 +743,86 @@
     </div>
 
     <script type="module" src="/src/main.js"></script>
+  
+    <script>
+      window.__probeErrors = []
+      window.addEventListener('error', function (e) {
+        window.__probeErrors.push('error: ' + String(e.message || e.error) + ' @ ' + (e.filename || '') + ':' + (e.lineno || ''))
+      })
+      window.addEventListener('unhandledrejection', function (e) {
+        window.__probeErrors.push('rejection: ' + String((e.reason && e.reason.message) || e.reason))
+      })
+      var __ce = console.error.bind(console)
+      console.error = function () {
+        var a = Array.prototype.slice.call(arguments).map(String)
+        window.__probeErrors.push('console.error: ' + a.join(' '))
+        __ce.apply(null, arguments)
+      }
+    </script>
+    <script type="module">
+      const report = (o) => fetch('/api/probe?d=' + encodeURIComponent(JSON.stringify(o))).catch(() => {})
+      const errs = () => (window.__probeErrors || []).slice(0, 6)
+      function snap(mod) {
+        const ov = document.getElementById('taskModalOverlay')
+        const cs = ov ? getComputedStyle(ov) : null
+        const r = ov ? ov.getBoundingClientRect() : null
+        const m = ov && ov.querySelector('.modal')
+        const mc = m ? getComputedStyle(m) : null
+        const mb = m ? m.getBoundingClientRect() : null
+        return {
+          mod,
+          hidden: ov ? ov.hidden : null,
+          display: cs ? cs.display : null,
+          visibility: cs ? cs.visibility : null,
+          opacity: cs ? cs.opacity : null,
+          z: cs ? cs.zIndex : null,
+          rect: r ? { t: Math.round(r.top), w: Math.round(r.width), h: Math.round(r.height) } : null,
+          modal: m ? { display: mc.display, opacity: mc.opacity, t: Math.round(mb.top), h: Math.round(mb.height) } : null,
+          rows: document.querySelectorAll('.mtasks2-row').length,
+          modalTitle: document.getElementById('modalTitle') && document.getElementById('modalTitle').textContent,
+          lists: Array.from(document.querySelectorAll('.doli-select__list')).map((l) => {
+            const c = getComputedStyle(l); const b = l.getBoundingClientRect()
+            return { hidden: l.hidden, display: c.display, z: c.zIndex, t: Math.round(b.top), l: Math.round(b.left), w: Math.round(b.width), h: Math.round(b.height) }
+          }),
+          control: Array.from(document.querySelectorAll('.doli-select__control')).map((b) => ({ disabled: b.disabled, text: b.textContent.trim() })),
+          topAtCenter: document.elementsFromPoint(Math.round(innerWidth / 2), Math.round(innerHeight / 2)).slice(0, 5).map((e) => e.tagName + '.' + (e.className && e.className.toString ? e.className.toString().slice(0, 40) : '')),
+          errs: errs(),
+        }
+      }
+      const waitFor = (fn, ms) => new Promise((res) => {
+        const t0 = Date.now()
+        const loop = () => {
+          let v = null
+          try { v = fn() } catch (e) { }
+          if (v) return res(v)
+          if (Date.now() - t0 > ms) return res(null)
+          setTimeout(loop, 150)
+        }
+        loop()
+      })
+
+      const row = await waitFor(() => document.querySelector('.mtasks2-row'), 12000)
+      await report(snap('boot'))
+
+      if (row) {
+        row.click()
+        await new Promise((r) => setTimeout(r, 800))
+        await report(snap('apres-clic-ligne'))
+
+        const ov = document.getElementById('taskModalOverlay')
+        if (ov && !ov.hidden) {
+          const cancel = document.getElementById('taskCancelBtn')
+          if (cancel) cancel.click()
+          await new Promise((r) => setTimeout(r, 400))
+        }
+        const add = document.getElementById('addTaskBtn') || document.getElementById('addTaskBtn3')
+        if (add) {
+          add.click()
+          await new Promise((r) => setTimeout(r, 800))
+          await report(snap('apres-bouton-nouvelle-tache'))
+        }
+      }
+      await report({ mod: 'fin', errs: errs() })
+    </script>
   </body>
 </html>
