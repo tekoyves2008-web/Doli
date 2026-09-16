@@ -95,6 +95,9 @@ export async function deleteTask(id) {
 export async function findTask(id) {
   // Pas de route dédiée : la liste est déjà scopée par utilisateur et
   // jamais assez grande, pour un usage perso, pour que ça coûte quoi que ce soit.
+  // Les id du DOM sont des chaînes, ceux du serveur aussi (UUID) : on compare
+  // en chaînes pour éviter les ratés (ex. nombre vs chaîne).
   const tasks = await getAllTasks()
-  return tasks.find((t) => t.id === id) || null
+  const needle = String(id)
+  return tasks.find((t) => String(t.id) === needle) || null
 }

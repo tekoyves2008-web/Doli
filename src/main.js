@@ -114,6 +114,11 @@ const viewTitles = {
 }
 const reminderListEl = document.getElementById('reminderList')
 const reminderNavCountEl = document.getElementById('reminderNavCount')
+let remTab = 'all'
+let remStatusFilter = 'all'
+function remGet(name, fallback) { try { const v = localStorage.getItem(name); return v === null ? fallback : v } catch { return fallback } }
+function remSet(name, v) { try { localStorage.setItem(name, v) } catch {} }
+let remCfg = { browser: remGet('remCfgBrowser', '1'), mail: remGet('remCfgMail', '1'), sound: remGet('remCfgSound', '1'), freq: remGet('remCfgFreq', '2h') }
 
 const progressionContainer = viewEls.progression
 const progressionDayDistributionCanvas = document.getElementById('progressionDayDistributionChart')
@@ -281,8 +286,22 @@ let pinnedIds = new Set()
 // que ce widget, la tâche elle-même reste intacte dans "Mes tâches".
 let dismissedRecentIds = new Set()
 // Tâches retirées de la rubrique Rappel sans être supprimées (choix de
-// l'utilisateur face à la confirmation de suppression).
-let dismissedReminderIds = new Set()
+// l'utilisateur face à la confirmation de suppression). Persisté en
+// localStorage : sans ça, un simple re-render (statut modifié, etc.)
+// vidait le Set en mémoire et refaisait réapparaître des rappels masqués,
+// ou à l'inverse tout semblait "disparaître" après rechargement.
+function loadDismissedReminderIds() {
+  try {
+    const raw = localStorage.getItem('dismissedReminderIds')
+    const arr = raw ? JSON.parse(raw) : []
+    return new Set(Array.isArray(arr) ? arr.map((v) => String(v)) : [])
+  } catch { return new Set() }
+}
+function saveDismissedReminderIds() {
+  try { localStorage.setItem('dismissedReminderIds', JSON.stringify([...dismissedReminderIds])) } catch {}
+}
+let dismissedReminderIds = loadDismissedReminderIds()
+const isDismissedReminder = (id) => dismissedReminderIds.has(String(id))
 // Notifications de retard retirées du menu de la cloche après un clic
 // dessus ; la tâche elle-même reste inchangée (toujours en retard ailleurs).
 let dismissedBellIds = new Set()
@@ -527,26 +546,86 @@ async function render() {
   // Résumé de la journée (panneau latéral) : mêmes données, nouveau rendu.
   renderTasksSummary(tasksSummaryEl, allTasks)
 
-  // Rappel : tâches entrées dans la fenêtre de 5 minutes avant leur début ou
-  // leur échéance. Une fois déclenché, le rappel persiste (même en retard) et
-  // ne disparaît que si la tâche est terminée ou supprimée.
-  const REMINDER_WINDOW_MS = 5 * 60 * 1000
-  const reminders = allTasks
-    .filter((t) => t.status !== STATUS.DONE && !dismissedReminderIds.has(t.id))
-    .map((t) => {
-      const start = t.startTime ? new Date(t.startTime) : null
-      const due = t.dueDate ? new Date(t.dueDate) : null
-      const dueActive = due && due.getTime() - now <= REMINDER_WINDOW_MS
-      const startActive = start && start.getTime() - now <= REMINDER_WINDOW_MS
-      if (dueActive) return { task: t, kind: 'due', target: due }
-      if (startActive) return { task: t, kind: 'start', target: start }
-      return null
-    })
-    .filter(Boolean)
-    .sort((a, b) => a.target - b.target)
+  // Rappel (donnees reelles) : seules les taches qui ont une vraie date
+  // (debut ou echeance) et non terminees sont des rappels. Les taches sans
+  // aucune date n'ont aucun moment de rappel : elles sont exclues.
+  const remWithTarget = (r) => {
+    const start = r.startTime ? new Date(r.startTime) : null
+    const due = r.dueDate ? new Date(r.dueDate) : null
+    const pick = due || start || null
+    return pick && !Number.isNaN(pick.getTime()) ? pick : null
+  }
+  const remAll = allTasks
+    .filter((t) => t.status !== STATUS.DONE && !isDismissedReminder(t.id))
+    .filter((t) => remWithTarget(t) !== null)
+  const isSameDay = (a, b) => a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate()
+  const startOfWeek = new Date(now); startOfWeek.setHours(0, 0, 0, 0); startOfWeek.setDate(startOfWeek.getDate() - ((startOfWeek.getDay() + 6) % 7))
+  const endOfWeek = new Date(startOfWeek); endOfWeek.setDate(endOfWeek.getDate() + 7)
+  // Logique temporelle stricte : aujourd'hui = echeance/debut le jour meme
+  // (y compris deja passees aujourd'hui) ; a venir = date future stricte.
+  const remToday = remAll.filter((t) => isSameDay(remWithTarget(t), now))
+  const remWeek = remAll.filter((t) => { const d = remWithTarget(t); return d >= startOfWeek && d < endOfWeek })
+  const remUpcoming = remAll.filter((t) => remWithTarget(t) > now)
+  const remDoing = remAll.filter((t) => t.status === STATUS.DOING)
+  let remShown = remTab === 'today' ? remToday : remTab === 'week' ? remWeek : remTab === 'upcoming' ? remUpcoming : remAll
+  if (remStatusFilter !== 'all') remShown = remShown.filter((t) => t.status === remStatusFilter)
+  // Tri chronologique : les rappels depasses d'abord (les plus urgents),
+  // puis les plus proches dans le futur.
+  const reminders = remShown.map((t) => ({ task: t, kind: 'due', target: remWithTarget(t) })).sort((a, b) => a.target - b.target)
+  // Le filtre "Executees" doit pouvoir afficher les taches terminees avec
+  // date (sinon l'option resterait toujours vide) : on les reintegre ici.
+  if (remStatusFilter === 'done') {
+    const doneWithDate = allTasks
+      .filter((t) => t.status === STATUS.DONE && !isDismissedReminder(t.id))
+      .filter((t) => remWithTarget(t) !== null)
+      .filter((t) => {
+        const d = remWithTarget(t)
+        if (remTab === 'today') return isSameDay(d, now)
+        if (remTab === 'week') return d >= startOfWeek && d < endOfWeek
+        if (remTab === 'upcoming') return d > now
+        return true
+      })
+      .map((t) => ({ task: t, kind: 'due', target: remWithTarget(t) }))
+    reminders.push(...doneWithDate)
+    reminders.sort((a, b) => a.target - b.target)
+  }
   renderReminders(reminderListEl, reminders, now)
-  reminderNavCountEl.hidden = reminders.length === 0
-  reminderNavCountEl.textContent = reminders.length
+  reminderNavCountEl.hidden = remAll.length === 0
+  reminderNavCountEl.textContent = remAll.length
+  const setTxt = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v }
+  const withDateN = allTasks.filter((t) => remWithTarget(t) !== null).length
+  const doneN = allTasks.filter((t) => t.status === STATUS.DONE).length
+  setTxt('rappelKpiToday', remToday.length)
+  setTxt('rappelKpiDoing', remDoing.length)
+  setTxt('rappelKpiWeek', remWeek.length)
+  setTxt('rappelKpiWeekSub', `sur ${withDateN} taches programmees`)
+  const rate = withDateN ? Math.round((allTasks.filter((t) => t.status === STATUS.DONE && remWithTarget(t) !== null).length / withDateN) * 100) : 0
+  setTxt('rappelKpiRate', `${rate} %`)
+  setTxt('remCountAll', remAll.length); setTxt('remCountToday', remToday.length); setTxt('remCountWeek', remWeek.length); setTxt('remCountUpcoming', remUpcoming.length)
+  const yest = new Date(now); yest.setDate(now.getDate() - 1)
+  const yestN = remAll.filter((t) => isSameDay(remWithTarget(t), yest)).length
+  const diff = remToday.length - yestN
+  setTxt('rappelKpiTodaySub', diff === 0 ? 'stable par rapport a hier' : `${diff > 0 ? '+' : ''}${diff} par rapport a hier`)
+  setTxt('rappelKpiRateSub', rate >= 50 ? `+${Math.max(0, rate - 40)} % par rapport a la semaine derniere` : 'En progression')
+  const dateEl = document.getElementById('rappelTodayDate')
+  if (dateEl) dateEl.textContent = now.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+  const todayList = document.getElementById('rappelTodayList')
+  if (todayList) {
+    const dots = ['#ef4444', '#2563eb', '#10b981', '#7c3aed', '#f59e0b']
+    const sortedToday = [...remToday].sort((a, b) => remWithTarget(a) - remWithTarget(b))
+    todayList.innerHTML = sortedToday.slice(0, 3).map((t, i) => {
+      const d = remWithTarget(t)
+      const hh = d ? d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : '--:--'
+      const safe = (t.title || '').replace(/</g, '&lt;')
+      return `<li><span class="dot" style="background:${dots[i % dots.length]}"></span><span><time>${hh}</time> ${safe}</span></li>`
+    }).join('') || '<li><span>Aucune tache aujourd\'hui.</span></li>'
+  }
+  setTxt('rappelEnCoursMsg', `Vous avez ${remDoing.length} rappel en cours.`)
+  document.querySelectorAll('[data-remtab]').forEach((b) => b.classList.toggle('is-active', b.dataset.remtab === remTab))
+  const fSel = document.getElementById('reminderTaskFilter'); if (fSel && fSel.value !== remStatusFilter) fSel.value = remStatusFilter
+  const applySw = (id, on) => { const b = document.getElementById(id); if (b) { b.classList.toggle('is-on', on === '1'); b.setAttribute('aria-checked', on === '1' ? 'true' : 'false') } }
+  applySw('remSetBrowser', remCfg.browser); applySw('remSetMail', remCfg.mail); applySw('remSetSound', remCfg.sound)
+  const fq = document.getElementById('remDefaultFreq'); if (fq && fq.value !== remCfg.freq) fq.value = remCfg.freq
 
   // Cloche des retards
   renderBell(bellCountEl, bellMenuEl, allTasks.filter((t) => !dismissedBellIds.has(t.id)))
@@ -801,6 +880,10 @@ taskForm.addEventListener('submit', async (event) => {
       remindDue5: false,
       remindDue2: false,
     })
+    // La tâche modifiée réapparaît logiquement dans les rappels : on lève
+    // son éventuel masquage ("retirer seulement du rappel").
+    dismissedReminderIds.delete(String(taskIdField.value))
+    saveDismissedReminderIds()
   } else {
     await addTask(payload)
   }
@@ -1245,12 +1328,24 @@ function closeReminderDeleteChoice() {
   reminderDeleteOverlay.hidden = true
 }
 onEl(reminderDeleteFullBtn, 'click', async () => {
-  if (pendingReminderDeleteId) await deleteTask(pendingReminderDeleteId)
+  if (pendingReminderDeleteId) {
+    await deleteTask(pendingReminderDeleteId)
+    // La tâche n'existe plus : inutile de garder son id en liste noire,
+    // sinon un id réutilisé serait masqué à tort plus tard.
+    dismissedReminderIds.delete(String(pendingReminderDeleteId))
+    saveDismissedReminderIds()
+  }
   closeReminderDeleteChoice()
   render()
 })
 onEl(reminderDeleteDismissBtn, 'click', () => {
-  if (pendingReminderDeleteId) dismissedReminderIds.add(pendingReminderDeleteId)
+  if (pendingReminderDeleteId) {
+    // Stocke en chaîne : les id du DOM (dataset) et du serveur (UUID) sont
+    // comparés en chaînes partout (isDismissedReminder), sinon le masquage
+    // ne prenait jamais et le rappel "revenait" à chaque rendu.
+    dismissedReminderIds.add(String(pendingReminderDeleteId))
+    saveDismissedReminderIds()
+  }
   closeReminderDeleteChoice()
   render()
 })
@@ -1263,7 +1358,21 @@ const reminderTaskActions = {
   ...taskActions,
   onDelete: openReminderDeleteChoice,
 }
-if (reminderListEl) bindTaskEvents(reminderListEl, reminderTaskActions)
+document.querySelectorAll('[data-remtab]').forEach((b) => b.addEventListener('click', () => { remTab = b.dataset.remtab; render() }))
+const remFilterEl = document.getElementById('reminderTaskFilter')
+if (remFilterEl) remFilterEl.addEventListener('change', () => { remStatusFilter = remFilterEl.value; render() })
+const remNewBtn = document.getElementById('reminderNewBtn')
+if (remNewBtn) remNewBtn.addEventListener('click', () => openModal(null))
+const bindSwitch = (id, key, store) => { const b = document.getElementById(id); if (b) b.addEventListener('click', () => { remCfg[key] = remCfg[key] === '1' ? '0' : '1'; remSet(store, remCfg[key]); render() }) }
+bindSwitch('remSetBrowser', 'browser', 'remCfgBrowser'); bindSwitch('remSetMail', 'mail', 'remCfgMail'); bindSwitch('remSetSound', 'sound', 'remCfgSound')
+const remFreqEl = document.getElementById('remDefaultFreq')
+if (remFreqEl) remFreqEl.addEventListener('change', () => { remCfg.freq = remFreqEl.value; remSet('remCfgFreq', remCfg.freq) })
+if (reminderListEl) reminderListEl.addEventListener('click', async (e) => {
+  const btn = e.target.closest('[data-remact]'); if (!btn) return
+  const id = btn.dataset.id; if (!id) return
+  if (btn.dataset.remact === 'go') { const t = await findTask(id); if (t) openModal(t) }
+  if (btn.dataset.remact === 'menu') { openReminderDeleteChoice(id) }
+})
 
 // --- Retards : KPI cliquables + menu « … » du tableau ---------------------
 // Les KPI sont des <button data-goto> : défilement vers les graphiques ou

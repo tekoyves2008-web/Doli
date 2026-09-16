@@ -444,7 +444,76 @@
         </section>
 
         <section id="viewReminders" class="view" hidden>
-          <div id="reminderList" class="task-list task-list--list" aria-live="polite"></div>
+          <div class="rappels">
+            <div class="rappels__main">
+              <div class="rappels__head">
+                <div class="rappels__title-wrap">
+                  <span class="rappels__icon" aria-hidden="true">R</span>
+                  <div>
+                    <h2 class="rappels__title">Rappels</h2>
+                    <p class="rappels__sub">Ne manquez plus vos taches importantes. Recevez des rappels au bon moment pour rester organise et atteindre vos objectifs.</p>
+                  </div>
+                </div>
+                <button type="button" id="reminderNewBtn" class="rappels__new"><span aria-hidden="true">+</span> Nouveau rappel</button>
+              </div>
+              <div class="rappels__kpis">
+                <div class="rappel-kpi rappel-kpi--blue">
+                  <span class="rappel-kpi__ico" aria-hidden="true">B</span>
+                  <div><p class="rappel-kpi__label">Rappels d'aujourd'hui</p><p class="rappel-kpi__num" id="rappelKpiToday">0</p><p class="rappel-kpi__sub" id="rappelKpiTodaySub">--</p></div>
+                </div>
+                <div class="rappel-kpi rappel-kpi--violet">
+                  <span class="rappel-kpi__ico" aria-hidden="true">C</span>
+                  <div><p class="rappel-kpi__label">Rappels en cours</p><p class="rappel-kpi__num" id="rappelKpiDoing">0</p><p class="rappel-kpi__sub">Tache en cours</p></div>
+                </div>
+                <div class="rappel-kpi rappel-kpi--green">
+                  <span class="rappel-kpi__ico" aria-hidden="true">S</span>
+                  <div><p class="rappel-kpi__label">Rappels cette semaine</p><p class="rappel-kpi__num" id="rappelKpiWeek">0</p><p class="rappel-kpi__sub" id="rappelKpiWeekSub">sur 0 taches programmees</p></div>
+                </div>
+                <div class="rappel-kpi rappel-kpi--mint">
+                  <span class="rappel-kpi__ico" aria-hidden="true">T</span>
+                  <div><p class="rappel-kpi__label">Taux de respect</p><p class="rappel-kpi__num" id="rappelKpiRate">0 %</p><p class="rappel-kpi__sub" id="rappelKpiRateSub">--</p></div>
+                </div>
+              </div>
+<!--RAPPELS-REST-->
+              <div class="rappels__card">
+                <div class="rappels__tabs-row">
+                  <div class="rappels__tabs">
+                    <button type="button" class="rappels__tab is-active" data-remtab="all">Tous les rappels <span class="rappels__count" id="remCountAll">0</span></button>
+                    <button type="button" class="rappels__tab" data-remtab="today">Aujourd'hui <span class="rappels__count" id="remCountToday">0</span></button>
+                    <button type="button" class="rappels__tab" data-remtab="week">Cette semaine <span class="rappels__count" id="remCountWeek">0</span></button>
+                    <button type="button" class="rappels__tab" data-remtab="upcoming">A venir <span class="rappels__count" id="remCountUpcoming">0</span></button>
+                  </div>
+                  <label class="rappels__filter"><select id="reminderTaskFilter"><option value="all">Toutes les taches</option><option value="todo">Non executees</option><option value="doing">En cours</option><option value="done">Executees</option></select></label>
+                </div>
+                <div class="rappels__table-wrap">
+                  <table class="rappels__table">
+                    <thead><tr><th class="c-check"><input type="checkbox" id="remCheckAll" aria-label="Tout selectionner" /></th><th>Tache</th><th>Date et heure du rappel</th><th>Frequence</th><th>Statut</th><th class="c-act">Actions</th></tr></thead>
+                    <tbody id="reminderList"></tbody>
+                  </table>
+                  <p id="reminderEmpty" class="rappels__empty" hidden>Aucun rappel dans cette vue pour le moment.</p>
+                </div>
+              </div>
+            </div>
+            <aside class="rappels__aside">
+              <div class="rappels__panel">
+                <div class="rappels__today-head"><div><strong>Aujourd'hui</strong><span id="rappelTodayDate">--</span></div></div>
+                <ul id="rappelTodayList" class="rappels__today-list"></ul>
+                <div class="rappels__encart"><div><strong id="rappelEnCoursMsg">Vous avez 0 rappel en cours.</strong><span>Gardez le cap !</span></div><span aria-hidden="true">></span></div>
+              </div>
+              <div class="rappels__panel">
+                <h3 class="rappels__panel-title">Parametres des rappels</h3>
+                <label class="rappels__switch-row">Notifications sur le navigateur <button type="button" id="remSetBrowser" class="switch is-on" role="switch" aria-checked="true"><span></span></button></label>
+                <label class="rappels__switch-row">Notifications par e-mail <button type="button" id="remSetMail" class="switch is-on" role="switch" aria-checked="true"><span></span></button></label>
+                <label class="rappels__switch-row">Rappel sonore <button type="button" id="remSetSound" class="switch is-on" role="switch" aria-checked="true"><span></span></button></label>
+                <p class="rappels__field-label">Frequence par defaut</p>
+                <label class="rappels__freq"><select id="remDefaultFreq"><option value="2h">Toutes les 2 heures</option><option value="1h">Toutes les heures</option><option value="1d">Tous les jours</option><option value="1w">Toutes les semaines</option><option value="once">Une seule fois</option></select></label>
+              </div>
+              <div class="rappels__motivation">
+                <p><strong>Chaque rappel vous rapproche de vos objectifs !</strong></p>
+                <span class="rappels__bar"></span>
+              </div>
+            </aside>
+          </div>
         </section>
 
         <section id="viewProgression" class="view" hidden>

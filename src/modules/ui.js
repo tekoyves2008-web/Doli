@@ -294,14 +294,78 @@ function reminderCardHtml({ task, kind, target }, now) {
   })
 }
 
-// --- Rappel : uniquement les tches  5 min ou moins de leur dbut ou de
-// leur chance ; chaque carte affiche le temps restant avant disparition.
+// --- Rappel : lignes reelles (taches avec vraie date), statut logique.
 export function renderReminders(container, reminders, now) {
-  if (reminders.length === 0) {
-    container.innerHTML = `<p class="empty-state">Aucun rappel actif pour le moment.</p>`
-    return
-  }
-  container.innerHTML = reminders.map((r) => reminderCardHtml(r, now)).join('')
+  const tb = container || document.getElementById('reminderList')
+  if (!tb) return
+  const list = Array.isArray(reminders) ? reminders : []
+  const ref = now instanceof Date ? now : new Date()
+  const rows = list.map((r) => {
+    const t = r.task || r
+    const raw = r.target ? new Date(r.target) : (t.dueDate ? new Date(t.dueDate) : (t.startTime ? new Date(t.startTime) : null))
+    const target = raw && !Number.isNaN(raw.getTime()) ? raw : null
+    // Un rappel reel a toujours une date ; sans date on n'affiche pas de ligne.
+    if (!target) return ''
+    const isToday = sameDay(target, ref)
+    const isPast = target.getTime() < ref.getTime()
+    const minsLeft = Math.round((target.getTime() - ref.getTime()) / 60000)
+    const soon = !isPast && minsLeft <= 180
+    // Statut logique : depasse > en cours > bientot (moins de 3 h) >
+    // aujourd'hui > a venir.
+    let stCls = 'rem-status--future'
+    let stTxt = 'A venir'
+    if (t.status === STATUS.DOING) { stCls = 'rem-status--doing'; stTxt = 'En cours' }
+    else if (isPast) { stCls = 'rem-status--todo'; stTxt = isToday ? "Aujourd'hui - depasse" : 'En retard' }
+    else if (soon) { stCls = 'rem-status--soon'; stTxt = 'Bientot' }
+    else if (isToday) { stCls = 'rem-status--todo'; stTxt = "Aujourd'hui" }
+    const dateTxt = fmtRemDate(target, ref)
+    const timeTxt = fmtRemTime(target)
+    const freq = freqOf(t)
+    const ico = icoOf(t)
+    const title = escapeHtml(t.title || 'Tache')
+    const desc = escapeHtml(t.description || '')
+    const countTxt = isPast ? 'depasse' : countdownTxt(minsLeft)
+    return `<tr data-id="${t.id}"><td class="c-check"><input type="checkbox" data-remcheck="${t.id}" aria-label="Selectionner" /></td>`
+      + `<td><div class="rem-task"><span class="rem-ico" style="background:${ico.bg}">${ico.ch}</span><div><strong>${title}</strong><span>${desc}</span></div></div></td>`
+      + `<td><div class="rem-date"><span aria-hidden="true">C</span><div>${dateTxt}<small>${timeTxt} - ${countTxt}</small></div></div></td>`
+      + `<td><span class="rem-freq">R ${freq}</span></td>`
+      + `<td><span class="rem-status ${stCls}">${stTxt}</span></td>`
+      + `<td><div class="rem-actions"><button type="button" class="rem-act" data-remact="menu" data-id="${t.id}" aria-label="Options">...</button><button type="button" class="rem-act" data-remact="go" data-id="${t.id}" aria-label="Ouvrir">›</button></div></td></tr>`
+  }).join('')
+  tb.innerHTML = rows
+  const emptyEl = document.getElementById('reminderEmpty')
+  if (emptyEl) emptyEl.hidden = list.length !== 0
+}
+function countdownTxt(mins) {
+  if (mins < 60) return `dans ${mins} min`
+  const h = Math.floor(mins / 60)
+  if (h < 24) return `dans ${h} h`
+  const d = Math.floor(h / 24)
+  return `dans ${d} j`
+}
+function sameDay(a, b) { return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate() }
+function fmtRemDate(d, ref) {
+  const base = ref instanceof Date ? ref : new Date()
+  const tom = new Date(base); tom.setDate(base.getDate() + 1)
+  if (sameDay(d, base)) return "Aujourd'hui"
+  if (sameDay(d, tom)) return 'Demain'
+  return d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })
+}
+function fmtRemTime(d) { return d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) }
+function freqOf(t) {
+  const s = (t.title || '').toLowerCase()
+  if (s.includes('reunion') || s.includes('equipe') || s.includes('design') || s.includes('interface')) return 'Toutes les semaines'
+  if (t.status === STATUS.DOING) return 'Toutes les 2 h'
+  return 'Une seule fois'
+}
+function icoOf(t) {
+  const s = (t.title || '').toLowerCase()
+  if (s.includes('rapport') || s.includes('redaction')) return { bg: '#ef4444', ch: 'R' }
+  if (s.includes('develop') || s.includes('fonction')) return { bg: '#2563eb', ch: '&lt;/&gt;' }
+  if (s.includes('bug') || s.includes('correct')) return { bg: '#16a34a', ch: '*' }
+  if (s.includes('reunion') || s.includes('equipe')) return { bg: '#7c3aed', ch: 'o' }
+  if (s.includes('design') || s.includes('interface')) return { bg: '#f59e0b', ch: '/' }
+  return { bg: '#7c3aed', ch: '+' }
 }
 
 function recentCardHtml(task, now) {
