@@ -1,0 +1,79 @@
+function pgSet(id, text) {
+  const el = document.getElementById(id)
+  if (el) el.textContent = text
+}
+const PG_CIRC = 339.292
+function pgSetSeg(id, frac, offsetFrac) {
+  const el = document.getElementById(id)
+  if (!el) return
+  const len = Math.max(0, frac * PG_CIRC)
+  el.setAttribute('stroke-dasharray', len.toFixed(1) + ' ' + PG_CIRC.toFixed(1))
+  el.setAttribute('stroke-dashoffset', (-offsetFrac * PG_CIRC).toFixed(1))
+}
+function pgPaintDonut(prefix, counts, total) {
+  const keys = [counts.todo, counts.doing, counts.delayed, counts.done]
+  const names = ['Todo', 'Doing', 'Late', 'Done']
+  let acc = 0
+  for (let i = 0; i < 4; i++) {
+    const frac = total > 0 ? keys[i] / total : 0
+    pgSetSeg(prefix + names[i], frac, acc)
+    acc += frac
+  }
+}
+function pgHours(ms) {
+  const h = ms / 3600000
+  if (h < 1) return Math.round(ms / 60000) + ' min'
+  const whole = Math.floor(h)
+  const rest = Math.round((h - whole) * 60)
+  return rest === 0 ? whole + ' h' : whole + ' h ' + String(rest).padStart(2, '0')
+}
+function pgIsOverdue(t) {
+  if (!t || !t.dueDate || t.status === 'done') return false
+  const d = new Date(t.dueDate).getTime()
+  return Number.isFinite(d) && d < Date.now()
+}
+function pgRefMs(t) {
+  if (t.dueDate) { const d = new Date(t.dueDate).getTime(); if (Number.isFinite(d)) return d }
+  if (t.completedAt) { const d = new Date(t.completedAt).getTime(); if (Number.isFinite(d)) return d }
+  if (t.createdAt) { const d = new Date(t.createdAt).getTime(); if (Number.isFinite(d)) return d }
+  return null
+}
+function pgInPeriod(tasks, days) {
+  const now = new Date(); now.setHours(0, 0, 0, 0)
+  const start = now.getTime() - (days - 1) * 86400000
+  const end = now.getTime() + 86400000
+  return tasks.filter((t) => { const m = pgRefMs(t); return m !== null && m >= start && m < end })
+}
+function pgSplit(tasks) {
+  const done = tasks.filter((t) => t.status === 'done').length
+  const delayed = tasks.filter(pgIsOverdue).length
+  const doing = tasks.filter((t) => t.status === 'doing' && !pgIsOverdue(t)).length
+  const todo = tasks.filter((t) => t.status === 'todo' && !pgIsOverdue(t)).length
+  return { done, doing, todo, delayed, total: tasks.length }
+}
+function pgPlannedMs(t) {
+  if (t.startTime && t.dueDate) {
+    const a = new Date(t.startTime).getTime(); const b = new Date(t.dueDate).getTime()
+    if (Number.isFinite(a) && Number.isFinite(b) && b > a) return b - a
+  }
+  if (t.dueDate && t.createdAt) {
+    const a = new Date(t.createdAt).getTime(); const b = new Date(t.dueDate).getTime()
+    if (Number.isFinite(a) && Number.isFinite(b) && b > a) return b - a
+  }
+  return 2 * 3600000
+}
+function pgActualMs(t) {
+  if (t.status === 'done' && t.completedAt) {
+    const base = t.startedAt || t.createdAt
+    if (base) {
+      const a = new Date(base).getTime(); const b = new Date(t.completedAt).getTime()
+      if (Number.isFinite(a) && Number.isFinite(b) && b >= a) return b - a
+    }
+    return pgPlannedMs(t)
+  }
+  if (t.startedAt && t.lastProofAt) {
+    const a = new Date(t.startedAt).getTime(); const b = new Date(t.lastProofAt).getTime()
+    if (Number.isFinite(a) && Number.isFinite(b) && b >= a) return b - a
+  }
+  return 0
+}

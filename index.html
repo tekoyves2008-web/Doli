@@ -517,114 +517,135 @@
         </section>
 
         <section id="viewProgression" class="view" hidden>
-          <div class="pg2">
-            <div class="pg2__topbar">
-              <div class="pg2__head">
-                <span class="pg2__head-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><rect x="3" y="12" width="4" height="9" rx="1"/><rect x="10" y="7" width="4" height="14" rx="1"/><rect x="17" y="3" width="4" height="18" rx="1"/></svg></span>
-                <div><h2 class="pg2__title">Progression</h2><p class="pg2__sub">Suivez l'avancement de vos tâches et atteignez vos objectifs</p></div>
-              </div>
-              <div class="pg2__seg" role="tablist" aria-label="Période">
-                <button type="button" class="pg2__seg-btn is-active" data-period="1">Aujourd'hui</button>
-                <button type="button" class="pg2__seg-btn" data-period="7">Cette semaine</button>
-                <button type="button" class="pg2__seg-btn" data-period="30">Ce mois</button>
-              </div>
-            </div>
-            <div class="pg2__row-top">
-              <div class="pg2-card">
-                <div class="pg2-card__head">
-                  <span class="pg2-card__ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1" fill="currentColor"/></svg></span>
-                  <div><h3 id="pgDayTitle">Ma progression du jour</h3><p>Avancement global de vos tâches</p></div>
-                  <span class="pg2-dots" aria-hidden="true">•••</span>
-                </div>
-                <div class="pg2-day__body">
-                  <div class="pg2-day__left">
-                    <svg id="pgDayDonut" class="pg2-donut" viewBox="0 0 140 140" width="128" height="128" aria-hidden="true">
-                      <circle cx="70" cy="70" r="54" fill="none" stroke="#e9edf3" stroke-width="15"/>
-                      <circle id="pgDaySegTodo" cx="70" cy="70" r="54" fill="none" stroke="#c3cad4" stroke-width="15" stroke-linecap="round" transform="rotate(-90 70 70)" stroke-dasharray="0 339.292" stroke-dashoffset="0"/>
-                      <circle id="pgDaySegDoing" cx="70" cy="70" r="54" fill="none" stroke="#3b82f6" stroke-width="15" stroke-linecap="round" transform="rotate(-90 70 70)" stroke-dasharray="0 339.292" stroke-dashoffset="0"/>
-                      <circle id="pgDaySegDelayed" cx="70" cy="70" r="54" fill="none" stroke="#ef4444" stroke-width="15" stroke-linecap="round" transform="rotate(-90 70 70)" stroke-dasharray="0 339.292" stroke-dashoffset="0"/>
-                      <circle id="pgDaySegDone" cx="70" cy="70" r="54" fill="none" stroke="#22b07d" stroke-width="15" stroke-linecap="round" transform="rotate(-90 70 70)" stroke-dasharray="0 339.292" stroke-dashoffset="0"/>
-                    </svg>
-                    <div class="pg2-donut__center"><strong id="pgDayPct">0 %</strong><span id="pgDayCenterSub">Progression<br/>aujourd'hui</span></div>
-                    <span id="pgDayBadge" class="pg2-pill pg2-pill--green"><span aria-hidden="true">↑</span> Bon rythme !</span>
-                  </div>
-                  <div class="pg2-day__right">
-                    <h4>Répartition des tâches</h4>
-                    <ul class="pg2-repart">
-                      <li><span class="pg2-dot pg2-dot--green"></span>Exécutées<b id="pgDayDoneN">0</b><em id="pgDayDoneP">0 %</em></li>
-                      <li><span class="pg2-dot pg2-dot--blue"></span>En cours<b id="pgDayDoingN">0</b><em id="pgDayDoingP">0 %</em></li>
-                      <li><span class="pg2-dot pg2-dot--grey"></span>Non exécutées<b id="pgDayTodoN">0</b><em id="pgDayTodoP">0 %</em></li>
-                      <li><span class="pg2-dot pg2-dot--red"></span>En retard<b id="pgDayLateN">0</b><em id="pgDayLateP">0 %</em></li>
-                      <li class="pg2-repart__total"><span>Total</span><b id="pgDayTotalN">0</b><em>100 %</em></li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-              <div class="pg2-card">
-                <div class="pg2-card__head">
-                  <span class="pg2-card__ico" aria-hidden="true">H</span>
-                  <div><h3>Respect du temps</h3><p>Comparaison temps prévu / temps réel</p></div>
-                  <span class="pg2-dots" aria-hidden="true">•••</span>
-                </div>
-                <div class="pg2-time__donut-wrap">
-                  <svg class="pg2-donut pg2-donut--sm" viewBox="0 0 140 140" width="104" height="104" aria-hidden="true">
-                    <circle cx="70" cy="70" r="54" fill="none" stroke="#e9edf3" stroke-width="15"/>
-                    <circle id="pgTimeSeg" cx="70" cy="70" r="54" fill="none" stroke="#22b07d" stroke-width="15" stroke-linecap="round" transform="rotate(-90 70 70)" stroke-dasharray="0 339.292" stroke-dashoffset="0"/>
-                  </svg>
-                  <div class="pg2-donut__center pg2-donut__center--sm"><strong id="pgTimePct">0 %</strong></div>
-                </div>
-                <span id="pgTimeBadge" class="pg2-pill pg2-pill--green pg2-pill--center">Dans le rythme prévu</span>
-                <div class="pg2-time__cols">
-                  <div><p class="pg2-time__label">Temps prévu</p><strong id="pgPlanned">0 h</strong></div>
-                  <div><p class="pg2-time__label">Temps réellement utilisé</p><strong id="pgActual">0 h</strong></div>
-                </div>
-              </div>
-              
-              <div class="progression-stat-card">
-                <div class="stat-icon stat-icon--notdone" aria-hidden="true"><svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="10" cy="10" r="7.5"/><line x1="7.6" y1="10" x2="7.6" y2="10"/><line x1="12.4" y1="10" x2="12.4" y2="10"/></svg></div>
-                <div class="stat-content">
-                  <div id="progressionStatNotDone" class="stat-number">X</div>
-                  <div class="stat-label">Non exécutée</div>
-                  <div id="progressionStatNotDonePercent" class="stat-percent">0%</div>
-                </div>
-              </div>
-            </div>
-            
-            <div class="progression-charts">
-              <div class="progression-chart">
-                <h3 id="progressionDistributionTitle">Répartition des tâches</h3>
-                <canvas id="progressionDayDistributionChart" width="400" height="300"></canvas>
-              </div>
-              
-              <div class="progression-chart">
-                <h3 id="progressionComparisonTitle">Comparaison sur la semaine</h3>
-                <canvas id="progressionWeeklyComparisonChart" width="400" height="300"></canvas>
-              </div>
-            </div>
-            
-            <div class="progression-bottom">
-              <div class="progression-chart progression-chart--trend">
-                <h3 id="progressionTrendTitle">Évolution de la progression</h3>
-                <canvas id="progressionTrendChart" width="800" height="250"></canvas>
-              </div>
-              
-              <div class="progression-summary">
-                <div class="summary-card">
-                  <div class="summary-icon-wrapper">
-                    <div class="summary-icon">✓</div>
-                  </div>
-                  <div class="summary-content">
-                    <h4 id="progressionSummaryTitle">Bilan du jour</h4>
-                    <div id="progressionTodayPercent" class="summary-big">0%</div>
-                    <div id="progressionTodayLabel" class="summary-label">de tâches exécutées</div>
-                    <div id="progressionProgressBar" class="progress-bar"></div>
-                    <div id="progressionMessage" class="summary-message"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
+<div class="pg">
+<div class="pg__topbar">
+<div class="pg__head">
+<span class="pg__head-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><rect x="3" y="12" width="4" height="9" rx="1.2"/><rect x="10" y="7" width="4" height="14" rx="1.2"/><rect x="17" y="3" width="4" height="18" rx="1.2"/></svg></span>
+<div><h2 class="pg__title">Progression</h2><p class="pg__sub">Suivez l'avancement de vos tâches et atteignez vos objectifs</p></div>
+</div>
+<div class="pg2__seg pg__seg" role="tablist" aria-label="Période">
+<button type="button" class="pg2__seg-btn is-active" data-period="1">Aujourd'hui</button>
+<button type="button" class="pg2__seg-btn" data-period="7">Cette semaine</button>
+<button type="button" class="pg2__seg-btn" data-period="30">Ce mois</button>
+</div>
+</div>
+<div class="pg__grid-top">
+<article class="pg-card pg-card--day">
+<header class="pg-card__head">
+<span class="pg-card__ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.6"/><circle cx="12" cy="12" r="1.1" fill="currentColor" stroke="none"/></svg></span>
+<div class="pg-card__titles"><h3 id="pgDayTitle">Ma progression du jour</h3><p>Avancement global de vos tâches</p></div>
+<span class="pg-dots" aria-hidden="true">...</span>
+</header>
+<div class="pg-day__body">
+<div class="pg-day__left">
+<div class="pg-donut-wrap">
+<svg id="pgDonutDay" class="pg-donut" viewBox="0 0 140 140" width="150" height="150" aria-hidden="true">
+<circle cx="70" cy="70" r="54" fill="none" stroke="#e9edf3" stroke-width="15" class="pg-track"/>
+<circle id="pgDaySegTodo" cx="70" cy="70" r="54" fill="none" stroke="#c3cad4" stroke-width="15" stroke-linecap="round" transform="rotate(-90 70 70)" stroke-dasharray="0 339.292" stroke-dashoffset="0"/>
+<circle id="pgDaySegDoing" cx="70" cy="70" r="54" fill="none" stroke="#3b82f6" stroke-width="15" stroke-linecap="round" transform="rotate(-90 70 70)" stroke-dasharray="0 339.292" stroke-dashoffset="0"/>
+<circle id="pgDaySegLate" cx="70" cy="70" r="54" fill="none" stroke="#ef4444" stroke-width="15" stroke-linecap="round" transform="rotate(-90 70 70)" stroke-dasharray="0 339.292" stroke-dashoffset="0"/>
+<circle id="pgDaySegDone" cx="70" cy="70" r="54" fill="none" stroke="#22b07d" stroke-width="15" stroke-linecap="round" transform="rotate(-90 70 70)" stroke-dasharray="0 339.292" stroke-dashoffset="0"/>
+</svg>
+<div class="pg-donut__center"><strong id="pgDayPct">0 %</strong><span id="pgDayCenterLabel">Progression aujourd'hui</span></div>
+</div>
+<span id="pgDayBadge" class="pg-pill pg-pill--green"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M6 11l6-6 6 6"/></svg>Bon rythme !</span>
+</div>
+<div class="pg-day__right">
+<h4>Répartition des tâches</h4>
+<ul class="pg-repart">
+<li><span class="pg-dot pg-dot--green"></span>Exécutées<b id="pgDayDoneN">0</b><em id="pgDayDoneP">0 %</em></li>
+<li><span class="pg-dot pg-dot--blue"></span>En cours<b id="pgDayDoingN">0</b><em id="pgDayDoingP">0 %</em></li>
+<li><span class="pg-dot pg-dot--grey"></span>Non exécutées<b id="pgDayTodoN">0</b><em id="pgDayTodoP">0 %</em></li>
+<li><span class="pg-dot pg-dot--red"></span>En retard<b id="pgDayLateN">0</b><em id="pgDayLateP">0 %</em></li>
+<li class="pg-repart__total"><span>Total</span><b id="pgDayTotalN">0</b><em>100 %</em></li>
+</ul>
+</div>
+</div>
+</article>
+<article class="pg-card pg-card--time">
+<header class="pg-card__head">
+<span class="pg-card__ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg></span>
+<div class="pg-card__titles"><h3>Respect du temps</h3><p>Comparaison temps prévu / temps réel</p></div>
+<span class="pg-dots" aria-hidden="true">...</span>
+</header>
+<div class="pg-donut-wrap pg-donut-wrap--sm">
+<svg class="pg-donut pg-donut--sm" viewBox="0 0 140 140" width="122" height="122" aria-hidden="true">
+<circle cx="70" cy="70" r="54" fill="none" stroke="#e9edf3" stroke-width="15" class="pg-track"/>
+<circle id="pgTimeSeg" cx="70" cy="70" r="54" fill="none" stroke="#22b07d" stroke-width="15" stroke-linecap="round" transform="rotate(-90 70 70)" stroke-dasharray="0 339.292" stroke-dashoffset="0"/>
+</svg>
+<div class="pg-donut__center pg-donut__center--sm"><strong id="pgTimePct">0 %</strong></div>
+</div>
+<span id="pgTimeBadge" class="pg-pill pg-pill--green pg-pill--center"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8.5 12.2l2.4 2.4 4.6-5"/></svg>Dans le rythme prévu</span>
+<div class="pg-time__cols">
+<div><p class="pg-time__label">Temps prévu</p><strong id="pgPlanned">0 h</strong></div>
+<div><p class="pg-time__label">Temps réellement utilisé</p><strong id="pgActual">0 h</strong></div>
+</div>
+</article>
+<article class="pg-card pg-card--evo">
+<header class="pg-card__head">
+<span class="pg-card__ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5.5-5.5 3.5 3.5L20.5 6.5"/><path d="M15 6.5h5.5V12"/></svg></span>
+<div class="pg-card__titles"><h3>Évolution de la progression</h3><p>Sur les 7 derniers jours</p></div>
+<span class="pg-dots" aria-hidden="true">...</span>
+</header>
+<div class="pg-evo__wrap"><canvas id="pgEvoChart" height="190"></canvas></div>
+</article>
+</div>
+<div class="pg__grid-mid">
+<article class="pg-card pg-card--detail">
+<header class="pg-card__head">
+<span class="pg-card__ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><rect x="4" y="3.5" width="16" height="17" rx="2.5"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></span>
+<div class="pg-card__titles"><h3>Détail des tâches du jour</h3><p>Répartition visuelle de vos tâches</p></div>
+<span class="pg-dots" aria-hidden="true">...</span>
+</header>
+<div class="pg-detail__body">
+<div class="pg-tiles">
+<div class="pg-tile pg-tile--green"><span class="pg-tile__ico"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><b>Exécutées</b><strong id="pgTileDoneN">0</strong><em id="pgTileDoneP">0 %</em></div>
+<div class="pg-tile pg-tile--blue"><span class="pg-tile__ico"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="2.2" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="5.4" stroke-dasharray="2.4 2.6"/></svg></span><b>En cours</b><strong id="pgTileDoingN">0</strong><em id="pgTileDoingP">0 %</em></div>
+<div class="pg-tile pg-tile--grey"><span class="pg-tile__ico"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 12h12"/></svg></span><b>Non exécutées</b><strong id="pgTileTodoN">0</strong><em id="pgTileTodoP">0 %</em></div>
+<div class="pg-tile pg-tile--red"><span class="pg-tile__ico"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v9"/><circle cx="12" cy="18" r="1.2" fill="currentColor" stroke="none"/></svg></span><b>En retard</b><strong id="pgTileLateN">0</strong><em id="pgTileLateP">0 %</em></div>
+</div>
+<div class="pg-detail__donut">
+<div class="pg-donut-wrap pg-donut-wrap--xs">
+<svg id="pgDonutDetail" class="pg-donut pg-donut--xs" viewBox="0 0 140 140" width="132" height="132" aria-hidden="true">
+<circle cx="70" cy="70" r="54" fill="none" stroke="#e9edf3" stroke-width="17" class="pg-track"/>
+<circle id="pgDetailSegTodo" cx="70" cy="70" r="54" fill="none" stroke="#c3cad4" stroke-width="17" transform="rotate(-90 70 70)" stroke-dasharray="0 339.292" stroke-dashoffset="0"/>
+<circle id="pgDetailSegDoing" cx="70" cy="70" r="54" fill="none" stroke="#3b82f6" stroke-width="17" transform="rotate(-90 70 70)" stroke-dasharray="0 339.292" stroke-dashoffset="0"/>
+<circle id="pgDetailSegLate" cx="70" cy="70" r="54" fill="none" stroke="#ef4444" stroke-width="17" transform="rotate(-90 70 70)" stroke-dasharray="0 339.292" stroke-dashoffset="0"/>
+<circle id="pgDetailSegDone" cx="70" cy="70" r="54" fill="none" stroke="#22b07d" stroke-width="17" transform="rotate(-90 70 70)" stroke-dasharray="0 339.292" stroke-dashoffset="0"/>
+</svg>
+<div class="pg-donut__center pg-donut__center--xs"><strong id="pgDetailTotal">0</strong><span>tâches</span></div>
+</div>
+<ul class="pg-legend">
+<li><span class="pg-dot pg-dot--green"></span>Executees<em id="pgDetailDoneP">0%</em></li>
+<li><span class="pg-dot pg-dot--blue"></span>En cours<em id="pgDetailDoingP">0%</em></li>
+<li><span class="pg-dot pg-dot--grey"></span>Non exécutées<em id="pgDetailTodoP">0%</em></li>
+<li><span class="pg-dot pg-dot--red"></span>En retard<em id="pgDetailLateP">0%</em></li>
+</ul>
+</div>
+</div>
+</article>
+<article class="pg-card pg-card--week">
+<header class="pg-card__head">
+<span class="pg-card__ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="16" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg></span>
+<div class="pg-card__titles"><h3>Résumé de la semaine</h3><p>Vos performances cette semaine</p></div>
+<span class="pg-dots" aria-hidden="true">...</span>
+</header>
+<div class="pg-week__grid">
+<div class="pg-mini pg-mini--green"><div class="pg-mini__row"><span class="pg-mini__ico"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><strong id="pgWeekDone">0</strong></div><p>Tâches exécutées</p><em id="pgWeekDoneDelta" class="pg-delta pg-delta--up">+12 %</em></div>
+<div class="pg-mini pg-mini--blue"><div class="pg-mini__row"><span class="pg-mini__ico"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg></span><strong id="pgWeekOnTime">0 %</strong></div><p>Dans les délais</p><em id="pgWeekOnTimeDelta" class="pg-delta pg-delta--up">+8 %</em></div>
+<div class="pg-mini pg-mini--rose"><div class="pg-mini__row"><span class="pg-mini__ico"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v9"/><circle cx="12" cy="18" r="1.2" fill="currentColor" stroke="none"/></svg></span><strong id="pgWeekLate">0</strong></div><p>Tâches en retard</p><em id="pgWeekLateDelta" class="pg-delta pg-delta--down">-3 %</em></div>
+<div class="pg-mini pg-mini--violet"><div class="pg-mini__row"><span class="pg-mini__ico"><svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5L2.5 9.4l6.6-.9z"/></svg></span><strong id="pgWeekEvol">+0 %</strong></div><p>Par rapport à la semaine dernière</p></div>
+</div>
+</article>
+</div>
+<div class="pg-banner">
+<span class="pg-banner__ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.6"/><circle cx="12" cy="12" r="1.1" fill="currentColor" stroke="none"/></svg></span>
+<div class="pg-banner__text"><strong id="pgBannerTitle">Tu es plus régulier cette semaine !</strong><p id="pgBannerSub">Continue sur cette lancée, tu fais de grands progrès.</p></div>
+<svg class="pg-banner__art" viewBox="0 0 220 64" aria-hidden="true"><g><ellipse cx="40" cy="48" rx="16" ry="7" fill="#dbe4fb"/><ellipse cx="56" cy="44" rx="12" ry="6" fill="#e6ecfc"/><path d="M120 58L158 12l38 46z" fill="#c7d6fb"/><path d="M140 58l18-26 18 26z" fill="#a9bdf7"/><path d="M158 12l7 10-4 3-3-4-4 2z" fill="#3b5bdb"/><rect x="161.4" y="4" width="1.6" height="10" fill="#3b5bdb"/><path d="M163 4h11l-2.5 2.5L174 9h-11z" fill="#3b5bdb"/><path d="M96 58l16-20 16 20z" fill="#d3defa"/></g></svg>
+<button type="button" id="pgSeeDetail" class="pg-banner__btn">Voir le détail <span aria-hidden="true">→</span></button>
+</div>
+</div>
+</section>
 
         <section id="viewRetards" class="view" hidden>
           <div class="retards-container">

@@ -1,0 +1,46 @@
+<section id="viewProgression" class="view" hidden>
+<div class="pg">
+<div class="pg__topbar">
+<div class="pg__head">
+<span class="pg__head-ico" aria-hidden="true">P</span>
+<div><h2 class="pg__title">Progression</h2><p class="pg__sub">Suivez l'avancement de vos taches et atteignez vos objectifs</p></div>
+</div>
+<div class="pg2__seg pg__seg" role="tablist" aria-label="Periode">
+<button type="button" class="pg2__seg-btn is-active" data-period="1">Aujourd'hui</button>
+<button type="button" class="pg2__seg-btn" data-period="7">Cette semaine</button>
+<button type="button" class="pg2__seg-btn" data-period="30">Ce mois</button>
+</div>
+</div>
+<div class="pg__grid-top">
+<article class="pg-card pg-card--day">
+<header class="pg-card__head">
+<span class="pg-card__ico" aria-hidden="true">C</span>
+<div class="pg-card__titles"><h3 id="pgDayTitle">Ma progression du jour</h3><p>Avancement global de vos taches</p></div>
+<span class="pg-dots" aria-hidden="true">...</span>
+</header>
+<div class="pg-day__body">
+<div class="pg-day__left">
+<div class="pg-donut-wrap">
+<svg id="pgDonutDay" class="pg-donut" viewBox="0 0 140 140" width="150" height="150" aria-hidden="true">
+<circle cx="70" cy="70" r="54" fill="none" stroke="#e9edf3" stroke-width="15" class="pg-track"/>
+<circle id="pgDaySegTodo" cx="70" cy="70" r="54" fill="none" stroke="#c3cad4" stroke-width="15" stroke-linecap="round" transform="rotate(-90 70 70)" stroke-dasharray="0 339.292" stroke-dashoffset="0"/>
+<circle id="pgDaySegDoing" cx="70" cy="70" r="54" fill="none" stroke="#3b82f6" stroke-width="15" stroke-linecap="round" transform="rotate(-90 70 70)" stroke-dasharray="0 339.292" stroke-dashoffset="0"/>
+<circle id="pgDaySegLate" cx="70" cy="70" r="54" fill="none" stroke="#ef4444" stroke-width="15" stroke-linecap="round" transform="rotate(-90 70 70)" stroke-dasharray="0 339.292" stroke-dashoffset="0"/>
+<circle id="pgDaySegDone" cx="70" cy="70" r="54" fill="none" stroke="#22b07d" stroke-width="15" stroke-linecap="round" transform="rotate(-90 70 70)" stroke-dasharray="0 339.292" stroke-dashoffset="0"/>
+</svg>
+<div class="pg-donut__center"><strong id="pgDayPct">0 %</strong><span id="pgDayCenterLabel">Progression aujourd'hui</span></div>
+</div>
+<span id="pgDayBadge" class="pg-pill pg-pill--green">Bon rythme !</span>
+</div>
+<div class="pg-day__right">
+<h4>Repartition des taches</h4>
+<ul class="pg-repart">
+<li><span class="pg-dot pg-dot--green"></span>Executees<b id="pgDayDoneN">0</b><em id="pgDayDoneP">0 %</em></li>
+<li><span class="pg-dot pg-dot--blue"></span>En cours<b id="pgDayDoingN">0</b><em id="pgDayDoingP">0 %</em></li>
+<li><span class="pg-dot pg-dot--grey"></span>Non executees<b id="pgDayTodoN">0</b><em id="pgDayTodoP">0 %</em></li>
+<li><span class="pg-dot pg-dot--red"></span>En retard<b id="pgDayLateN">0</b><em id="pgDayLateP">0 %</em></li>
+<li class="pg-repart__total"><span>Total</span><b id="pgDayTotalN">0</b><em>100 %</em></li>
+</ul>
+</div>
+</div>
+</article>

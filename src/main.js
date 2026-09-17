@@ -36,7 +36,7 @@ import {
   bindBellMenu,
   renderReminders,
   triggerConfetti,
-  renderProgressionStats,
+  renderProgressionMaquette,
   renderProgressionDayDistribution,
   renderProgressionWeeklyComparison,
   renderProgressionTrend,
@@ -644,24 +644,9 @@ async function render() {
   // Cloche des retards
   renderBell(bellCountEl, bellMenuEl, allTasks.filter((t) => !dismissedBellIds.has(t.id)))
 
-  // Progression
+  // Progression (maquette image : donuts SVG + courbe canvas + tuiles).
   if (currentView === 'progression') {
-    updateProgressionTitles(progressionPeriod)
-
-    const progressionStats = computeProgressionStats(allTasks, progressionPeriod)
-    renderProgressionStats(progressionStats)
-
-    const todayDistribution = computeTodayDistribution(allTasks, progressionPeriod)
-    renderProgressionDayDistribution(progressionDayDistributionCanvas, todayDistribution)
-
-    const weekComparison = computeWeekComparison(allTasks, progressionPeriod)
-    renderProgressionWeeklyComparison(progressionWeeklyComparisonCanvas, weekComparison)
-
-    const trendData = computeProgressionTrend(allTasks, progressionPeriod)
-    renderProgressionTrend(progressionTrendCanvas, trendData)
-
-    const todayStats = computeTodayStats(allTasks, progressionPeriod)
-    renderProgressionTodayStats(todayStats)
+    renderProgressionMaquette(allTasks, progressionPeriod)
   }
 
   // Retards (maquette : 4 KPI + évolution + liste numérotée).

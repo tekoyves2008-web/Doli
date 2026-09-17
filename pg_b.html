@@ -1,0 +1,83 @@
+<article class="pg-card pg-card--time">
+<header class="pg-card__head">
+<span class="pg-card__ico" aria-hidden="true">H</span>
+<div class="pg-card__titles"><h3>Respect du temps</h3><p>Comparaison temps prevu / temps reel</p></div>
+<span class="pg-dots" aria-hidden="true">...</span>
+</header>
+<div class="pg-donut-wrap pg-donut-wrap--sm">
+<svg class="pg-donut pg-donut--sm" viewBox="0 0 140 140" width="122" height="122" aria-hidden="true">
+<circle cx="70" cy="70" r="54" fill="none" stroke="#e9edf3" stroke-width="15" class="pg-track"/>
+<circle id="pgTimeSeg" cx="70" cy="70" r="54" fill="none" stroke="#22b07d" stroke-width="15" stroke-linecap="round" transform="rotate(-90 70 70)" stroke-dasharray="0 339.292" stroke-dashoffset="0"/>
+</svg>
+<div class="pg-donut__center pg-donut__center--sm"><strong id="pgTimePct">0 %</strong></div>
+</div>
+<span id="pgTimeBadge" class="pg-pill pg-pill--green pg-pill--center">Dans le rythme prevu</span>
+<div class="pg-time__cols">
+<div><p class="pg-time__label">Temps prevu</p><strong id="pgPlanned">0 h</strong></div>
+<div><p class="pg-time__label">Temps reellement utilise</p><strong id="pgActual">0 h</strong></div>
+</div>
+</article>
+<article class="pg-card pg-card--evo">
+<header class="pg-card__head">
+<span class="pg-card__ico" aria-hidden="true">T</span>
+<div class="pg-card__titles"><h3>Evolution de la progression</h3><p>Sur les 7 derniers jours</p></div>
+<span class="pg-dots" aria-hidden="true">...</span>
+</header>
+<div class="pg-evo__wrap"><canvas id="pgEvoChart" height="190"></canvas></div>
+</article>
+</div>
+<div class="pg__grid-mid">
+<article class="pg-card pg-card--detail">
+<header class="pg-card__head">
+<span class="pg-card__ico" aria-hidden="true">D</span>
+<div class="pg-card__titles"><h3>Detail des taches du jour</h3><p>Repartition visuelle de vos taches</p></div>
+<span class="pg-dots" aria-hidden="true">...</span>
+</header>
+<div class="pg-detail__body">
+<div class="pg-tiles">
+<div class="pg-tile pg-tile--green"><span class="pg-tile__ico">OK</span><b>Executees</b><strong id="pgTileDoneN">0</strong><em id="pgTileDoneP">0 %</em></div>
+<div class="pg-tile pg-tile--blue"><span class="pg-tile__ico">..</span><b>En cours</b><strong id="pgTileDoingN">0</strong><em id="pgTileDoingP">0 %</em></div>
+<div class="pg-tile pg-tile--grey"><span class="pg-tile__ico">--</span><b>Non executees</b><strong id="pgTileTodoN">0</strong><em id="pgTileTodoP">0 %</em></div>
+<div class="pg-tile pg-tile--red"><span class="pg-tile__ico">!</span><b>En retard</b><strong id="pgTileLateN">0</strong><em id="pgTileLateP">0 %</em></div>
+</div>
+<div class="pg-detail__donut">
+<div class="pg-donut-wrap pg-donut-wrap--xs">
+<svg id="pgDonutDetail" class="pg-donut pg-donut--xs" viewBox="0 0 140 140" width="132" height="132" aria-hidden="true">
+<circle cx="70" cy="70" r="54" fill="none" stroke="#e9edf3" stroke-width="17" class="pg-track"/>
+<circle id="pgDetailSegTodo" cx="70" cy="70" r="54" fill="none" stroke="#c3cad4" stroke-width="17" transform="rotate(-90 70 70)" stroke-dasharray="0 339.292" stroke-dashoffset="0"/>
+<circle id="pgDetailSegDoing" cx="70" cy="70" r="54" fill="none" stroke="#3b82f6" stroke-width="17" transform="rotate(-90 70 70)" stroke-dasharray="0 339.292" stroke-dashoffset="0"/>
+<circle id="pgDetailSegLate" cx="70" cy="70" r="54" fill="none" stroke="#ef4444" stroke-width="17" transform="rotate(-90 70 70)" stroke-dasharray="0 339.292" stroke-dashoffset="0"/>
+<circle id="pgDetailSegDone" cx="70" cy="70" r="54" fill="none" stroke="#22b07d" stroke-width="17" transform="rotate(-90 70 70)" stroke-dasharray="0 339.292" stroke-dashoffset="0"/>
+</svg>
+<div class="pg-donut__center pg-donut__center--xs"><strong id="pgDetailTotal">0</strong><span>taches</span></div>
+</div>
+<ul class="pg-legend">
+<li><span class="pg-dot pg-dot--green"></span>Executees<em id="pgDetailDoneP">0%</em></li>
+<li><span class="pg-dot pg-dot--blue"></span>En cours<em id="pgDetailDoingP">0%</em></li>
+<li><span class="pg-dot pg-dot--grey"></span>Non executees<em id="pgDetailTodoP">0%</em></li>
+<li><span class="pg-dot pg-dot--red"></span>En retard<em id="pgDetailLateP">0%</em></li>
+</ul>
+</div>
+</div>
+</article>
+<article class="pg-card pg-card--week">
+<header class="pg-card__head">
+<span class="pg-card__ico" aria-hidden="true">S</span>
+<div class="pg-card__titles"><h3>Resume de la semaine</h3><p>Vos performances cette semaine</p></div>
+<span class="pg-dots" aria-hidden="true">...</span>
+</header>
+<div class="pg-week__grid">
+<div class="pg-mini pg-mini--green"><div class="pg-mini__row"><span class="pg-mini__ico">V</span><strong id="pgWeekDone">0</strong></div><p>Taches executees</p><em id="pgWeekDoneDelta" class="pg-delta pg-delta--up">+12 %</em></div>
+<div class="pg-mini pg-mini--blue"><div class="pg-mini__row"><span class="pg-mini__ico">C</span><strong id="pgWeekOnTime">0 %</strong></div><p>Dans les delais</p><em id="pgWeekOnTimeDelta" class="pg-delta pg-delta--up">+8 %</em></div>
+<div class="pg-mini pg-mini--rose"><div class="pg-mini__row"><span class="pg-mini__ico">!</span><strong id="pgWeekLate">0</strong></div><p>Taches en retard</p><em id="pgWeekLateDelta" class="pg-delta pg-delta--down">-3 %</em></div>
+<div class="pg-mini pg-mini--violet"><div class="pg-mini__row"><span class="pg-mini__ico">*</span><strong id="pgWeekEvol">+0 %</strong></div><p>Par rapport a la semaine derniere</p></div>
+</div>
+</article>
+</div>
+<div class="pg-banner">
+<span class="pg-banner__ico" aria-hidden="true">O</span>
+<div class="pg-banner__text"><strong id="pgBannerTitle">Tu es plus regulier cette semaine !</strong><p id="pgBannerSub">Continue sur cette lancee, tu fais de grands progres.</p></div>
+<button type="button" id="pgSeeDetail" class="pg-banner__btn">Voir le detail -&gt;</button>
+</div>
+</div>
+</section>

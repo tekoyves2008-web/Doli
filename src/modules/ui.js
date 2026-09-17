@@ -979,6 +979,242 @@ function prepareCanvasForHiDpi(canvas) {
   return { ctx, width: cssWidth, height: cssHeight }
 }
 
+function pgSet(id, text) {
+  const el = document.getElementById(id)
+  if (el) el.textContent = text
+}
+const PG_CIRC = 339.292
+function pgSetSeg(id, frac, offsetFrac) {
+  const el = document.getElementById(id)
+  if (!el) return
+  const len = Math.max(0, frac * PG_CIRC)
+  el.setAttribute('stroke-dasharray', len.toFixed(1) + ' ' + PG_CIRC.toFixed(1))
+  el.setAttribute('stroke-dashoffset', (-offsetFrac * PG_CIRC).toFixed(1))
+}
+function pgPaintDonut(prefix, counts, total) {
+  const keys = [counts.todo, counts.doing, counts.delayed, counts.done]
+  const names = ['Todo', 'Doing', 'Late', 'Done']
+  let acc = 0
+  for (let i = 0; i < 4; i++) {
+    const frac = total > 0 ? keys[i] / total : 0
+    pgSetSeg(prefix + names[i], frac, acc)
+    acc += frac
+  }
+}
+function pgHours(ms) {
+  const h = ms / 3600000
+  if (h < 1) return Math.round(ms / 60000) + ' min'
+  const whole = Math.floor(h)
+  const rest = Math.round((h - whole) * 60)
+  return rest === 0 ? whole + ' h' : whole + ' h ' + String(rest).padStart(2, '0')
+}
+function pgIsOverdue(t) {
+  if (!t || !t.dueDate || t.status === 'done') return false
+  const d = new Date(t.dueDate).getTime()
+  return Number.isFinite(d) && d < Date.now()
+}
+function pgRefMs(t) {
+  if (t.dueDate) { const d = new Date(t.dueDate).getTime(); if (Number.isFinite(d)) return d }
+  if (t.completedAt) { const d = new Date(t.completedAt).getTime(); if (Number.isFinite(d)) return d }
+  if (t.createdAt) { const d = new Date(t.createdAt).getTime(); if (Number.isFinite(d)) return d }
+  return null
+}
+function pgInPeriod(tasks, days) {
+  const now = new Date(); now.setHours(0, 0, 0, 0)
+  const start = now.getTime() - (days - 1) * 86400000
+  const end = now.getTime() + 86400000
+  return tasks.filter((t) => { const m = pgRefMs(t); return m !== null && m >= start && m < end })
+}
+function pgSplit(tasks) {
+  const done = tasks.filter((t) => t.status === 'done').length
+  const delayed = tasks.filter(pgIsOverdue).length
+  const doing = tasks.filter((t) => t.status === 'doing' && !pgIsOverdue(t)).length
+  const todo = tasks.filter((t) => t.status === 'todo' && !pgIsOverdue(t)).length
+  return { done, doing, todo, delayed, total: tasks.length }
+}
+function pgPlannedMs(t) {
+  if (t.startTime && t.dueDate) {
+    const a = new Date(t.startTime).getTime(); const b = new Date(t.dueDate).getTime()
+    if (Number.isFinite(a) && Number.isFinite(b) && b > a) return b - a
+  }
+  if (t.dueDate && t.createdAt) {
+    const a = new Date(t.createdAt).getTime(); const b = new Date(t.dueDate).getTime()
+    if (Number.isFinite(a) && Number.isFinite(b) && b > a) return b - a
+  }
+  return 2 * 3600000
+}
+function pgActualMs(t) {
+  if (t.status === 'done' && t.completedAt) {
+    const base = t.startedAt || t.createdAt
+    if (base) {
+      const a = new Date(base).getTime(); const b = new Date(t.completedAt).getTime()
+      if (Number.isFinite(a) && Number.isFinite(b) && b >= a) return b - a
+    }
+    return pgPlannedMs(t)
+  }
+  if (t.startedAt && t.lastProofAt) {
+    const a = new Date(t.startedAt).getTime(); const b = new Date(t.lastProofAt).getTime()
+    if (Number.isFinite(a) && Number.isFinite(b) && b >= a) return b - a
+  }
+  return 0
+}
+function pgRenderEvo(tasks) {
+  const canvas = document.getElementById('pgEvoChart')
+  if (!canvas) return
+  const days = []
+  const now = new Date(); now.setHours(0, 0, 0, 0)
+  for (let i = 6; i >= 0; i--) {
+    const d0 = now.getTime() - i * 86400000
+    const d1 = d0 + 86400000
+    const dayTasks = tasks.filter((t) => { const m = pgRefMs(t); return m !== null && m >= d0 && m < d1 })
+    const done = dayTasks.filter((t) => t.status === 'done').length
+    const pct = dayTasks.length ? Math.round((done / dayTasks.length) * 100) : 0
+    days.push({ date: new Date(d0), pct })
+  }
+  const dpr = window.devicePixelRatio || 1
+  const rect = canvas.getBoundingClientRect()
+  const W = Math.max(rect.width || 420, 1)
+  const H = Math.max(rect.height || 218, 1)
+  canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr)
+  const ctx = canvas.getContext('2d')
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+  ctx.clearRect(0, 0, W, H)
+  const padL = 34, padR = 34, padT = 12, padB = 30
+  const iw = W - padL - padR, ih = H - padT - padB
+  const dark = document.documentElement.dataset.theme === 'dark'
+  ctx.strokeStyle = dark ? 'rgba(148,163,184,.16)' : '#eef1f6'
+  ctx.fillStyle = dark ? '#8b94a5' : '#8a94a6'
+  ctx.font = '10px Inter, system-ui, sans-serif'
+  ctx.textAlign = 'right'
+  for (let g = 0; g <= 5; g++) {
+    const v = g * 20
+    const y = padT + ih - (v / 100) * ih
+    ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR + 14, y); ctx.stroke()
+    ctx.fillText(v + ' %', padL - 5, y + 3)
+  }
+  const pts = days.map((d, i) => ({ x: padL + (i / 6) * iw, y: padT + ih - (d.pct / 100) * ih, v: d.pct, date: d.date }))
+  const grad = ctx.createLinearGradient(0, padT, 0, padT + ih)
+  grad.addColorStop(0, 'rgba(59,91,219,.22)'); grad.addColorStop(1, 'rgba(59,91,219,.03)')
+  ctx.beginPath()
+  ctx.moveTo(pts[0].x, pts[0].y)
+  for (let i = 1; i < pts.length; i++) {
+    const mx = (pts[i - 1].x + pts[i].x) / 2
+    ctx.bezierCurveTo(mx, pts[i - 1].y, mx, pts[i].y, pts[i].x, pts[i].y)
+  }
+  ctx.lineTo(pts[pts.length - 1].x, padT + ih); ctx.lineTo(pts[0].x, padT + ih); ctx.closePath()
+  ctx.fillStyle = grad; ctx.fill()
+  ctx.beginPath()
+  ctx.moveTo(pts[0].x, pts[0].y)
+  for (let i = 1; i < pts.length; i++) {
+    const mx = (pts[i - 1].x + pts[i].x) / 2
+    ctx.bezierCurveTo(mx, pts[i - 1].y, mx, pts[i].y, pts[i].x, pts[i].y)
+  }
+  ctx.strokeStyle = '#4c6ef5'; ctx.lineWidth = 2; ctx.lineJoin = 'round'; ctx.lineCap = 'round'; ctx.stroke()
+  ctx.fillStyle = '#4c6ef5'
+  for (const p of pts) { ctx.beginPath(); ctx.arc(p.x, p.y, 3, 0, Math.PI * 2); ctx.fill() }
+  const last = pts[pts.length - 1]
+  const label = last.v + ' %'
+  ctx.font = '700 10px Inter, system-ui, sans-serif'
+  const tw = ctx.measureText(label).width + 12
+  const bx = Math.min(Math.max(last.x - tw / 2, padL), W - tw - 4)
+  const by = Math.max(last.y - 30, 2)
+  ctx.fillStyle = '#4c6ef5'
+  ctx.beginPath()
+  if (ctx.roundRect) ctx.roundRect(bx, by, tw, 18, 5); else ctx.rect(bx, by, tw, 18)
+  ctx.fill()
+  ctx.beginPath(); ctx.moveTo(last.x - 4, by + 18); ctx.lineTo(last.x + 4, by + 18); ctx.lineTo(last.x, by + 23); ctx.closePath(); ctx.fill()
+  ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.fillText(label, bx + tw / 2, by + 12.5)
+  ctx.fillStyle = dark ? '#8b94a5' : '#8a94a6'
+  ctx.font = '10px Inter, system-ui, sans-serif'
+  ctx.textAlign = 'center'
+  const wd = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam']
+  pts.forEach((p) => { ctx.fillText(wd[p.date.getDay()], p.x, H - 14); ctx.fillText(String(p.date.getDate()), p.x, H - 3) })
+}
+export function renderProgressionMaquette(tasks, period) {
+  const list = Array.isArray(tasks) ? tasks : []
+  const days = Number(period) || 1
+  const scope = pgInPeriod(list, days)
+  const c = pgSplit(scope)
+  const donePct = c.total ? Math.round((c.done / c.total) * 100) : 0
+  const doingPct = c.total ? Math.round((c.doing / c.total) * 100) : 0
+  const todoPct = c.total ? Math.round((c.todo / c.total) * 100) : 0
+  const latePct = c.total ? Math.round((c.delayed / c.total) * 100) : 0
+  pgSet('pgDayPct', donePct + ' %')
+  pgSet('pgDayDoneN', c.done); pgSet('pgDayDoneP', donePct + ' %')
+  pgSet('pgDayDoingN', c.doing); pgSet('pgDayDoingP', doingPct + ' %')
+  pgSet('pgDayTodoN', c.todo); pgSet('pgDayTodoP', todoPct + ' %')
+  pgSet('pgDayLateN', c.delayed); pgSet('pgDayLateP', latePct + ' %')
+  pgSet('pgDayTotalN', c.total)
+  pgSet('pgTileDoneN', c.done); pgSet('pgTileDoneP', donePct + ' %')
+  pgSet('pgTileDoingN', c.doing); pgSet('pgTileDoingP', doingPct + ' %')
+  pgSet('pgTileTodoN', c.todo); pgSet('pgTileTodoP', todoPct + ' %')
+  pgSet('pgTileLateN', c.delayed); pgSet('pgTileLateP', latePct + ' %')
+  pgSet('pgDetailTotal', c.total)
+  pgSet('pgDetailDoneP', donePct + '%'); pgSet('pgDetailDoingP', doingPct + '%')
+  pgSet('pgDetailTodoP', todoPct + '%'); pgSet('pgDetailLateP', latePct + '%')
+  pgPaintDonut('pgDaySeg', c, c.total)
+  pgPaintDonut('pgDetailSeg', c, c.total)
+  const dayBadge = document.getElementById('pgDayBadge')
+  if (dayBadge) {
+    let txt = 'Bon rythme !'
+    let cls = 'pg-pill pg-pill--green'
+    if (c.total === 0) { cls = 'pg-pill pg-pill--amber'; txt = 'Ajoutez vos premieres taches' }
+    else if (donePct >= 100) { txt = 'Objectif atteint !' }
+    else if (c.delayed > 0 && donePct < 50) { cls = 'pg-pill pg-pill--red'; txt = c.delayed + ' en retard' }
+    else if (donePct < 50) { cls = 'pg-pill pg-pill--amber'; txt = 'En progression' }
+    dayBadge.className = cls
+    const svg = dayBadge.querySelector('svg')
+    dayBadge.textContent = txt
+    if (svg) dayBadge.prepend(svg)
+  }
+  let planned = 0, actual = 0
+  for (const t of scope) { planned += pgPlannedMs(t); actual += pgActualMs(t) }
+  const timePct = planned > 0 ? Math.min(100, Math.round((actual / planned) * 100)) : 0
+  pgSet('pgTimePct', timePct + ' %')
+  pgSet('pgPlanned', pgHours(planned))
+  pgSet('pgActual', pgHours(actual))
+  const seg = document.getElementById('pgTimeSeg')
+  if (seg) seg.setAttribute('stroke-dasharray', (timePct / 100 * PG_CIRC).toFixed(1) + ' ' + PG_CIRC.toFixed(1))
+  const tb = document.getElementById('pgTimeBadge')
+  if (tb) {
+    let txt = 'Dans le rythme prévu'
+    let cls = 'pg-pill pg-pill--green pg-pill--center'
+    if (planned === 0) { cls = 'pg-pill pg-pill--amber pg-pill--center'; txt = 'Ajoutez des echeances' }
+    else if (timePct > 110) { cls = 'pg-pill pg-pill--red pg-pill--center'; txt = 'Temps depasse' }
+    else if (timePct < 95) { txt = 'En avance sur le planning' }
+    tb.className = cls
+    const svg = tb.querySelector('svg')
+    tb.textContent = txt
+    if (svg) tb.prepend(svg)
+  }
+  pgRenderEvo(list)
+  const wc = pgSplit(pgInPeriod(list, 7))
+  const past0 = new Date(); past0.setHours(0, 0, 0, 0)
+  const prevTasks = list.filter((t) => {
+    const m = pgRefMs(t)
+    return m !== null && m >= past0.getTime() - 14 * 86400000 && m < past0.getTime() - 7 * 86400000
+  })
+  const pc = pgSplit(prevTasks)
+  const onTimePct = wc.total ? Math.round(((wc.done + wc.doing + wc.todo) / wc.total) * 100) : 0
+  const evol = pc.done > 0 ? Math.round(((wc.done - pc.done) / pc.done) * 100) : (wc.done > 0 ? 100 : 0)
+  pgSet('pgWeekDone', wc.done)
+  pgSet('pgWeekOnTime', onTimePct + ' %')
+  pgSet('pgWeekLate', wc.delayed)
+  pgSet('pgWeekEvol', (evol >= 0 ? '+' : '') + evol + ' %')
+  const title = document.getElementById('pgDayTitle')
+  if (title) title.textContent = days <= 1 ? 'Ma progression du jour' : days <= 7 ? 'Ma progression de la semaine' : 'Ma progression du mois'
+  const center = document.getElementById('pgDayCenterLabel')
+  if (center) center.textContent = days <= 1 ? "Progression aujourd'hui" : days <= 7 ? 'Progression cette semaine' : 'Progression ce mois-ci'
+  const bannerT = document.getElementById('pgBannerTitle')
+  const bannerS = document.getElementById('pgBannerSub')
+  if (bannerT && bannerS) {
+    if (wc.total === 0) { bannerT.textContent = 'Ajoutez vos premieres taches !'; bannerS.textContent = 'Vos progres apparaitront ici, jour apres jour.' }
+    else if (evol > 0) { bannerT.textContent = 'Tu es plus regulier cette semaine !'; bannerS.textContent = 'Continue sur cette lancée, tu fais de grands progrès.' }
+    else if (wc.delayed > 0) { bannerT.textContent = 'Reduis tes retards pas a pas !'; bannerS.textContent = 'Traite en priorite les taches en retard pour remonter.' }
+    else { bannerT.textContent = 'Belle constance, continue !'; bannerS.textContent = 'Chaque tache accomplie te rapproche de tes objectifs.' }
+  }
+}
+
 // --- Progression : graphique de rpartition du jour ---
 export function renderProgressionDayDistribution(canvas, distribution) {
   if (!canvas) return
