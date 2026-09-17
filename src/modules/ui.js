@@ -1060,6 +1060,28 @@ function pgActualMs(t) {
   }
   return 0
 }
+// Palette du thème actif, pour les canvas de la rubrique. Les couleurs viennent
+// des variables CSS : le rendu reste donc accordé aux deux thèmes, sans aucune
+// teinte figée dans le JavaScript. Replis = valeurs exactes de la feuille de
+// style, utilisés seulement si une variable venait à manquer.
+function pgCanvasPalette() {
+  const root = document.documentElement
+  const isDark = root.getAttribute('data-theme') === 'dark'
+  const vars = getComputedStyle(root)
+  const read = (name) => vars.getPropertyValue(name).trim()
+  return {
+    isDark,
+    text: read('--text') || (isDark ? '#e6e8ec' : '#1c2536'),
+    muted: read('--text-muted') || (isDark ? '#9199a6' : '#6b7689'),
+    // Anneau neutre : piloté par --pg-ring-track, définie dans les DEUX thèmes
+    // (la variable --task-track n'existe qu'en clair). Plus jamais de gris clair
+    // éclatant sur la carte sombre : c'est la feuille de style qui décide.
+    track: read('--pg-ring-track') || (isDark ? '#333c50' : '#e9edf4'),
+    ok: read('--badge-done-text') || (isDark ? '#63d99a' : '#227a4e'),
+    over: read('--badge-todo-text') || (isDark ? '#ff8b8b' : '#c0392b'),
+  }
+}
+
 // Donut « Respect du temps » : reprend la facture du cercle de « Répartition des
 // retards » (rubrique Retards) — canvas HiDPI, anneau épais, segments détachés,
 // valeur centrée, typographie proportionnelle à l'espace disponible.
@@ -1069,23 +1091,15 @@ function pgRenderTimeDonut(planned, actual) {
   const { ctx, width, height } = prepareCanvasForHiDpi(canvas)
   ctx.clearRect(0, 0, width, height)
 
-  // Couleurs lues dans le thème actif : harmonie garantie avec les autres rubriques.
-  const vars = getComputedStyle(document.documentElement)
-  const cssVar = (name, fallback) => {
-    const value = vars.getPropertyValue(name).trim()
-    return value || fallback
-  }
-  const textColor = cssVar('--text', '#1c2536')
-  const mutedColor = cssVar('--text-muted', '#6b7689')
-  const trackColor = cssVar('--task-track', '#e9edf4')
-  const okColor = cssVar('--badge-done-text', '#227a4e')
-  const overColor = cssVar('--badge-todo-text', '#c0392b')
+  // Couleurs du thème actif : identiques aux autres rubriques dans les deux
+  // thèmes, avec un anneau neutre assorti au fond sombre.
+  const pal = pgCanvasPalette()
 
   const hasData = planned > 0
   const ratio = hasData ? actual / planned : 0
   const pct = hasData ? Math.round(ratio * 100) : 0
   const fill = Math.max(0, Math.min(1, ratio))
-  const ringColor = !hasData ? trackColor : ratio > 1.1 ? overColor : okColor
+  const ringColor = !hasData ? pal.track : ratio > 1.1 ? pal.over : pal.ok
 
   const size = Math.min(width, height)
   const centerX = width / 2
@@ -1106,26 +1120,30 @@ function pgRenderTimeDonut(planned, actual) {
   ctx.lineWidth = thick
   ctx.lineCap = 'butt'
   // Part consommée : vert tant que le planning est tenu, rouge en cas de dépassement.
+  // En mode sombre, un halo de la couleur de l'anneau donne à l'arc une lumière
+  // douce (aspect lumineux premium) ; en clair, aucun halo n'est nécessaire.
+  if (pal.isDark && fill > 0) { ctx.shadowColor = ringColor; ctx.shadowBlur = thick * 0.55 }
   ctx.strokeStyle = ringColor
   ctx.beginPath()
   ctx.arc(centerX, centerY, arcRadius, start + (fill > 0 ? gap / 2 : 0), start + fill * TAU - (fill > 0 && fill < 1 ? gap / 2 : 0))
   ctx.stroke()
+  ctx.shadowBlur = 0
   // Part restante : teinte neutre du thème, comme l'anneau vide des retards.
   if (fill < 1) {
-    ctx.strokeStyle = trackColor
+    ctx.strokeStyle = pal.track
     ctx.beginPath()
     ctx.arc(centerX, centerY, arcRadius, start + fill * TAU + (fill > 0 ? gap / 2 : 0), start + TAU - gap / 2)
     ctx.stroke()
   }
 
   // Valeur centrée (mêmes familles et hiérarchie que la répartition des retards).
-  ctx.fillStyle = textColor
+  ctx.fillStyle = pal.text
   ctx.font = `800 ${numFont}px 'Plus Jakarta Sans', Inter, sans-serif`
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
   ctx.fillText(hasData ? bigLabel : '0 %', centerX, centerY - numLift)
   ctx.font = `500 ${labFont}px Inter, sans-serif`
-  ctx.fillStyle = mutedColor
+  ctx.fillStyle = pal.muted
   ctx.fillText('du temps', centerX, centerY - numLift + numFont * 0.5 + labGap)
   ctx.fillText('prévu', centerX, centerY - numLift + numFont * 0.5 + labGap + labFont + 2)
 }
