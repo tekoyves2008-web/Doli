@@ -568,12 +568,9 @@
 <div class="pg-card__titles"><h3>Respect du temps</h3><p>Comparaison temps prévu / temps réel</p></div>
 <span class="pg-dots" aria-hidden="true">...</span>
 </header>
-<div class="pg-donut-wrap pg-donut-wrap--sm">
-<svg class="pg-donut pg-donut--sm" viewBox="0 0 140 140" width="122" height="122" aria-hidden="true">
-<circle cx="70" cy="70" r="54" fill="none" stroke="#e9edf3" stroke-width="15" class="pg-track"/>
-<circle id="pgTimeSeg" cx="70" cy="70" r="54" fill="none" stroke-width="15" stroke-linecap="round" transform="rotate(-90 70 70)" stroke-dasharray="0 339.292" stroke-dashoffset="0" style="stroke:var(--badge-done-text)"/>
-</svg>
-<div class="pg-donut__center pg-donut__center--sm"><strong id="pgTimePct">0 %</strong></div>
+<div class="pg-time__donut">
+<canvas id="pgTimeDonut" width="300" height="300" aria-hidden="true"></canvas>
+<span id="pgTimePct" class="pg-time__pct">0 % du temps prévu</span>
 </div>
 <span id="pgTimeBadge" class="pg-pill pg-pill--green pg-pill--center"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8.5 12.2l2.4 2.4 4.6-5"/></svg>Dans le rythme prévu</span>
 <div class="pg-time__cols">
@@ -603,24 +600,6 @@
 <div class="pg-tile pg-tile--blue"><span class="pg-tile__ico"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="2.2" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="5.4" stroke-dasharray="2.4 2.6"/></svg></span><b>En cours</b><strong id="pgTileDoingN">0</strong><em id="pgTileDoingP">0 %</em></div>
 <div class="pg-tile pg-tile--grey"><span class="pg-tile__ico"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 12h12"/></svg></span><b>Non exécutées</b><strong id="pgTileTodoN">0</strong><em id="pgTileTodoP">0 %</em></div>
 <div class="pg-tile pg-tile--red"><span class="pg-tile__ico"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v9"/><circle cx="12" cy="18" r="1.2" fill="currentColor" stroke="none"/></svg></span><b>En retard</b><strong id="pgTileLateN">0</strong><em id="pgTileLateP">0 %</em></div>
-</div>
-<div class="pg-detail__donut">
-<div class="pg-donut-wrap pg-donut-wrap--xs">
-<svg id="pgDonutDetail" class="pg-donut pg-donut--xs" viewBox="0 0 140 140" width="132" height="132" aria-hidden="true">
-<circle cx="70" cy="70" r="54" fill="none" stroke="#e9edf3" stroke-width="17" class="pg-track"/>
-<circle id="pgDetailSegTodo" cx="70" cy="70" r="54" fill="none" stroke-width="17" transform="rotate(-90 70 70)" stroke-dasharray="0 339.292" stroke-dashoffset="0" style="stroke:var(--text-muted);opacity:.55"/>
-<circle id="pgDetailSegDoing" cx="70" cy="70" r="54" fill="none" stroke-width="17" transform="rotate(-90 70 70)" stroke-dasharray="0 339.292" stroke-dashoffset="0" style="stroke:var(--accent)"/>
-<circle id="pgDetailSegLate" cx="70" cy="70" r="54" fill="none" stroke-width="17" transform="rotate(-90 70 70)" stroke-dasharray="0 339.292" stroke-dashoffset="0" style="stroke:var(--badge-todo-text)"/>
-<circle id="pgDetailSegDone" cx="70" cy="70" r="54" fill="none" stroke-width="17" transform="rotate(-90 70 70)" stroke-dasharray="0 339.292" stroke-dashoffset="0" style="stroke:var(--badge-done-text)"/>
-</svg>
-<div class="pg-donut__center pg-donut__center--xs"><strong id="pgDetailTotal">0</strong><span>tâches</span></div>
-</div>
-<ul class="pg-legend">
-<li><span class="pg-dot pg-dot--green"></span>Exécutées<em id="pgDetailDoneP">0%</em></li>
-<li><span class="pg-dot pg-dot--blue"></span>En cours<em id="pgDetailDoingP">0%</em></li>
-<li><span class="pg-dot pg-dot--grey"></span>Non exécutées<em id="pgDetailTodoP">0%</em></li>
-<li><span class="pg-dot pg-dot--red"></span>En retard<em id="pgDetailLateP">0%</em></li>
-</ul>
 </div>
 </div>
 </article>

@@ -5962,9 +5962,6 @@ input:focus-visible,
 .pg-donut__center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 2px; pointer-events: none; }
 .pg-donut__center strong { font-size: 27px; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--text); }
 .pg-donut__center span { font-size: 11px; color: var(--text-muted); line-height: 1.35; }
-.pg-donut__center--sm strong { font-size: 21px; }
-.pg-donut__center--xs strong { font-size: 19px; }
-.pg-donut__center--xs span { font-size: 10.5px; }
 .pg-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 700; border-radius: 999px; padding: 6px 12px; border: 1px solid transparent; }
 .pg-pill--green { color: var(--badge-done-text); background: var(--badge-done-bg); border-color: color-mix(in srgb, var(--badge-done-text) 25%, transparent); }
 .pg-pill--amber { color: var(--badge-doing-text); background: var(--badge-doing-bg); border-color: color-mix(in srgb, var(--badge-doing-text) 25%, transparent); }
@@ -5981,28 +5978,38 @@ input:focus-visible,
 .pg-dot--grey { background: var(--text-muted); opacity: .55; } .pg-dot--red { background: var(--badge-todo-text); }
 .pg-card--time { display: flex; flex-direction: column; align-items: center; text-align: center; }
 .pg-card--time .pg-card__head { width: 100%; text-align: left; }
+/* Cercle « Respect du temps » : même facture que le cercle de « Répartition des
+   retards » de la rubrique Retards (canvas HiDPI, anneau épais, segments
+   détachés, valeur centrée). Taille identique pour une harmonie parfaite. */
+.pg-time__donut { display: flex; align-items: center; justify-content: center; padding: 2px 0 6px; }
+.pg-time__donut canvas { width: 170px; height: 170px; display: block; }
+/* La valeur est dessinée dans le canvas : ce texte reste exposé aux lecteurs
+   d'écran sans être affiché en double. */
+.pg-time__pct { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; border: 0; }
+/* La carte s'étire comme ses voisines : l'espace libre se place au-dessus du
+   statut, qui reste collé au bloc « Temps prévu / réellement utilisé ». */
+.pg-card--time .pg-pill--center { margin-top: auto; }
 .pg-time__cols { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; width: 100%; }
 .pg-time__cols > div + div { border-left: 1px solid var(--border); padding-left: 12px; }
 .pg-time__label { margin: 0 0 4px; font-size: 11px; color: var(--text-muted); }
 .pg-time__cols strong { font-size: 16px; font-variant-numeric: tabular-nums; color: var(--text); }
 .pg-evo__wrap { position: relative; height: 218px; min-height: 218px; }
 .pg-evo__wrap canvas { width: 100% !important; height: 100% !important; display: block; }
-.pg-detail__body { display: flex; gap: 18px; align-items: center; }
-.pg-tiles { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 10px; flex: 1.35; min-width: 0; }
-.pg-tile { border-radius: 12px; padding: 12px 10px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 4px; transition: transform .15s ease; }
-.pg-tile:hover { transform: translateY(-2px); }
-.pg-tile b { font-size: 11px; font-weight: 700; color: var(--text); }
-.pg-tile strong { font-size: 17px; font-variant-numeric: tabular-nums; color: var(--text); }
-.pg-tile em { font-style: normal; font-size: 11px; font-weight: 700; }
-.pg-tile__ico { width: 32px; height: 32px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: #fff; flex: none; }
+/* La carte « Détail » s'étire sur la hauteur de la ligne (align-items: stretch
+   de .pg__grid-mid) : ses tuiles remplissent donc verticalement l'espace libre. */
+.pg-card--detail { display: flex; flex-direction: column; }
+.pg-detail__body { display: flex; flex: 1; min-height: 0; }
+.pg-tiles { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); grid-auto-rows: minmax(112px, 1fr); gap: 12px; flex: 1; min-width: 0; }
+.pg-tile { border-radius: 12px; padding: 18px 14px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7px; transition: transform .15s ease, box-shadow .15s ease; }
+.pg-tile:hover { transform: translateY(-2px); box-shadow: 0 6px 16px color-mix(in srgb, var(--text) 10%, transparent); }
+.pg-tile b { font-size: 12px; font-weight: 700; color: var(--text); }
+.pg-tile strong { font-size: 22px; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--text); }
+.pg-tile em { font-style: normal; font-size: 11.5px; font-weight: 700; }
+.pg-tile__ico { width: 38px; height: 38px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: #fff; flex: none; }
 .pg-tile--green { background: var(--badge-done-bg); } .pg-tile--green strong, .pg-tile--green em { color: var(--badge-done-text); } .pg-tile--green .pg-tile__ico { background: var(--badge-done-text); }
 .pg-tile--blue { background: color-mix(in srgb, var(--accent) 12%, var(--bg-elevated)); } .pg-tile--blue strong, .pg-tile--blue em { color: var(--accent); } .pg-tile--blue .pg-tile__ico { background: var(--accent); }
 .pg-tile--grey { background: var(--bg-hover); } .pg-tile--grey strong, .pg-tile--grey em { color: var(--text-muted); } .pg-tile--grey .pg-tile__ico { background: var(--text-muted); }
 .pg-tile--red { background: var(--badge-todo-bg); } .pg-tile--red strong, .pg-tile--red em { color: var(--badge-todo-text); } .pg-tile--red .pg-tile__ico { background: var(--badge-todo-text); }
-.pg-detail__donut { display: flex; align-items: center; gap: 14px; flex: 1; min-width: 0; justify-content: center; }
-.pg-legend { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 7px; font-size: 11.5px; color: var(--text); min-width: 130px; }
-.pg-legend li { display: flex; align-items: center; gap: 8px; }
-.pg-legend em { font-style: normal; color: var(--text-muted); margin-left: auto; padding-left: 10px; font-variant-numeric: tabular-nums; }
 .pg-week__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .pg-mini { border-radius: 12px; padding: 12px 14px; min-width: 0; }
 .pg-mini__row { display: flex; align-items: center; gap: 8px; }
@@ -6032,7 +6039,7 @@ input:focus-visible,
 [data-theme='dark'] .pg-mini p { color: var(--text-muted); }
 [data-theme='dark'] .pg-mini--violet strong { color: #b79bff; }
 @media (max-width: 1200px) { .pg__grid-top { grid-template-columns: 1fr 1fr; } .pg-card--evo { grid-column: 1 / -1; } .pg__grid-mid { grid-template-columns: 1fr; } }
-@media (max-width: 760px) { .pg__grid-top { grid-template-columns: 1fr; } .pg-day__body { flex-direction: column; } .pg-day__right { border-left: 0; padding-left: 0; width: 100%; } .pg-detail__body { flex-direction: column; } .pg-tiles { width: 100%; grid-template-columns: 1fr 1fr; } .pg-banner { flex-wrap: wrap; } .pg-banner__art { display: none; } }
+@media (max-width: 760px) { .pg__grid-top { grid-template-columns: 1fr; } .pg-day__body { flex-direction: column; } .pg-day__right { border-left: 0; padding-left: 0; width: 100%; } .pg-tiles { grid-template-columns: 1fr 1fr; } .pg-banner { flex-wrap: wrap; } .pg-banner__art { display: none; } }
 
 /* ===== Maquette Retards (fidelite image de reference) ===== */
 .retards-pagehead {

@@ -17,6 +17,9 @@ import { fileURLToPath } from 'node:url'
 const ROOT = path.dirname(fileURLToPath(import.meta.url))
 const htmlPath = path.join(ROOT, 'index.html')
 const MODULE_DIR = path.join(ROOT, 'src', 'modules')
+const SRC_DIR = path.join(ROOT, 'src')
+// main.js : point d'entrée réellement chargé par index.html (script type=module).
+const mainPath = path.join(SRC_DIR, 'main.js')
 
 const errors = []
 const warnings = []
@@ -118,6 +121,125 @@ for (const m of code.matchAll(/\b([A-Za-z_$][\w$]*)\b(?!\s*[=,;:.(])/g)) {
 for (const name of Object.keys(problems).sort()) {
   err('src/main.js', '?', `Variable utilisée mais jamais déclarée : "${name}"`)
 }
+
+// -------------------------- 4) imports nommés <-> exports des modules
+// Protège du bug du 17/09/2026 : `computeProgressionTrend` était utilisé dans
+// main.js sans être importé -> ReferenceError au premier render() -> dashboard,
+// mes tâches, rappel et preuves restaient vides. Un import nommé absent fait
+// planter le module AVANT toute exécution : on le détecte ici, statiquement.
+function listJsFiles(dir) {
+  const out = []
+  if (!fs.existsSync(dir)) return out
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name)
+    if (entry.isDirectory()) { if (entry.name !== 'node_modules') out.push(...listJsFiles(full)) }
+    else if (entry.name.endsWith('.js')) out.push(full)
+  }
+  return out
+}
+
+const exportCache = new Map()
+function exportsOf(file) {
+  if (exportCache.has(file)) return exportCache.get(file)
+  const names = new Set()
+  const src = fs.readFileSync(file, 'utf8')
+  for (const m of src.matchAll(/export\s+(?:async\s+)?(?:function|class)\s+([A-Za-z_$][\w$]*)/g)) names.add(m[1])
+  for (const m of src.matchAll(/export\s+(?:const|let|var)\s+([A-Za-z_$][\w$]*)/g)) names.add(m[1])
+  for (const m of src.matchAll(/export\s*\{([^}]*)\}/g)) {
+    for (const part of m[1].split(',')) {
+      const t = part.trim()
+      if (!t) continue
+      const alias = t.split(/\s+as\s+/)
+      names.add((alias[1] || alias[0]).trim())
+    }
+  }
+  if (/(^|\n)\s*export\s+default\b/.test(src)) names.add('default')
+  exportCache.set(file, names)
+  return names
+}
+
+function resolveModule(fromFile, spec) {
+  const base = path.resolve(path.dirname(fromFile), spec)
+  const candidates = [base, `${base}.js`, path.join(base, 'index.js')]
+  return candidates.find((c) => fs.existsSync(c) && fs.statSync(c).isFile()) || null
+}
+
+for (const file of listJsFiles(SRC_DIR)) {
+  const rel = path.relative(ROOT, file)
+  const src = fs.readFileSync(file, 'utf8')
+  for (const m of src.matchAll(/import\s*\{([^}]*)\}\s*from\s*['"]([^'"]+)['"]/g)) {
+    const spec = m[2]
+    if (!spec.startsWith('.')) continue
+    const resolved = resolveModule(file, spec)
+    if (!resolved) { err(rel, '?', `module introuvable : "${spec}"`); continue }
+    const available = exportsOf(resolved)
+    for (const part of m[1].split(',')) {
+      const raw = part.trim()
+      if (!raw || raw.startsWith('*')) continue
+      const imported = raw.split(/\s+as\s+/)[0].trim()
+      if (!imported) continue
+      if (!available.has(imported)) {
+        err(rel, '?', `"${imported}" est importé de "${spec}" mais n'est pas exporté -> ReferenceError au chargement`)
+      }
+    }
+  }
+}
+
+// --------------------- 5) symbole utilisé dans main.js mais ni déclaré ni importé
+// (le bug ci-dessus sous sa forme « utilisation sans import » : main.js se
+// chargeait, puis plantait à l'exécution de render()).
+const mainImported = new Set()
+for (const m of mainSrc.matchAll(/import\s*\{([^}]*)\}\s*from/g)) {
+  for (const part of m[1].split(',')) {
+    const t = part.trim().split(/\s+as\s+/).pop()
+    if (t) mainImported.add(t.trim())
+  }
+}
+const KNOWN_ROOTS = new Set(['Math', 'Date', 'JSON', 'Object', 'Array', 'Number', 'String', 'Promise', 'Set', 'Map', 'RegExp', 'Error', 'Boolean', 'Symbol', 'Intl', 'URL', 'URLSearchParams', 'FormData', 'Blob', 'File', 'FileReader', 'Image', 'TextEncoder', 'TextDecoder', 'AbortController', 'CustomEvent', 'Event', 'KeyboardEvent', 'MouseEvent', 'PointerEvent', 'MutationObserver', 'ResizeObserver', 'IntersectionObserver', 'DOMParser', 'Notification', 'Audio', 'HTMLElement', 'Node', 'Element', 'Document', 'Window', 'Storage', 'requestAnimationFrame', 'cancelAnimationFrame', 'setTimeout', 'clearTimeout', 'setInterval', 'clearInterval', 'queueMicrotask', 'getComputedStyle', 'matchMedia', 'postMessage', 'getSelection', 'createImageBitmap', 'requestIdleCallback', 'cancelIdleCallback', 'structuredClone', 'fetch'])
+;(function () {
+  const stripped = mainSrc
+    .replace(/\/\/.*$/gm, '')
+    .replace(/\/\*[\s\S]*?\*\//g, ' ')
+    .replace(/`[\s\S]*?`/g, ' ')
+    .replace(/'[^'\\]*(?:\\.[^'\\]*)*'/g, ' ')
+    .replace(/"[^"\\]*(?:\\.[^"\\]*)*"/g, ' ')
+    .replace(/import\s+[^;]*from\s*['"][^'"]*['"]\s*;?/g, ' ')
+  const local = new Set()
+  for (const m of stripped.matchAll(/\b(?:const|let|var|class)\s+([A-Za-z_$][\w$]*)/g)) local.add(m[1])
+  for (const m of stripped.matchAll(/\b(?:async\s+)?function\s+([A-Za-z_$][\w$]*)/g)) local.add(m[1])
+  for (const m of stripped.matchAll(/\b(?:async\s+)?function(?:\s+[A-Za-z_$][\w$]*)?\s*\(([^)]*)\)/g)) {
+    for (const p of m[1].split(',')) { const t = p.trim().split('=')[0].split(':')[0].trim(); if (/^[A-Za-z_$][\w$]*$/.test(t)) local.add(t) }
+  }
+  for (const m of stripped.matchAll(/\(?([A-Za-z_$][\w$]*)\)?\s*=>/g)) local.add(m[1])
+  const seen = {}
+  // Définition de raccourci de méthode (`nom(...) {` dans un objet) : ce n'est
+  // PAS un appel -> on regarde ce qui suit la parenthèse fermante.
+  const isDefinition = (text, openParen) => {
+    let depth = 0
+    for (let i = openParen; i < text.length; i++) {
+      if (text[i] === '(') depth++
+      else if (text[i] === ')') {
+        depth--
+        if (depth === 0) return /^\s*\{/.test(text.slice(i + 1, i + 8))
+      }
+    }
+    return false
+  }
+  // Identifiants « camelCase » appelés comme fonction : un nom tout en
+  // minuscules est presque toujours un mot-clé ou une propriété, on ne retient
+  // donc que les noms contenant une majuscule interne (ex. computeXxx).
+  for (const m of stripped.matchAll(/\b([A-Za-z_$][A-Za-z0-9_$]*[A-Z][A-Za-z0-9_$]*)\s*\(/g)) {
+    const name = m[1]
+    if (local.has(name) || mainImported.has(name) || KNOWN_ROOTS.has(name) || RESERVED.has(name) || NATIVE.has(name)) continue
+    const before = stripped.slice(Math.max(0, m.index - 20), m.index)
+    if (before.trimEnd().endsWith('.') || before.trimEnd().endsWith('function') || before.trimEnd().endsWith('new')) continue
+    if (isDefinition(stripped, m.index + m[0].lastIndexOf('('))) continue
+    seen[name] = true
+  }
+  for (const name of Object.keys(seen).sort()) {
+    err('src/main.js', '?', `"${name}()" est appelé mais jamais déclaré ni importé -> plantage à l'exécution`)
+  }
+})()
 
 // ---------------------------------------------------------------- Sortie
 console.log('\n=== Contrôle de cohérence index.html <-> main.js ===\n')

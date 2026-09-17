@@ -11,6 +11,7 @@ import {
 } from './modules/stats.js'
 import {
   computeTaskProgress,
+  computeProgressionTrend,
 } from './modules/progression.js'
 import { applyTheme } from './modules/theme.js'
 import {
@@ -318,6 +319,11 @@ async function render() {
   const allTasks = await getAllTasks()
   const stats = computeStats(allTasks)
   const now = Date.now()
+
+  // Garde-fou : une erreur de rendu (donnée inattendue, module KO) ne doit
+  // jamais vider les rubriques dashboard / mes tâches / rappel / preuves.
+  // L'échec est journalisé dans la console, l'application reste utilisable.
+  try {
 
   // --- Dashboard (maquette Doli) : tous les rendus passent par les calculs
   // existants (computeTaskProgress, situationInfo, etc.) — présentation seule.
@@ -660,6 +666,11 @@ async function render() {
   }
 
   themeToggleBtn.innerHTML = settings.theme === 'dark' ? MOON_ICON : SUN_ICON
+
+  } catch (error) {
+    // Diagnostic visible en console, sans casser l'interface.
+    console.error('[render] erreur pendant le rendu :', error)
+  }
 }
 
 // --- Navigation entre vues ---------------------------------------------

@@ -1060,6 +1060,76 @@ function pgActualMs(t) {
   }
   return 0
 }
+// Donut « Respect du temps » : reprend la facture du cercle de « Répartition des
+// retards » (rubrique Retards) — canvas HiDPI, anneau épais, segments détachés,
+// valeur centrée, typographie proportionnelle à l'espace disponible.
+function pgRenderTimeDonut(planned, actual) {
+  const canvas = document.getElementById('pgTimeDonut')
+  if (!canvas) return
+  const { ctx, width, height } = prepareCanvasForHiDpi(canvas)
+  ctx.clearRect(0, 0, width, height)
+
+  // Couleurs lues dans le thème actif : harmonie garantie avec les autres rubriques.
+  const vars = getComputedStyle(document.documentElement)
+  const cssVar = (name, fallback) => {
+    const value = vars.getPropertyValue(name).trim()
+    return value || fallback
+  }
+  const textColor = cssVar('--text', '#1c2536')
+  const mutedColor = cssVar('--text-muted', '#6b7689')
+  const trackColor = cssVar('--task-track', '#e9edf4')
+  const okColor = cssVar('--badge-done-text', '#227a4e')
+  const overColor = cssVar('--badge-todo-text', '#c0392b')
+
+  const hasData = planned > 0
+  const ratio = hasData ? actual / planned : 0
+  const pct = hasData ? Math.round(ratio * 100) : 0
+  const fill = Math.max(0, Math.min(1, ratio))
+  const ringColor = !hasData ? trackColor : ratio > 1.1 ? overColor : okColor
+
+  const size = Math.min(width, height)
+  const centerX = width / 2
+  const centerY = height / 2
+  const radius = Math.max(10, size / 2 - 14)
+  const thick = Math.max(22, radius * 0.34)
+  const bigLabel = pct + ' %'
+  const numScale = bigLabel.length > 4 ? 0.78 : 1
+  const numFont = Math.round(Math.max(13, Math.min(21, size * 0.15)) * numScale)
+  const labFont = Math.round(Math.max(8.5, Math.min(10.5, size * 0.066)))
+  const numLift = Math.round(numFont * 0.55)
+  const labGap = Math.max(5, Math.round(labFont * 0.8))
+
+  const TAU = Math.PI * 2
+  const start = -Math.PI / 2
+  const arcRadius = radius - thick / 2
+  const gap = fill > 0 && fill < 1 ? 0.035 : 0
+  ctx.lineWidth = thick
+  ctx.lineCap = 'butt'
+  // Part consommée : vert tant que le planning est tenu, rouge en cas de dépassement.
+  ctx.strokeStyle = ringColor
+  ctx.beginPath()
+  ctx.arc(centerX, centerY, arcRadius, start + (fill > 0 ? gap / 2 : 0), start + fill * TAU - (fill > 0 && fill < 1 ? gap / 2 : 0))
+  ctx.stroke()
+  // Part restante : teinte neutre du thème, comme l'anneau vide des retards.
+  if (fill < 1) {
+    ctx.strokeStyle = trackColor
+    ctx.beginPath()
+    ctx.arc(centerX, centerY, arcRadius, start + fill * TAU + (fill > 0 ? gap / 2 : 0), start + TAU - gap / 2)
+    ctx.stroke()
+  }
+
+  // Valeur centrée (mêmes familles et hiérarchie que la répartition des retards).
+  ctx.fillStyle = textColor
+  ctx.font = `800 ${numFont}px 'Plus Jakarta Sans', Inter, sans-serif`
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
+  ctx.fillText(hasData ? bigLabel : '0 %', centerX, centerY - numLift)
+  ctx.font = `500 ${labFont}px Inter, sans-serif`
+  ctx.fillStyle = mutedColor
+  ctx.fillText('du temps', centerX, centerY - numLift + numFont * 0.5 + labGap)
+  ctx.fillText('prévu', centerX, centerY - numLift + numFont * 0.5 + labGap + labFont + 2)
+}
+
 function pgRenderEvo(tasks) {
   const canvas = document.getElementById('pgEvoChart')
   if (!canvas) return
@@ -1155,11 +1225,7 @@ export function renderProgressionMaquette(tasks, period) {
   pgSet('pgTileDoingN', c.doing); pgSet('pgTileDoingP', doingPct + ' %')
   pgSet('pgTileTodoN', c.todo); pgSet('pgTileTodoP', todoPct + ' %')
   pgSet('pgTileLateN', c.delayed); pgSet('pgTileLateP', latePct + ' %')
-  pgSet('pgDetailTotal', c.total)
-  pgSet('pgDetailDoneP', donePct + '%'); pgSet('pgDetailDoingP', doingPct + '%')
-  pgSet('pgDetailTodoP', todoPct + '%'); pgSet('pgDetailLateP', latePct + '%')
   pgPaintDonut('pgDaySeg', c, c.total)
-  pgPaintDonut('pgDetailSeg', c, c.total)
   const dayBadge = document.getElementById('pgDayBadge')
   if (dayBadge) {
     let txt = 'Bon rythme !'
@@ -1175,12 +1241,13 @@ export function renderProgressionMaquette(tasks, period) {
   }
   let planned = 0, actual = 0
   for (const t of scope) { planned += pgPlannedMs(t); actual += pgActualMs(t) }
-  const timePct = planned > 0 ? Math.min(100, Math.round((actual / planned) * 100)) : 0
-  pgSet('pgTimePct', timePct + ' %')
+  // Pas d'écrêtage à 100 % : un dépassement doit rester visible, à la fois sur
+  // l'anneau (segment rouge) et sur le statut « Temps dépassé ».
+  const timePct = planned > 0 ? Math.round((actual / planned) * 100) : 0
+  pgSet('pgTimePct', timePct + ' % du temps prévu')
   pgSet('pgPlanned', pgHours(planned))
   pgSet('pgActual', pgHours(actual))
-  const seg = document.getElementById('pgTimeSeg')
-  if (seg) seg.setAttribute('stroke-dasharray', (timePct / 100 * PG_CIRC).toFixed(1) + ' ' + PG_CIRC.toFixed(1))
+  pgRenderTimeDonut(planned, actual)
   const tb = document.getElementById('pgTimeBadge')
   if (tb) {
     let txt = 'Dans le rythme prévu'
