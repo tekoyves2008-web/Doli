@@ -992,6 +992,8 @@ function pgSetSeg(id, frac, offsetFrac) {
   el.setAttribute('stroke-dashoffset', (-offsetFrac * PG_CIRC).toFixed(1))
 }
 function pgPaintDonut(prefix, counts, total) {
+  // Ordre circulaire fixe : les portions se suivent sans chevauchement
+  // (chaque segment occupe son arc via dasharray/dashoffset).
   const keys = [counts.todo, counts.doing, counts.delayed, counts.done]
   const names = ['Todo', 'Doing', 'Late', 'Done']
   let acc = 0
@@ -1082,9 +1084,12 @@ function pgRenderEvo(tasks) {
   const padL = 34, padR = 34, padT = 12, padB = 30
   const iw = W - padL - padR, ih = H - padT - padB
   const dark = document.documentElement.dataset.theme === 'dark'
-  ctx.strokeStyle = dark ? 'rgba(148,163,184,.16)' : '#eef1f6'
-  ctx.fillStyle = dark ? '#8b94a5' : '#8a94a6'
-  ctx.font = '10px Inter, system-ui, sans-serif'
+  const gridColor = dark ? 'rgba(148,163,184,.16)' : '#eef1f6'
+  const labelColor = dark ? '#8b94a5' : '#8a94a6'
+  const font = '10px Inter, system-ui, sans-serif'
+  ctx.strokeStyle = gridColor
+  ctx.fillStyle = labelColor
+  ctx.font = font
   ctx.textAlign = 'right'
   for (let g = 0; g <= 5; g++) {
     const v = g * 20
@@ -1093,8 +1098,9 @@ function pgRenderEvo(tasks) {
     ctx.fillText(v + ' %', padL - 5, y + 3)
   }
   const pts = days.map((d, i) => ({ x: padL + (i / 6) * iw, y: padT + ih - (d.pct / 100) * ih, v: d.pct, date: d.date }))
+  const accent = dark ? '#6c8cff' : '#4c6ef5'
   const grad = ctx.createLinearGradient(0, padT, 0, padT + ih)
-  grad.addColorStop(0, 'rgba(59,91,219,.22)'); grad.addColorStop(1, 'rgba(59,91,219,.03)')
+  grad.addColorStop(0, dark ? 'rgba(108,140,255,.28)' : 'rgba(59,91,219,.22)'); grad.addColorStop(1, dark ? 'rgba(108,140,255,.04)' : 'rgba(59,91,219,.03)')
   ctx.beginPath()
   ctx.moveTo(pts[0].x, pts[0].y)
   for (let i = 1; i < pts.length; i++) {
@@ -1109,8 +1115,8 @@ function pgRenderEvo(tasks) {
     const mx = (pts[i - 1].x + pts[i].x) / 2
     ctx.bezierCurveTo(mx, pts[i - 1].y, mx, pts[i].y, pts[i].x, pts[i].y)
   }
-  ctx.strokeStyle = '#4c6ef5'; ctx.lineWidth = 2; ctx.lineJoin = 'round'; ctx.lineCap = 'round'; ctx.stroke()
-  ctx.fillStyle = '#4c6ef5'
+  ctx.strokeStyle = accent; ctx.lineWidth = 2; ctx.lineJoin = 'round'; ctx.lineCap = 'round'; ctx.stroke()
+  ctx.fillStyle = accent
   for (const p of pts) { ctx.beginPath(); ctx.arc(p.x, p.y, 3, 0, Math.PI * 2); ctx.fill() }
   const last = pts[pts.length - 1]
   const label = last.v + ' %'
@@ -1118,14 +1124,14 @@ function pgRenderEvo(tasks) {
   const tw = ctx.measureText(label).width + 12
   const bx = Math.min(Math.max(last.x - tw / 2, padL), W - tw - 4)
   const by = Math.max(last.y - 30, 2)
-  ctx.fillStyle = '#4c6ef5'
+  ctx.fillStyle = accent
   ctx.beginPath()
   if (ctx.roundRect) ctx.roundRect(bx, by, tw, 18, 5); else ctx.rect(bx, by, tw, 18)
   ctx.fill()
   ctx.beginPath(); ctx.moveTo(last.x - 4, by + 18); ctx.lineTo(last.x + 4, by + 18); ctx.lineTo(last.x, by + 23); ctx.closePath(); ctx.fill()
   ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.fillText(label, bx + tw / 2, by + 12.5)
-  ctx.fillStyle = dark ? '#8b94a5' : '#8a94a6'
-  ctx.font = '10px Inter, system-ui, sans-serif'
+  ctx.fillStyle = labelColor
+  ctx.font = font
   ctx.textAlign = 'center'
   const wd = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam']
   pts.forEach((p) => { ctx.fillText(wd[p.date.getDay()], p.x, H - 14); ctx.fillText(String(p.date.getDate()), p.x, H - 3) })
@@ -1158,7 +1164,7 @@ export function renderProgressionMaquette(tasks, period) {
   if (dayBadge) {
     let txt = 'Bon rythme !'
     let cls = 'pg-pill pg-pill--green'
-    if (c.total === 0) { cls = 'pg-pill pg-pill--amber'; txt = 'Ajoutez vos premieres taches' }
+    if (c.total === 0) { cls = 'pg-pill pg-pill--amber'; txt = 'Ajoutez vos premières tâches' }
     else if (donePct >= 100) { txt = 'Objectif atteint !' }
     else if (c.delayed > 0 && donePct < 50) { cls = 'pg-pill pg-pill--red'; txt = c.delayed + ' en retard' }
     else if (donePct < 50) { cls = 'pg-pill pg-pill--amber'; txt = 'En progression' }
@@ -1179,8 +1185,8 @@ export function renderProgressionMaquette(tasks, period) {
   if (tb) {
     let txt = 'Dans le rythme prévu'
     let cls = 'pg-pill pg-pill--green pg-pill--center'
-    if (planned === 0) { cls = 'pg-pill pg-pill--amber pg-pill--center'; txt = 'Ajoutez des echeances' }
-    else if (timePct > 110) { cls = 'pg-pill pg-pill--red pg-pill--center'; txt = 'Temps depasse' }
+    if (planned === 0) { cls = 'pg-pill pg-pill--amber pg-pill--center'; txt = 'Ajoutez des échéances' }
+    else if (timePct > 110) { cls = 'pg-pill pg-pill--red pg-pill--center'; txt = 'Temps dépassé' }
     else if (timePct < 95) { txt = 'En avance sur le planning' }
     tb.className = cls
     const svg = tb.querySelector('svg')
@@ -1197,10 +1203,18 @@ export function renderProgressionMaquette(tasks, period) {
   const pc = pgSplit(prevTasks)
   const onTimePct = wc.total ? Math.round(((wc.done + wc.doing + wc.todo) / wc.total) * 100) : 0
   const evol = pc.done > 0 ? Math.round(((wc.done - pc.done) / pc.done) * 100) : (wc.done > 0 ? 100 : 0)
+  const doneDelta = pc.done > 0 ? Math.round(((wc.done - pc.done) / pc.done) * 100) : (wc.done > 0 ? 100 : 0)
+  const lateDelta = pc.delayed > 0 ? Math.round(((wc.delayed - pc.delayed) / pc.delayed) * 100) : (wc.delayed > 0 ? 100 : 0)
   pgSet('pgWeekDone', wc.done)
   pgSet('pgWeekOnTime', onTimePct + ' %')
   pgSet('pgWeekLate', wc.delayed)
   pgSet('pgWeekEvol', (evol >= 0 ? '+' : '') + evol + ' %')
+  const doneDeltaEl = document.getElementById('pgWeekDoneDelta')
+  if (doneDeltaEl) { doneDeltaEl.textContent = (doneDelta >= 0 ? '↑ +' : '↓ ') + Math.abs(doneDelta) + ' %'; doneDeltaEl.className = 'pg-delta ' + (doneDelta >= 0 ? 'pg-delta--up' : 'pg-delta--down') }
+  const lateDeltaEl = document.getElementById('pgWeekLateDelta')
+  if (lateDeltaEl) { lateDeltaEl.textContent = (lateDelta <= 0 ? '↓ ' : '↑ +') + Math.abs(lateDelta) + ' %'; lateDeltaEl.className = 'pg-delta ' + (lateDelta <= 0 ? 'pg-delta--up' : 'pg-delta--down') }
+  const onTimeDeltaEl = document.getElementById('pgWeekOnTimeDelta')
+  if (onTimeDeltaEl) { onTimeDeltaEl.textContent = (evol >= 0 ? '↑ +' : '↓ ') + Math.abs(evol) + ' %'; onTimeDeltaEl.className = 'pg-delta ' + (evol >= 0 ? 'pg-delta--up' : 'pg-delta--down') }
   const title = document.getElementById('pgDayTitle')
   if (title) title.textContent = days <= 1 ? 'Ma progression du jour' : days <= 7 ? 'Ma progression de la semaine' : 'Ma progression du mois'
   const center = document.getElementById('pgDayCenterLabel')
@@ -1208,10 +1222,10 @@ export function renderProgressionMaquette(tasks, period) {
   const bannerT = document.getElementById('pgBannerTitle')
   const bannerS = document.getElementById('pgBannerSub')
   if (bannerT && bannerS) {
-    if (wc.total === 0) { bannerT.textContent = 'Ajoutez vos premieres taches !'; bannerS.textContent = 'Vos progres apparaitront ici, jour apres jour.' }
-    else if (evol > 0) { bannerT.textContent = 'Tu es plus regulier cette semaine !'; bannerS.textContent = 'Continue sur cette lancée, tu fais de grands progrès.' }
-    else if (wc.delayed > 0) { bannerT.textContent = 'Reduis tes retards pas a pas !'; bannerS.textContent = 'Traite en priorite les taches en retard pour remonter.' }
-    else { bannerT.textContent = 'Belle constance, continue !'; bannerS.textContent = 'Chaque tache accomplie te rapproche de tes objectifs.' }
+    if (wc.total === 0) { bannerT.textContent = 'Ajoutez vos premières tâches !'; bannerS.textContent = 'Vos progrès apparaîtront ici, jour après jour.' }
+    else if (evol > 0) { bannerT.textContent = 'Tu es plus régulier cette semaine !'; bannerS.textContent = 'Continue sur cette lancée, tu fais de grands progrès.' }
+    else if (wc.delayed > 0) { bannerT.textContent = 'Réduis tes retards pas à pas !'; bannerS.textContent = 'Traite en priorité les tâches en retard pour remonter.' }
+    else { bannerT.textContent = 'Belle constance, continue !'; bannerS.textContent = 'Chaque tâche accomplie te rapproche de tes objectifs.' }
   }
 }
 

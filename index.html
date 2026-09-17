@@ -541,10 +541,10 @@
 <div class="pg-donut-wrap">
 <svg id="pgDonutDay" class="pg-donut" viewBox="0 0 140 140" width="150" height="150" aria-hidden="true">
 <circle cx="70" cy="70" r="54" fill="none" stroke="#e9edf3" stroke-width="15" class="pg-track"/>
-<circle id="pgDaySegTodo" cx="70" cy="70" r="54" fill="none" stroke="#c3cad4" stroke-width="15" stroke-linecap="round" transform="rotate(-90 70 70)" stroke-dasharray="0 339.292" stroke-dashoffset="0"/>
-<circle id="pgDaySegDoing" cx="70" cy="70" r="54" fill="none" stroke="#3b82f6" stroke-width="15" stroke-linecap="round" transform="rotate(-90 70 70)" stroke-dasharray="0 339.292" stroke-dashoffset="0"/>
-<circle id="pgDaySegLate" cx="70" cy="70" r="54" fill="none" stroke="#ef4444" stroke-width="15" stroke-linecap="round" transform="rotate(-90 70 70)" stroke-dasharray="0 339.292" stroke-dashoffset="0"/>
-<circle id="pgDaySegDone" cx="70" cy="70" r="54" fill="none" stroke="#22b07d" stroke-width="15" stroke-linecap="round" transform="rotate(-90 70 70)" stroke-dasharray="0 339.292" stroke-dashoffset="0"/>
+<circle id="pgDaySegTodo" cx="70" cy="70" r="54" fill="none" stroke-width="15" stroke-linecap="round" transform="rotate(-90 70 70)" stroke-dasharray="0 339.292" stroke-dashoffset="0" style="stroke:var(--text-muted);opacity:.55"/>
+<circle id="pgDaySegDoing" cx="70" cy="70" r="54" fill="none" stroke-width="15" stroke-linecap="round" transform="rotate(-90 70 70)" stroke-dasharray="0 339.292" stroke-dashoffset="0" style="stroke:var(--accent)"/>
+<circle id="pgDaySegLate" cx="70" cy="70" r="54" fill="none" stroke-width="15" stroke-linecap="round" transform="rotate(-90 70 70)" stroke-dasharray="0 339.292" stroke-dashoffset="0" style="stroke:var(--badge-todo-text)"/>
+<circle id="pgDaySegDone" cx="70" cy="70" r="54" fill="none" stroke-width="15" stroke-linecap="round" transform="rotate(-90 70 70)" stroke-dasharray="0 339.292" stroke-dashoffset="0" style="stroke:var(--badge-done-text)"/>
 </svg>
 <div class="pg-donut__center"><strong id="pgDayPct">0 %</strong><span id="pgDayCenterLabel">Progression aujourd'hui</span></div>
 </div>
@@ -571,7 +571,7 @@
 <div class="pg-donut-wrap pg-donut-wrap--sm">
 <svg class="pg-donut pg-donut--sm" viewBox="0 0 140 140" width="122" height="122" aria-hidden="true">
 <circle cx="70" cy="70" r="54" fill="none" stroke="#e9edf3" stroke-width="15" class="pg-track"/>
-<circle id="pgTimeSeg" cx="70" cy="70" r="54" fill="none" stroke="#22b07d" stroke-width="15" stroke-linecap="round" transform="rotate(-90 70 70)" stroke-dasharray="0 339.292" stroke-dashoffset="0"/>
+<circle id="pgTimeSeg" cx="70" cy="70" r="54" fill="none" stroke-width="15" stroke-linecap="round" transform="rotate(-90 70 70)" stroke-dasharray="0 339.292" stroke-dashoffset="0" style="stroke:var(--badge-done-text)"/>
 </svg>
 <div class="pg-donut__center pg-donut__center--sm"><strong id="pgTimePct">0 %</strong></div>
 </div>
@@ -608,15 +608,15 @@
 <div class="pg-donut-wrap pg-donut-wrap--xs">
 <svg id="pgDonutDetail" class="pg-donut pg-donut--xs" viewBox="0 0 140 140" width="132" height="132" aria-hidden="true">
 <circle cx="70" cy="70" r="54" fill="none" stroke="#e9edf3" stroke-width="17" class="pg-track"/>
-<circle id="pgDetailSegTodo" cx="70" cy="70" r="54" fill="none" stroke="#c3cad4" stroke-width="17" transform="rotate(-90 70 70)" stroke-dasharray="0 339.292" stroke-dashoffset="0"/>
-<circle id="pgDetailSegDoing" cx="70" cy="70" r="54" fill="none" stroke="#3b82f6" stroke-width="17" transform="rotate(-90 70 70)" stroke-dasharray="0 339.292" stroke-dashoffset="0"/>
-<circle id="pgDetailSegLate" cx="70" cy="70" r="54" fill="none" stroke="#ef4444" stroke-width="17" transform="rotate(-90 70 70)" stroke-dasharray="0 339.292" stroke-dashoffset="0"/>
-<circle id="pgDetailSegDone" cx="70" cy="70" r="54" fill="none" stroke="#22b07d" stroke-width="17" transform="rotate(-90 70 70)" stroke-dasharray="0 339.292" stroke-dashoffset="0"/>
+<circle id="pgDetailSegTodo" cx="70" cy="70" r="54" fill="none" stroke-width="17" transform="rotate(-90 70 70)" stroke-dasharray="0 339.292" stroke-dashoffset="0" style="stroke:var(--text-muted);opacity:.55"/>
+<circle id="pgDetailSegDoing" cx="70" cy="70" r="54" fill="none" stroke-width="17" transform="rotate(-90 70 70)" stroke-dasharray="0 339.292" stroke-dashoffset="0" style="stroke:var(--accent)"/>
+<circle id="pgDetailSegLate" cx="70" cy="70" r="54" fill="none" stroke-width="17" transform="rotate(-90 70 70)" stroke-dasharray="0 339.292" stroke-dashoffset="0" style="stroke:var(--badge-todo-text)"/>
+<circle id="pgDetailSegDone" cx="70" cy="70" r="54" fill="none" stroke-width="17" transform="rotate(-90 70 70)" stroke-dasharray="0 339.292" stroke-dashoffset="0" style="stroke:var(--badge-done-text)"/>
 </svg>
 <div class="pg-donut__center pg-donut__center--xs"><strong id="pgDetailTotal">0</strong><span>tâches</span></div>
 </div>
 <ul class="pg-legend">
-<li><span class="pg-dot pg-dot--green"></span>Executees<em id="pgDetailDoneP">0%</em></li>
+<li><span class="pg-dot pg-dot--green"></span>Exécutées<em id="pgDetailDoneP">0%</em></li>
 <li><span class="pg-dot pg-dot--blue"></span>En cours<em id="pgDetailDoingP">0%</em></li>
 <li><span class="pg-dot pg-dot--grey"></span>Non exécutées<em id="pgDetailTodoP">0%</em></li>
 <li><span class="pg-dot pg-dot--red"></span>En retard<em id="pgDetailLateP">0%</em></li>

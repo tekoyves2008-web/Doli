@@ -10,12 +10,7 @@ import {
   computeStreak,
 } from './modules/stats.js'
 import {
-  computeProgressionStats,
   computeTaskProgress,
-  computeTodayDistribution,
-  computeWeekComparison,
-  computeProgressionTrend,
-  computeTodayStats,
 } from './modules/progression.js'
 import { applyTheme } from './modules/theme.js'
 import {
@@ -37,10 +32,6 @@ import {
   renderReminders,
   triggerConfetti,
   renderProgressionMaquette,
-  renderProgressionDayDistribution,
-  renderProgressionWeeklyComparison,
-  renderProgressionTrend,
-  renderProgressionTodayStats,
   bindProgressionFilters,
   renderDashKpiDistribution,
   renderDashKpiPerformance,
@@ -64,29 +55,6 @@ const STATUS_FILTER_LABEL = {
   [STATUS.DOING]: 'en cours',
   [STATUS.DONE]: 'exécutée',
   delayed: 'en retard',
-}
-
-const PROGRESSION_PERIOD_LABELS = {
-  1: 'Aujourd\'hui',
-  7: '1 semaine',
-  14: '2 semaines',
-  30: '1 mois',
-  90: '3 mois',
-  180: '6 mois',
-  365: '1 an'
-}
-
-function updateProgressionTitles(period) {
-  const label = PROGRESSION_PERIOD_LABELS[period] || 'Aujourd\'hui'
-  const distributionTitle = document.getElementById('progressionDistributionTitle')
-  const comparisonTitle = document.getElementById('progressionComparisonTitle')
-  const trendTitle = document.getElementById('progressionTrendTitle')
-  const summaryTitle = document.getElementById('progressionSummaryTitle')
-
-  if (distributionTitle) distributionTitle.textContent = `Répartition des tâches sur ${label}`
-  if (comparisonTitle) comparisonTitle.textContent = `Comparaison sur ${label}`
-  if (trendTitle) trendTitle.textContent = `Évolution de la progression sur ${label}`
-  if (summaryTitle) summaryTitle.textContent = `Bilan sur ${label}`
 }
 
 // --- Références DOM ------------------------------------------------
@@ -121,9 +89,6 @@ function remSet(name, v) { try { localStorage.setItem(name, v) } catch {} }
 let remCfg = { browser: remGet('remCfgBrowser', '1'), mail: remGet('remCfgMail', '1'), sound: remGet('remCfgSound', '1'), freq: remGet('remCfgFreq', '2h') }
 
 const progressionContainer = viewEls.progression
-const progressionDayDistributionCanvas = document.getElementById('progressionDayDistributionChart')
-const progressionWeeklyComparisonCanvas = document.getElementById('progressionWeeklyComparisonChart')
-const progressionTrendCanvas = document.getElementById('progressionTrendChart')
 const preuvesListEl = document.getElementById('preuvesList')
 
 // --- Références DOM : dashboard (maquette Doli) --------------------------
@@ -742,6 +707,13 @@ function setView(view) {
       getAllTasks().then(renderRetardsNow).catch(() => {})
     })
   }
+  // La courbe « Évolution » de Progression mesure son conteneur : même
+  // re-rendu une fois la section visible pour éviter un canvas à 0px.
+  if (view === 'progression') {
+    requestAnimationFrame(() => {
+      getAllTasks().then((tasks) => renderProgressionMaquette(tasks, progressionPeriod)).catch(() => {})
+    })
+  }
 }
 
 // --- Tiroir de la sidebar (téléphone : ☰ en haut, sidebar masquée sinon) --
@@ -775,6 +747,12 @@ navButtons.forEach((btn) => {
 const retardsViewProofsBtn = document.getElementById('retardsViewProofsBtn')
 if (retardsViewProofsBtn) {
   retardsViewProofsBtn.addEventListener('click', () => setView('preuves'))
+}
+
+// Bouton « Voir le détail » (bandeau progression -> mes tâches)
+const pgSeeDetailBtn = document.getElementById('pgSeeDetail')
+if (pgSeeDetailBtn) {
+  pgSeeDetailBtn.addEventListener('click', () => setView('tasks'))
 }
 
 // --- Progression : filtres temporels ---
