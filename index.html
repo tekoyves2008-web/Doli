@@ -539,14 +539,9 @@
 <div class="pg-day__body">
 <div class="pg-day__left">
 <div class="pg-donut-wrap">
-<svg id="pgDonutDay" class="pg-donut" viewBox="0 0 140 140" width="150" height="150" aria-hidden="true">
-<circle cx="70" cy="70" r="54" fill="none" stroke="#e9edf3" stroke-width="15" class="pg-track"/>
-<circle id="pgDaySegTodo" cx="70" cy="70" r="54" fill="none" stroke-width="15" stroke-linecap="round" transform="rotate(-90 70 70)" stroke-dasharray="0 339.292" stroke-dashoffset="0" style="stroke:var(--text-muted);opacity:.55"/>
-<circle id="pgDaySegDoing" cx="70" cy="70" r="54" fill="none" stroke-width="15" stroke-linecap="round" transform="rotate(-90 70 70)" stroke-dasharray="0 339.292" stroke-dashoffset="0" style="stroke:var(--accent)"/>
-<circle id="pgDaySegLate" cx="70" cy="70" r="54" fill="none" stroke-width="15" stroke-linecap="round" transform="rotate(-90 70 70)" stroke-dasharray="0 339.292" stroke-dashoffset="0" style="stroke:var(--badge-todo-text)"/>
-<circle id="pgDaySegDone" cx="70" cy="70" r="54" fill="none" stroke-width="15" stroke-linecap="round" transform="rotate(-90 70 70)" stroke-dasharray="0 339.292" stroke-dashoffset="0" style="stroke:var(--badge-done-text)"/>
-</svg>
-<div class="pg-donut__center"><strong id="pgDayPct">0 %</strong><span id="pgDayCenterLabel">Progression aujourd'hui</span></div>
+<canvas id="pgDayDonut" width="300" height="300" aria-hidden="true"></canvas>
+<span id="pgDayPct" class="pg-time__pct">0 %</span>
+<span id="pgDayCenterLabel" class="pg-time__pct">Progression aujourd'hui</span>
 </div>
 <span id="pgDayBadge" class="pg-pill pg-pill--green"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M6 11l6-6 6 6"/></svg>Bon rythme !</span>
 </div>

@@ -983,26 +983,6 @@ function pgSet(id, text) {
   const el = document.getElementById(id)
   if (el) el.textContent = text
 }
-const PG_CIRC = 339.292
-function pgSetSeg(id, frac, offsetFrac) {
-  const el = document.getElementById(id)
-  if (!el) return
-  const len = Math.max(0, frac * PG_CIRC)
-  el.setAttribute('stroke-dasharray', len.toFixed(1) + ' ' + PG_CIRC.toFixed(1))
-  el.setAttribute('stroke-dashoffset', (-offsetFrac * PG_CIRC).toFixed(1))
-}
-function pgPaintDonut(prefix, counts, total) {
-  // Ordre circulaire fixe : les portions se suivent sans chevauchement
-  // (chaque segment occupe son arc via dasharray/dashoffset).
-  const keys = [counts.todo, counts.doing, counts.delayed, counts.done]
-  const names = ['Todo', 'Doing', 'Late', 'Done']
-  let acc = 0
-  for (let i = 0; i < 4; i++) {
-    const frac = total > 0 ? keys[i] / total : 0
-    pgSetSeg(prefix + names[i], frac, acc)
-    acc += frac
-  }
-}
 function pgHours(ms) {
   const h = ms / 3600000
   if (h < 1) return Math.round(ms / 60000) + ' min'
@@ -1079,6 +1059,8 @@ function pgCanvasPalette() {
     track: read('--pg-ring-track') || (isDark ? '#333c50' : '#e9edf4'),
     ok: read('--badge-done-text') || (isDark ? '#63d99a' : '#227a4e'),
     over: read('--badge-todo-text') || (isDark ? '#ff8b8b' : '#c0392b'),
+    doing: read('--accent') || (isDark ? '#6ba1ff' : '#2563eb'),
+    late: read('--badge-todo-text') || (isDark ? '#ff8b8b' : '#c0392b'),
   }
 }
 
@@ -1146,6 +1128,86 @@ function pgRenderTimeDonut(planned, actual) {
   ctx.fillStyle = pal.muted
   ctx.fillText('du temps', centerX, centerY - numLift + numFont * 0.5 + labGap)
   ctx.fillText('prévu', centerX, centerY - numLift + numFont * 0.5 + labGap + labFont + 2)
+}
+
+// Donut « Ma progression du jour » : rendu strictement identique à celui du
+// « Respect du temps » — canvas HiDPI, anneau épais, segments détachés par de
+// fins interstices, valeur et libellé centrés DANS le canvas (donc toujours
+// parfaitement au centre, sans jamais déborder de l'anneau).
+function pgRenderDayDonut(counts, total, pct, label) {
+  const canvas = document.getElementById('pgDayDonut')
+  if (!canvas) return
+  const { ctx, width, height } = prepareCanvasForHiDpi(canvas)
+  ctx.clearRect(0, 0, width, height)
+
+  const pal = pgCanvasPalette()
+  const c = counts || { done: 0, doing: 0, todo: 0, delayed: 0 }
+  const parts = [
+    { frac: total > 0 ? c.todo / total : 0, color: pal.muted },
+    { frac: total > 0 ? c.doing / total : 0, color: pal.doing },
+    { frac: total > 0 ? c.delayed / total : 0, color: pal.late },
+    { frac: total > 0 ? c.done / total : 0, color: pal.ok },
+  ].filter((p) => p.frac > 0)
+  // Un seul état représenté : pas d'interstice, l'anneau est complet.
+  const gaps = parts.length > 1 ? parts.length : 0
+
+  const size = Math.min(width, height)
+  const centerX = width / 2
+  const centerY = height / 2
+  const radius = Math.max(10, size / 2 - 14)
+  const thick = Math.max(22, radius * 0.34)
+  const TAU = Math.PI * 2
+  const start = -Math.PI / 2
+  const arcRadius = radius - thick / 2
+  const gap = gaps ? 0.035 : 0
+
+  if (parts.length === 0) {
+    ctx.lineWidth = thick
+    ctx.lineCap = 'butt'
+    ctx.strokeStyle = pal.track
+    ctx.beginPath()
+    ctx.arc(centerX, centerY, arcRadius, 0, TAU)
+    ctx.stroke()
+  } else {
+    ctx.lineWidth = thick
+    ctx.lineCap = 'butt'
+    let angle = start
+    for (let i = 0; i < parts.length; i++) {
+      const sweep = parts[i].frac * TAU
+      const a0 = angle + (gaps ? gap / 2 : 0)
+      const a1 = angle + sweep - (gaps ? gap / 2 : 0)
+      ctx.strokeStyle = parts[i].color
+      if (pal.isDark) { ctx.shadowColor = parts[i].color; ctx.shadowBlur = thick * 0.55 }
+      ctx.beginPath()
+      ctx.arc(centerX, centerY, arcRadius, a0, Math.max(a0, a1))
+      ctx.stroke()
+      ctx.shadowBlur = 0
+      angle += sweep
+    }
+  }
+
+  // Valeur + libellé centrés, dessinés dans le canvas comme « Respect du temps ».
+  const bigLabel = (pct ?? 0) + ' %'
+  const numScale = bigLabel.length > 4 ? 0.78 : 1
+  const numFont = Math.round(Math.max(13, Math.min(21, size * 0.15)) * numScale)
+  const labFont = Math.round(Math.max(8.5, Math.min(10.5, size * 0.066)))
+  const numLift = Math.round(numFont * 0.55)
+  const labGap = Math.max(5, Math.round(labFont * 0.8))
+
+  ctx.fillStyle = pal.text
+  ctx.font = `800 ${numFont}px 'Plus Jakarta Sans', Inter, sans-serif`
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
+  ctx.fillText(bigLabel, centerX, centerY - numLift)
+  ctx.font = `500 ${labFont}px Inter, sans-serif`
+  ctx.fillStyle = pal.muted
+  // Libellé réparti sur deux lignes au maximum pour rester dans l'anneau.
+  const words = String(label || '').split(/\s+/)
+  const line1 = words.slice(0, Math.ceil(words.length / 2)).join(' ')
+  const line2 = words.length > 1 ? words.slice(Math.ceil(words.length / 2)).join(' ') : ''
+  const y0 = centerY - numLift + numFont * 0.5 + labGap
+  ctx.fillText(line1, centerX, y0)
+  if (line2) ctx.fillText(line2, centerX, y0 + labFont + 2)
 }
 
 function pgRenderEvo(tasks) {
@@ -1243,7 +1305,7 @@ export function renderProgressionMaquette(tasks, period) {
   pgSet('pgTileDoingN', c.doing); pgSet('pgTileDoingP', doingPct + ' %')
   pgSet('pgTileTodoN', c.todo); pgSet('pgTileTodoP', todoPct + ' %')
   pgSet('pgTileLateN', c.delayed); pgSet('pgTileLateP', latePct + ' %')
-  pgPaintDonut('pgDaySeg', c, c.total)
+  pgRenderDayDonut(c, c.total, donePct, days <= 1 ? "Progression aujourd'hui" : days <= 7 ? 'Progression cette semaine' : 'Progression ce mois-ci')
   const dayBadge = document.getElementById('pgDayBadge')
   if (dayBadge) {
     let txt = 'Bon rythme !'
