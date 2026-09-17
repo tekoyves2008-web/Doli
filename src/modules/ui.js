@@ -1056,11 +1056,14 @@ function pgCanvasPalette() {
     // Anneau neutre : piloté par --pg-ring-track, définie dans les DEUX thèmes
     // (la variable --task-track n'existe qu'en clair). Plus jamais de gris clair
     // éclatant sur la carte sombre : c'est la feuille de style qui décide.
+    // Palette volontairement douce et mate, alignée sur le donut « Répartition
+    // des retards » (rubrique Retards) : mêmes teintes que PRIORITY_COLORS,
+    // sans éclat lumineux, identiques dans les deux thèmes.
     track: read('--pg-ring-track') || (isDark ? '#333c50' : '#e9edf4'),
-    ok: read('--badge-done-text') || (isDark ? '#63d99a' : '#227a4e'),
-    over: read('--badge-todo-text') || (isDark ? '#ff8b8b' : '#c0392b'),
-    doing: read('--accent') || (isDark ? '#6ba1ff' : '#2563eb'),
-    late: read('--badge-todo-text') || (isDark ? '#ff8b8b' : '#c0392b'),
+    ok: '#22c55e',
+    over: '#ef4444',
+    doing: '#3b82f6',
+    late: '#ef4444',
   }
 }
 
@@ -1102,9 +1105,7 @@ function pgRenderTimeDonut(planned, actual) {
   ctx.lineWidth = thick
   ctx.lineCap = 'butt'
   // Part consommée : vert tant que le planning est tenu, rouge en cas de dépassement.
-  // En mode sombre, un halo de la couleur de l'anneau donne à l'arc une lumière
-  // douce (aspect lumineux premium) ; en clair, aucun halo n'est nécessaire.
-  if (pal.isDark && fill > 0) { ctx.shadowColor = ringColor; ctx.shadowBlur = thick * 0.55 }
+  // Aucun halo : couleurs mates, comme le donut « Répartition des retards ».
   ctx.strokeStyle = ringColor
   ctx.beginPath()
   ctx.arc(centerX, centerY, arcRadius, start + (fill > 0 ? gap / 2 : 0), start + fill * TAU - (fill > 0 && fill < 1 ? gap / 2 : 0))
@@ -1177,11 +1178,9 @@ function pgRenderDayDonut(counts, total, pct, label) {
       const a0 = angle + (gaps ? gap / 2 : 0)
       const a1 = angle + sweep - (gaps ? gap / 2 : 0)
       ctx.strokeStyle = parts[i].color
-      if (pal.isDark) { ctx.shadowColor = parts[i].color; ctx.shadowBlur = thick * 0.55 }
       ctx.beginPath()
       ctx.arc(centerX, centerY, arcRadius, a0, Math.max(a0, a1))
       ctx.stroke()
-      ctx.shadowBlur = 0
       angle += sweep
     }
   }
