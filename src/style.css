@@ -517,12 +517,16 @@ input:focus-visible,
 
 /* Bandeau plein écran : bleu accent en thème sombre, marine de la barre
    latérale en thème clair. Le texte et la cloche s'adaptent pour rester
-   lisibles sur chacun des deux fonds. */
+   lisibles sur chacun des deux fonds.
+   La topbar est masquée à la demande (les éléments restent dans le DOM
+   pour que les listeners de main.js — titre de vue, cloche, menu mobile —
+   continuent de fonctionner sans erreur). */
 .app-topbar {
+  /* topbar masquée à la demande de l'utilisateur */
+  display: none;
   position: sticky;
   top: 0;
   z-index: 20;
-  display: flex;
   align-items: center;
   gap: 10px;
   margin: -24px -32px 24px;
