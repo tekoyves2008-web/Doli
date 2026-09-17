@@ -6048,11 +6048,12 @@ input:focus-visible,
 .retards-pagehead__icon {
   width: 40px;
   height: 40px;
-  border-radius: 50%;
+  border-radius: 12px;
   display: grid;
   place-items: center;
-  color: #ef4444;
-  background: linear-gradient(160deg, #fecaca, #fca5a5);
+  color: var(--accent-contrast);
+  background: linear-gradient(135deg, #ef4444, #f97316);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35);
   flex: none;
 }
 .retards-pagehead__title {
@@ -6653,5 +6654,26 @@ input:focus-visible,
 [data-theme='dark'] .rappels__encart{background:rgba(37,99,235,.12);border-color:rgba(37,99,235,.3);color:var(--text)}
 @media (max-width:1100px){.rappels{grid-template-columns:1fr}.rappels__kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:560px){.rappels__kpis{grid-template-columns:1fr}.rappels__head{flex-direction:column;align-items:stretch}}
+/* ===== Motifs d'en-tete reutilisables (identite « Progression ») =====
+   Carré arrondi 40px + dégradé, comme .pg__head-ico ; la couleur varie
+   selon le contexte de chaque rubrique. */
+.vhead-ico{width:40px;height:40px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;flex:none;color:var(--accent-contrast);background:linear-gradient(135deg,var(--accent),color-mix(in srgb,var(--accent) 65%,#7c3aed));box-shadow:0 4px 12px color-mix(in srgb,var(--accent) 35%,transparent)}
+.vhead-ico--rappels{background:linear-gradient(135deg,#6366f1,#8b5cf6);box-shadow:0 4px 12px rgba(99,102,241,.35)}
+.vhead-ico--retards{background:linear-gradient(135deg,#ef4444,#f97316);box-shadow:0 4px 12px rgba(239,68,68,.35)}
+.vhead-ico--preuves{background:linear-gradient(135deg,#10b981,#0d9488);box-shadow:0 4px 12px rgba(16,185,129,.35)}
+.vhead-ico svg{display:block}
+/* Dashboard : bloc salutation avec motif */
+.dash__hello{display:flex;align-items:center;gap:12px}
+/* Dashboard : kickers de sections avec petit motif */
+.dash-card__kicker{display:flex;align-items:center;gap:6px}
+.kick-ico{width:20px;height:20px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;flex:none;color:#fff}
+.kick-ico--accent{background:linear-gradient(135deg,#3b5bdb,#6d28d9)}
+.kick-ico--late{background:linear-gradient(135deg,#ef4444,#f97316)}
+.kick-ico--done{background:linear-gradient(135deg,#16a34a,#10b981)}
+.kick-ico--perf{background:linear-gradient(135deg,#7c3aed,#6366f1)}
+.kick-ico--dist{background:linear-gradient(135deg,#0ea5e9,#3b5bdb)}
+/* Preuves : motif a gauche du titre, texte flexible */
+.pf-header__text{flex:1;min-width:0}
+[data-theme='dark'] .kick-ico{filter:brightness(1.1)}
 
 

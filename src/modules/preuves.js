@@ -284,10 +284,9 @@ export function renderPreuves(container, tasks) {
   container.innerHTML = `
       <div class="pf__main">
         <div class="pf-header">
+          <span class="vhead-ico vhead-ico--preuves" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="9" width="15" height="11" rx="2.5"/><path d="M8 9V7a4 4 0 018 0v2"/><circle cx="12" cy="14.5" r="1.4" fill="currentColor" stroke="none"/></svg></span>
           <div class="pf-header__text">
-            <h2 class="pf__heading">Mes preuves privées
-              <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"><rect x="4.5" y="8.5" width="11" height="8" rx="1.5"/><path d="M7 8.5V6a3 3 0 016 0v2.5"/></svg>
-            </h2>
+            <h2 class="pf__heading">Mes preuves privées</h2>
             <p class="pf__subtitle">Consultez, gérez et vérifiez toutes vos preuves en toute confidentialité.</p>
           </div>
         </div>

@@ -174,9 +174,12 @@
         <section id="viewDashboard" class="view">
           <div class="dash">
             <div class="dash__header">
-              <div>
-                <h2 class="dash__greeting" id="dashGreeting">Bonjour !</h2>
-                <p class="dash__subtitle">Voici un aperçu clair de votre activité aujourd'hui.</p>
+              <div class="dash__hello">
+                <span class="vhead-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L4.5 13.5H11L9.5 22 19 10h-6.5L13 2z"/></svg></span>
+                <div>
+                  <h2 class="dash__greeting" id="dashGreeting">Bonjour !</h2>
+                  <p class="dash__subtitle">Voici un aperçu clair de votre activité aujourd'hui.</p>
+                </div>
               </div>
               <div class="dash__header-side">
                 <span class="dash__date">
@@ -192,24 +195,24 @@
 
             <div class="dash__kpis">
               <div class="dash-card dash-kpi dash-kpi--progress">
-                <h4 class="dash-card__kicker">Progression globale</h4>
+                <h4 class="dash-card__kicker"><span class="kick-ico kick-ico--accent" aria-hidden="true"><svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><rect x="3" y="12" width="4" height="9" rx="1.2"/><rect x="10" y="7" width="4" height="14" rx="1.2"/><rect x="17" y="3" width="4" height="18" rx="1.2"/></svg></span>Progression globale</h4>
                 <div class="dash-kpi__ring stats__circle" id="dashProgressRing" style="--percent:0"><span id="dashProgressPct">0 %</span></div>
                 <span class="dash-kpi__delta" id="dashProgressDelta">— % par rapport à hier</span>
               </div>
               <div class="dash-card dash-kpi dash-kpi--late">
-                <h4 class="dash-card__kicker">Tâches en retard</h4>
+                <h4 class="dash-card__kicker"><span class="kick-ico kick-ico--late" aria-hidden="true"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg></span>Tâches en retard</h4>
                 <span class="dash-kpi__sub dash-kpi__sub--alert" id="dashLateSub">À rattraper au plus vite</span>
                 <div class="dash-bignum dash-bignum--late" id="dashLateCount">0</div>
                 <button type="button" id="dashViewLate" class="dash-link">Voir les tâches →</button>
               </div>
               <div class="dash-card dash-kpi dash-kpi--done">
-                <h4 class="dash-card__kicker">Tâches terminées</h4>
+                <h4 class="dash-card__kicker"><span class="kick-ico kick-ico--done" aria-hidden="true"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M8.3 12.3l2.4 2.4 4.8-5"/></svg></span>Tâches terminées</h4>
                 <span class="dash-kpi__sub">Cette semaine</span>
                 <div class="dash-bignum" id="dashDoneWeek">0</div>
                 <button type="button" id="dashViewDone" class="dash-link">Voir les tâches →</button>
               </div>
               <div class="dash-card dash-kpi">
-                <h4 class="dash-card__kicker">Performance</h4>
+                <h4 class="dash-card__kicker"><span class="kick-ico kick-ico--perf" aria-hidden="true"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17l5-5 3 3 7-7"/><path d="M15 8h4v4"/></svg></span>Performance</h4>
                 <div class="dash-kpi__ring stats__circle" id="dashPerformance" style="--percent:0"><span id="dashPerformancePct">0 %</span></div>
                 <span class="dash-kpi__delta">Score actuel</span>
                 <span class="dash-kpi__sub">Votre score dépend de votre progression et de votre performance</span>
@@ -219,7 +222,7 @@
             <div class="dash__midrow">
             <div class="dash__kpis dash__kpis--secondary">
               <div class="dash-card dash-kpi dash-kpi--dist">
-                <h4 class="dash-card__kicker">Répartition des tâches</h4>
+                <h4 class="dash-card__kicker"><span class="kick-ico kick-ico--dist" aria-hidden="true"><svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M12 3a9 9 0 109 9h-9V3z"/><path d="M14.2 2.6a9 9 0 017.2 7.2h-7.2V2.6z" opacity=".55"/></svg></span>Répartition des tâches</h4>
                 <div class="dash-kpi__dist">
                   <div class="dash-donut" id="dashDonut"><span class="dash-donut__hole"><strong id="dashDonutTotal">0</strong><em>tâches</em></span></div>
                   <ul class="dash-legend" id="dashLegend"></ul>
@@ -227,7 +230,7 @@
                 <span class="dash-kpi__delta" id="dashDistTotal"></span>
               </div>
               <div class="dash-card dash-kpi dash-kpi--perf">
-                <h4 class="dash-card__kicker">Performance : résumé</h4>
+                <h4 class="dash-card__kicker"><span class="kick-ico kick-ico--perf" aria-hidden="true"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17l5-5 3 3 7-7"/><path d="M15 8h4v4"/></svg></span>Performance : résumé</h4>
                 <p class="dash-perf-intro">Vue d'ensemble sur la qualité d'exécution de vos tâches : respect des délais et gravité des retards.</p>
                 <div class="dash-kpi__perf">
                   <ul id="dashPerfList" class="dash-perf-list"></ul>
@@ -320,6 +323,7 @@
             <div class="mtasks2__main">
               <div class="mtasks2__header">
                 <div class="mtasks2__header-text">
+                  <span class="vhead-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4" width="17" height="17" rx="3"/><path d="M7.8 10.2l2.2 2.2 4.5-4.7"/><path d="M7.8 15.5h8.4"/></svg></span>
                   <h2>Mes tâches</h2>
                   <p>Gérez, suivez et accomplissez toutes vos tâches au quotidien.</p>
                 </div>
@@ -448,7 +452,7 @@
             <div class="rappels__main">
               <div class="rappels__head">
                 <div class="rappels__title-wrap">
-                  <span class="rappels__icon" aria-hidden="true">R</span>
+                  <span class="vhead-ico vhead-ico--rappels" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 9a6 6 0 10-12 0c0 5-2 6.5-2 6.5h16S18 14 18 9z"/><path d="M10 19a2.2 2.2 0 004 0"/></svg></span>
                   <div>
                     <h2 class="rappels__title">Rappels</h2>
                     <p class="rappels__sub">Ne manquez plus vos taches importantes. Recevez des rappels au bon moment pour rester organise et atteindre vos objectifs.</p>
@@ -458,19 +462,19 @@
               </div>
               <div class="rappels__kpis">
                 <div class="rappel-kpi rappel-kpi--blue">
-                  <span class="rappel-kpi__ico" aria-hidden="true">B</span>
+                  <span class="rappel-kpi__ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 9a6 6 0 10-12 0c0 5-2 6.5-2 6.5h16S18 14 18 9z"/><path d="M10 19a2.2 2.2 0 004 0"/></svg></span>
                   <div><p class="rappel-kpi__label">Rappels d'aujourd'hui</p><p class="rappel-kpi__num" id="rappelKpiToday">0</p><p class="rappel-kpi__sub" id="rappelKpiTodaySub">--</p></div>
                 </div>
                 <div class="rappel-kpi rappel-kpi--violet">
-                  <span class="rappel-kpi__ico" aria-hidden="true">C</span>
+                  <span class="rappel-kpi__ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="7"/><path d="M12 10v3.5l2.5 2"/><path d="M9.5 2.5h5"/></svg></span>
                   <div><p class="rappel-kpi__label">Rappels en cours</p><p class="rappel-kpi__num" id="rappelKpiDoing">0</p><p class="rappel-kpi__sub">Tache en cours</p></div>
                 </div>
                 <div class="rappel-kpi rappel-kpi--green">
-                  <span class="rappel-kpi__ico" aria-hidden="true">S</span>
+                  <span class="rappel-kpi__ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="16" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg></span>
                   <div><p class="rappel-kpi__label">Rappels cette semaine</p><p class="rappel-kpi__num" id="rappelKpiWeek">0</p><p class="rappel-kpi__sub" id="rappelKpiWeekSub">sur 0 taches programmees</p></div>
                 </div>
                 <div class="rappel-kpi rappel-kpi--mint">
-                  <span class="rappel-kpi__ico" aria-hidden="true">T</span>
+                  <span class="rappel-kpi__ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M19 5L5 19"/><circle cx="7.5" cy="7.5" r="2.5"/><circle cx="16.5" cy="16.5" r="2.5"/></svg></span>
                   <div><p class="rappel-kpi__label">Taux de respect</p><p class="rappel-kpi__num" id="rappelKpiRate">0 %</p><p class="rappel-kpi__sub" id="rappelKpiRateSub">--</p></div>
                 </div>
               </div>
@@ -625,9 +629,7 @@
           <div class="retards-container">
             <div class="retards-main">
               <div class="retards-pagehead">
-                <div class="retards-pagehead__icon" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15.5 14"/></svg>
-                </div>
+                <span class="vhead-ico vhead-ico--retards" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15.5 14"/></svg></span>
                 <div>
                   <h2 class="retards-pagehead__title">Retards</h2>
                   <p id="retardsSubtitle" class="retards-pagehead__sub">Suivez les tâches qui accusent un retard et analysez leur impact sur votre progression.</p>
