@@ -325,12 +325,12 @@ export function renderReminders(container, reminders, now) {
     const dateTxt = fmtRemDate(target, ref)
     const timeTxt = fmtRemTime(target)
     const freq = freqOf(t)
-    const ico = icoOf(t)
+    const motif = taskMotif(t)
     const title = escapeHtml(t.title || 'Tache')
     const desc = escapeHtml(t.description || '')
     const countTxt = isPast ? 'depasse' : countdownTxt(minsLeft)
-    return `<tr data-id="${t.id}"><td class="c-check"><input type="checkbox" data-remcheck="${t.id}" aria-label="Selectionner" /></td>`
-      + `<td><div class="rem-task"><span class="rem-ico" style="background:${ico.bg}">${ico.ch}</span><div><strong>${title}</strong><span>${desc}</span></div></div></td>`
+    return `<tr data-id="${t.id}"><td class="c-check"></td>`
+      + `<td><div class="rem-task"><span class="rem-ico rem-ico--task" aria-hidden="true">${motif.icon}</span><div><strong>${title}</strong><span>${desc}</span></div></div></td>`
       + `<td><div class="rem-date"><span aria-hidden="true">C</span><div>${dateTxt}<small>${timeTxt} - ${countTxt}</small></div></div></td>`
       + `<td><span class="rem-freq">R ${freq}</span></td>`
       + `<td><span class="rem-status ${stCls}">${stTxt}</span></td>`
