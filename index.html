@@ -324,8 +324,10 @@
               <div class="mtasks2__header">
                 <div class="mtasks2__header-text">
                   <span class="vhead-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4" width="17" height="17" rx="3"/><path d="M7.8 10.2l2.2 2.2 4.5-4.7"/><path d="M7.8 15.5h8.4"/></svg></span>
-                  <h2>Mes tâches</h2>
-                  <p>Gérez, suivez et accomplissez toutes vos tâches au quotidien.</p>
+                  <div>
+                    <h2>Mes tâches</h2>
+                    <p>Gérez, suivez et accomplissez toutes vos tâches au quotidien.</p>
+                  </div>
                 </div>
                 <div class="mtasks2__header-side">
                   <button type="button" id="tasksBellBtn" class="mtasks2__bell" aria-label="Notifications">
@@ -462,20 +464,36 @@
               </div>
               <div class="rappels__kpis">
                 <div class="rappel-kpi rappel-kpi--blue">
-                  <span class="rappel-kpi__ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 9a6 6 0 10-12 0c0 5-2 6.5-2 6.5h16S18 14 18 9z"/><path d="M10 19a2.2 2.2 0 004 0"/></svg></span>
-                  <div><p class="rappel-kpi__label">Rappels d'aujourd'hui</p><p class="rappel-kpi__num" id="rappelKpiToday">0</p><p class="rappel-kpi__sub" id="rappelKpiTodaySub">--</p></div>
+                  <div class="rappel-kpi__top">
+                    <p class="rappel-kpi__label">Rappels d'aujourd'hui</p>
+                    <span class="rappel-kpi__ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 9a6 6 0 10-12 0c0 5-2 6.5-2 6.5h16S18 14 18 9z"/><path d="M10 19a2.2 2.2 0 004 0"/></svg></span>
+                  </div>
+                  <p class="rappel-kpi__num" id="rappelKpiToday">0</p>
+                  <p class="rappel-kpi__sub" id="rappelKpiTodaySub">--</p>
                 </div>
                 <div class="rappel-kpi rappel-kpi--violet">
-                  <span class="rappel-kpi__ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="7"/><path d="M12 10v3.5l2.5 2"/><path d="M9.5 2.5h5"/></svg></span>
-                  <div><p class="rappel-kpi__label">Rappels en cours</p><p class="rappel-kpi__num" id="rappelKpiDoing">0</p><p class="rappel-kpi__sub">Tache en cours</p></div>
+                  <div class="rappel-kpi__top">
+                    <p class="rappel-kpi__label">Rappels en cours</p>
+                    <span class="rappel-kpi__ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="7"/><path d="M12 10v3.5l2.5 2"/><path d="M9.5 2.5h5"/></svg></span>
+                  </div>
+                  <p class="rappel-kpi__num" id="rappelKpiDoing">0</p>
+                  <p class="rappel-kpi__sub">Tache en cours</p>
                 </div>
                 <div class="rappel-kpi rappel-kpi--green">
-                  <span class="rappel-kpi__ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="16" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg></span>
-                  <div><p class="rappel-kpi__label">Rappels cette semaine</p><p class="rappel-kpi__num" id="rappelKpiWeek">0</p><p class="rappel-kpi__sub" id="rappelKpiWeekSub">sur 0 taches programmees</p></div>
+                  <div class="rappel-kpi__top">
+                    <p class="rappel-kpi__label">Rappels cette semaine</p>
+                    <span class="rappel-kpi__ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="16" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg></span>
+                  </div>
+                  <p class="rappel-kpi__num" id="rappelKpiWeek">0</p>
+                  <p class="rappel-kpi__sub" id="rappelKpiWeekSub">sur 0 taches programmees</p>
                 </div>
                 <div class="rappel-kpi rappel-kpi--mint">
-                  <span class="rappel-kpi__ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M19 5L5 19"/><circle cx="7.5" cy="7.5" r="2.5"/><circle cx="16.5" cy="16.5" r="2.5"/></svg></span>
-                  <div><p class="rappel-kpi__label">Taux de respect</p><p class="rappel-kpi__num" id="rappelKpiRate">0 %</p><p class="rappel-kpi__sub" id="rappelKpiRateSub">--</p></div>
+                  <div class="rappel-kpi__top">
+                    <p class="rappel-kpi__label">Taux de respect</p>
+                    <span class="rappel-kpi__ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M19 5L5 19"/><circle cx="7.5" cy="7.5" r="2.5"/><circle cx="16.5" cy="16.5" r="2.5"/></svg></span>
+                  </div>
+                  <p class="rappel-kpi__num" id="rappelKpiRate">0 %</p>
+                  <p class="rappel-kpi__sub" id="rappelKpiRateSub">--</p>
                 </div>
               </div>
 <!--RAPPELS-REST-->

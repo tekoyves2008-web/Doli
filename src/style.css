@@ -6584,16 +6584,19 @@ input:focus-visible,
 .rappels__sub{margin:3px 0 0;font-size:11px;line-height:1.5;color:var(--text-muted);max-width:460px}
 .rappels__new{border:none;border-radius:8px;padding:7px 12px;font-size:11.5px;font-weight:700;color:#fff;background:linear-gradient(135deg,#2563eb,#4f46e5);cursor:pointer;white-space:nowrap}
 .rappels__new:hover{filter:brightness(1.07)}
-.rappels__kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
-.rappel-kpi{display:flex;gap:8px;align-items:flex-start;background:#fff;border:1px solid var(--border);border-radius:10px;padding:9px 10px;min-width:0}
-.rappel-kpi__ico{width:24px;height:24px;border-radius:7px;display:grid;place-items:center;font-size:11px;font-weight:800;flex:none}
-.rappel-kpi--blue{background:#eff6ff;border-color:#dbeafe}.rappel-kpi--blue .rappel-kpi__ico{background:#2563eb;color:#fff}
-.rappel-kpi--violet{background:#f5f3ff;border-color:#ede9fe}.rappel-kpi--violet .rappel-kpi__ico{background:#7c3aed;color:#fff}
-.rappel-kpi--green{background:#f0fdf4;border-color:#dcfce7}.rappel-kpi--green .rappel-kpi__ico{background:#16a34a;color:#fff}
-.rappel-kpi--mint{background:#ecfdf5;border-color:#d1fae5}.rappel-kpi--mint .rappel-kpi__ico{background:#10b981;color:#fff}
-.rappel-kpi__label{margin:0;font-size:10px;font-weight:600;color:#334155;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.rappel-kpi__num{margin:2px 0 1px;font-size:19px;font-weight:800;color:#0f172a;line-height:1}
-.rappel-kpi__sub{margin:0;font-size:9.5px;color:#64748b}
+.rappels__kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+/* Même gabarit et même survol que les cartes de comptage de Mes tâches. */
+.rappel-kpi{display:flex;flex-direction:column;gap:2px;background:#fff;border:1px solid var(--border);border-radius:12px;padding:12px 14px;min-width:0;text-align:left;font-family:inherit;color:var(--text);transition:border-color .15s ease,transform .15s ease,box-shadow .15s ease}
+.rappel-kpi:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+.rappel-kpi__top{display:flex;align-items:center;justify-content:space-between;gap:6px;min-height:28px}
+.rappel-kpi__ico{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:800;flex:none}
+.rappel-kpi--blue .rappel-kpi__ico{background:#2563eb;color:#fff}
+.rappel-kpi--violet .rappel-kpi__ico{background:#7c3aed;color:#fff}
+.rappel-kpi--green .rappel-kpi__ico{background:#16a34a;color:#fff}
+.rappel-kpi--mint .rappel-kpi__ico{background:#10b981;color:#fff}
+.rappel-kpi__label{margin:0;font-size:11px;font-weight:600;color:#475569;min-width:0}
+.rappel-kpi__num{margin:0;font-size:24px;font-weight:800;line-height:1.1;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.rappel-kpi__sub{margin:0;font-size:11px;font-weight:500;color:var(--text-muted);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
 .rappels__card{background:#fff;border:1px solid var(--border);border-radius:10px;overflow:hidden}
 .rappels__tabs-row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px 0}
 .rappels__tabs{display:flex;gap:12px;flex-wrap:wrap}
@@ -6624,7 +6627,7 @@ input:focus-visible,
 .rem-actions{display:flex;align-items:center;gap:2px;justify-content:flex-end}
 .rem-act{border:none;background:none;color:#64748b;font-size:13px;padding:3px 5px;border-radius:6px;cursor:pointer}
 .rem-act:hover{background:#eef2ff;color:#2563eb}
-.rappels__aside{display:flex;flex-direction:column;gap:10px;min-width:0}
+.rappels__aside{display:flex;flex-direction:column;gap:12px;flex:0 0 260px;position:sticky;top:76px;min-width:0}
 .rappels__panel{background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px;font-size:11px}
 .rappels__today-head{display:flex;gap:7px;align-items:center;padding-bottom:8px;border-bottom:1px solid #f1f5f9;margin-bottom:8px}
 .rappels__today-head strong{display:block;font-size:12px;color:#0f172a}
@@ -6666,8 +6669,17 @@ input:focus-visible,
 .vhead-ico--retards{background:linear-gradient(135deg,#ef4444,#f97316);box-shadow:0 4px 12px rgba(239,68,68,.35)}
 .vhead-ico--preuves{background:linear-gradient(135deg,#10b981,#0d9488);box-shadow:0 4px 12px rgba(16,185,129,.35)}
 .vhead-ico svg{display:block}
-/* Dashboard : bloc salutation avec motif */
-.dash__hello{display:flex;align-items:center;gap:12px}
+/* Dashboard et Mes tâches : motif à gauche du titre, comme Retards. */
+.dash__hello,
+.mtasks2__header-text {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+.dash__hello > div,
+.mtasks2__header-text > div {
+  min-width: 0;
+}
 /* Dashboard : kickers de sections avec petit motif */
 .dash-card__kicker{display:flex;align-items:center;gap:6px}
 .kick-ico{width:20px;height:20px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;flex:none;color:#fff}
