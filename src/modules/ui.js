@@ -4,7 +4,7 @@
 // Ce module est le seul  toucher au DOM pour la liste de tches.
 
 import { STATUS } from './tasks.js'
-import { computeTaskProgress, computeGlobalProgress, countUnmeasuredTasks } from './progression.js'
+import { computeTaskProgress, computeGlobalProgress } from './progression.js'
 import { taskMotif } from './retards.js'
 
 const STATUS_LABEL = {
@@ -2088,7 +2088,6 @@ export function renderTasksSummary(el, tasks) {
 
   const doingPct = computeGlobalProgress(doing)
   const globalPct = computeGlobalProgress(tasks)
-  const unmeasured = countUnmeasuredTasks(tasks)
 
   // Prochain démarrage à venir (le plus proche).
   const upcoming = tasks
@@ -2126,7 +2125,6 @@ export function renderTasksSummary(el, tasks) {
         <li><i style="background:var(--badge-todo-text)"></i>En retard<b>${late.length}</b></li>
         <li><i style="background:var(--text-muted)"></i>À venir<b>${todo.length}</b></li>
       </ul>
-      ${unmeasured > 0 ? `<p class="mtasks2__unmeasured">${unmeasured} tâche${unmeasured !== 1 ? "s" : ""} sans preuve (non comptée)</p>` : ""}
     </div>
     <div class="mtasks2__motivation">
       <span class="mtasks2__motivation-icon" aria-hidden="true">🏆</span>
