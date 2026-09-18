@@ -1970,27 +1970,6 @@ input:focus-visible,
   justify-content: center;
 }
 .mtasks2__bell-count[hidden] { display: none; }
-.mtasks2__date {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  padding: 6px 10px;
-  border: 1px solid var(--border);
-  border-radius: 9px;
-  background: var(--bg-elevated);
-  color: var(--text-muted);
-}
-.mtasks2__date strong {
-  display: block;
-  font-size: 11.5px;
-  color: var(--text);
-}
-.mtasks2__date em {
-  display: block;
-  font-style: normal;
-  font-size: 10px;
-  color: var(--text-muted);
-}
 .mtasks2__add-btn {
   padding: 8px 13px;
   font-size: 12.5px;
@@ -6271,6 +6250,12 @@ input:focus-visible,
 .retards-more { border: 1px solid transparent; background: transparent; color: var(--text-muted); font-size: 14px; letter-spacing: 1px; padding: 4px 8px; border-radius: 8px; }
 .retards-more:hover { background: var(--bg-hover); color: var(--text); }
 .retards-table2__empty { text-align: center; color: var(--text-muted); padding: 22px 10px; }
+/* Ligne 2 du titre dans les tableaux Retards/Rappels : description courte.
+   (Rappels réutilise la même structure de liste que Retards.) */
+.retards-t2__sub { display: block; font-size: 11px; font-weight: 500; color: var(--text-muted); line-height: 1.35; }
+/* Même structure dans Rappels : fréquence sous le retard + états vides. */
+.retards-table-wrap--rappels { overflow-x: auto; padding: 4px 6px 8px; }
+.retards-table2--rappels { min-width: 760px; }
 /* (règles aside compactes définies plus haut — ne pas dupliquer ici) */
 .retards-floatmenu {
   z-index: 90;
@@ -6611,10 +6596,6 @@ input:focus-visible,
 .rappels__table tbody tr:last-child td{border-bottom:none}
 .rappels__table tbody tr:hover{background:#f8fafc}
 .rappels__empty{margin:10px;font-size:11.5px;color:var(--text-muted);text-align:center}
-.rem-task{display:flex;align-items:center;gap:8px;min-width:0}
-.rem-ico{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;color:#fff;font-size:12px;flex:none}
-.rem-task strong{display:block;font-size:11px;color:#0f172a;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:190px}
-.rem-task span{display:block;font-size:10px;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:190px}
 .rem-date{display:flex;align-items:center;gap:6px;font-size:10.5px;font-weight:600;color:#0f172a;white-space:nowrap;line-height:1.3}
 .rem-date small{display:block;font-weight:500;color:#64748b;font-size:10px}
 .rem-freq{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;color:#475569;white-space:nowrap}
@@ -6655,7 +6636,15 @@ input:focus-visible,
 [data-theme='dark'] .rappels__card,[data-theme='dark'] .rappels__panel,[data-theme='dark'] .rappels__motivation{background:var(--bg-elevated);border-color:var(--border)}
 [data-theme='dark'] .rappels__table thead th{background:var(--bg);color:var(--text-muted)}
 [data-theme='dark'] .rappels__table tbody td{border-color:var(--border)}
-[data-theme='dark'] .rem-task strong,[data-theme='dark'] .rem-date{color:var(--text)}
+[data-theme='dark'] .rem-date{color:var(--text)}
+.rem-date__ico{font-size:12px;flex:none}
+.rem-actions .rem-act{cursor:default;user-select:none}
+[data-theme='dark'] .rem-status--todo{background:rgba(239,68,68,.14);color:#f87171}
+[data-theme='dark'] .rem-status--doing{background:rgba(59,130,246,.14);color:#60a5fa}
+[data-theme='dark'] .rem-status--soon{background:rgba(245,158,11,.14);color:#fbbf24}
+[data-theme='dark'] .rem-status--future{background:rgba(99,102,241,.16);color:#a5b4fc}
+[data-theme='dark'] .rem-status--done{background:rgba(34,197,94,.14);color:#4ade80}
+[data-theme='dark'] .rem-freq{color:var(--text-muted)}
 [data-theme='dark'] .rappels__today-head strong,[data-theme='dark'] .rappels__panel-title{color:var(--text)}
 [data-theme='dark'] .rappels__motivation p{color:var(--text)}
 [data-theme='dark'] .rappels__encart{background:rgba(37,99,235,.12);border-color:rgba(37,99,235,.3);color:var(--text)}

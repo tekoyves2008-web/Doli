@@ -133,8 +133,6 @@ const taskSearchInput = document.getElementById('taskSearchInput')
 const taskSortBtn = document.getElementById('taskSortBtn')
 const taskSortMenu = document.getElementById('taskSortMenu')
 const tasksCountsEl = document.getElementById('tasksCounts')
-const tasksTodayDateEl = document.getElementById('tasksTodayDate')
-const tasksTodayWeekdayEl = document.getElementById('tasksTodayWeekday')
 const tasksBellCountEl = document.getElementById('tasksBellCount')
 const tasksPageInfoEl = document.getElementById('tasksPageInfo')
 const tasksPageNumsEl = document.getElementById('tasksPageNums')
@@ -417,15 +415,6 @@ async function render() {
   // « Statut » des filtres rapides quand aucun onglet n'est actif.
   const activeTasksFilter = statusFilter || (tasksQuickStatus !== 'all' ? tasksQuickStatus : 'all')
   renderTasksCounts(tasksCountsEl, tasksCounts, activeTasksFilter)
-  if (tasksTodayDateEl) {
-    const d = new Date()
-    tasksTodayDateEl.textContent = d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })
-  }
-  if (tasksTodayWeekdayEl) {
-    const d = new Date()
-    const wd = d.toLocaleDateString('fr-FR', { weekday: 'long' })
-    tasksTodayWeekdayEl.textContent = wd.charAt(0).toUpperCase() + wd.slice(1)
-  }
   if (tasksBellCountEl) {
     const n = delayed.length
     tasksBellCountEl.hidden = n === 0
@@ -1362,9 +1351,14 @@ bindSwitch('remSetBrowser', 'browser', 'remCfgBrowser'); bindSwitch('remSetMail'
 const remFreqEl = document.getElementById('remDefaultFreq')
 if (remFreqEl) remFreqEl.addEventListener('change', () => { remCfg.freq = remFreqEl.value; remSet('remCfgFreq', remCfg.freq) })
 if (reminderListEl) reminderListEl.addEventListener('click', async (e) => {
-  const btn = e.target.closest('[data-remact]'); if (!btn) return
+  // Même structure que Retards : « … » = choix de suppression du Rappel,
+  // clic sur la ligne = consultation de la tâche (contenu Rappel conservé).
+  const btn = e.target.closest('[data-remact]'); if (!btn) {
+    const row = e.target.closest('tr[data-id]')
+    if (row && row.dataset.id) { const t = await findTask(row.dataset.id); if (t) openModal(t) }
+    return
+  }
   const id = btn.dataset.id; if (!id) return
-  if (btn.dataset.remact === 'go') { const t = await findTask(id); if (t) openModal(t) }
   if (btn.dataset.remact === 'menu') { openReminderDeleteChoice(id) }
 })
 

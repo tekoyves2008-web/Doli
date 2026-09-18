@@ -12,7 +12,7 @@ import { STATUS } from './tasks.js'
 // Priorités : accepte les libellés FR éventuels ('Urgente', 'Haute'...)
 // et les alias ('normal', 'critical'...) pour que la répartition du donut
 // et les pastilles du tableau reflètent les VRAIES priorités saisies.
-function normalizePriority(p) {
+export function normalizePriority(p) {
   const v = String(p || 'medium').trim().toLowerCase()
   if (v === 'urgent' || v === 'urgente' || v === 'critical' || v === 'critique') return 'urgent'
   if (v === 'high' || v === 'haute' || v === 'haut' || v === 'élevée' || v === 'elevee') return 'high'
@@ -169,7 +169,7 @@ export function formatRateFR(rate) {
   return `${String(rate.toFixed(1)).replace('.', ',')} %`
 }
 
-const PRIORITY_LABELS = { urgent: 'Urgente', high: 'Haute', medium: 'Normale', low: 'Basse' }
+export const PRIORITY_LABELS = { urgent: 'Urgente', high: 'Haute', medium: 'Normale', low: 'Basse' }
 const PRIORITY_COLORS = { urgent: '#ef4444', high: '#f59e0b', medium: '#3b82f6', low: '#22c55e' }
 
 function themeColors() {

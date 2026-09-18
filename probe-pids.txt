@@ -1,3 +1,0 @@
-﻿PID 11572 | node.exe | node  server/index.js
-PID 5199 | absent
-PID 5198 | absent

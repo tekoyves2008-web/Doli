@@ -47,7 +47,7 @@
                 <button type="button" class="password-field__toggle" data-target="loginPassword" aria-label="Afficher le mot de passe">
                   <svg width="16" height="16"><use href="#eyeIcon"/></svg>
                 </button>
-              </div>
+                </div>
             </label>
             <button type="submit" class="login-card__submit">Se connecter</button>
           </form>
@@ -70,7 +70,7 @@
                 <button type="button" class="password-field__toggle" data-target="registerPassword" aria-label="Afficher le mot de passe">
                   <svg width="16" height="16"><use href="#eyeIcon"/></svg>
                 </button>
-              </div>
+                </div>
             </label>
             <label class="task-form__field">Confirmer le mot de passe
               <div class="password-field">
@@ -78,7 +78,7 @@
                 <button type="button" class="password-field__toggle" data-target="registerConfirmPassword" aria-label="Afficher le mot de passe">
                   <svg width="16" height="16"><use href="#eyeIcon"/></svg>
                 </button>
-              </div>
+                </div>
             </label>
             <button type="submit" class="login-card__submit">Créer mon compte</button>
           </form>
@@ -149,7 +149,7 @@
             <button type="button" id="logoutBtn" class="account-row__logout" aria-label="Se déconnecter" title="Se déconnecter">
               <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4H4v12h4"/><path d="M13 14l4-4-4-4"/><line x1="17" y1="10" x2="7" y2="10"/></svg>
             </button>
-          </div>
+                </div>
           <button type="button" id="themeToggleBtn" class="theme-toggle-discreet" aria-label="Changer de thème"></button>
         </div>
       </aside>
@@ -189,8 +189,8 @@
                 <button type="button" id="addTaskBtn" class="mtasks__add-btn">
                   <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="10" y1="4" x2="10" y2="16"/><line x1="4" y1="10" x2="16" y2="10"/></svg>
                   Nouvelle tâche
-                </button>
-              </div>
+                  </button>
+                </div>
             </div>
 
             <div class="dash__kpis">
@@ -329,20 +329,6 @@
                     <p>Gérez, suivez et accomplissez toutes vos tâches au quotidien.</p>
                   </div>
                 </div>
-                <div class="mtasks2__header-side">
-                  <button type="button" id="tasksBellBtn" class="mtasks2__bell" aria-label="Notifications">
-                    <svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2.5a5.5 5.5 0 015.5 5.5v2.4l1.3 2.3a.7.7 0 01-.6 1H3.8a.7.7 0 01-.6-1L4.5 10.4V8A5.5 5.5 0 0110 2.5z"/><path d="M8.3 16.5a1.8 1.8 0 003.4 0"/></svg>
-                    <span id="tasksBellCount" class="mtasks2__bell-count" hidden></span>
-                  </button>
-                  <span class="mtasks2__date">
-                    <svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="3" y="4" width="14" height="13" rx="2"/><line x1="3" y1="8" x2="17" y2="8"/><line x1="7" y1="2" x2="7" y2="5"/><line x1="13" y1="2" x2="13" y2="5"/></svg>
-                    <span><strong id="tasksTodayDate">—</strong><em id="tasksTodayWeekday"></em></span>
-                  </span>
-                  <button type="button" id="addTaskBtn3" class="mtasks__add-btn mtasks2__add-btn">
-                    <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="10" y1="4" x2="10" y2="16"/><line x1="4" y1="10" x2="16" y2="10"/></svg>
-                    Nouvelle tâche
-                  </button>
-                </div>
               </div>
 
               <div id="tasksCounts" class="mtasks2__counts"></div>
@@ -393,6 +379,15 @@
             </div>
 
             <aside class="mtasks2__side">
+              <div class="mtasks2__header-side">
+                  <button type="button" id="tasksBellBtn" class="mtasks2__bell" aria-label="Notifications">
+                    <svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2.5a5.5 5.5 0 015.5 5.5v2.4l1.3 2.3a.7.7 0 01-.6 1H3.8a.7.7 0 01-.6-1L4.5 10.4V8A5.5 5.5 0 0110 2.5z"/><path d="M8.3 16.5a1.8 1.8 0 003.4 0"/></svg>
+                    <span id="tasksBellCount" class="mtasks2__bell-count" hidden></span>
+                  </button><button type="button" id="addTaskBtn3" class="mtasks__add-btn mtasks2__add-btn">
+                    <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="10" y1="4" x2="10" y2="16"/><line x1="4" y1="10" x2="16" y2="10"/></svg>
+                    Nouvelle tâche
+                  </button>
+                </div>
               <div class="mtasks2__card">
                 <h3 class="mtasks2__card-title">Résumé de la journée</h3>
                 <div id="tasksSummary" class="mtasks2__summary"></div>
@@ -436,7 +431,7 @@
                   <svg viewBox="0 0 20 20" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10a6 6 0 0110.5-4M16 10a6 6 0 01-10.5 4"/><polyline points="14.5,2.5 14.5,6 11,6"/><polyline points="5.5,17.5 5.5,14 9,14"/></svg>
                   Réinitialiser les filtres
                 </button>
-              </div>
+                </div>
               <div class="mtasks2__card mtasks2__card--info">
                 <h3 class="mtasks2__card-title mtasks2__card-title--blue">
                   <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2l7 3v5c0 4.5-3 7.5-7 8.5-4-1-7-4-7-8.5V5z"/><polyline points="7,10 9,12 13,8"/></svg>
@@ -509,7 +504,7 @@
                 </div>
                 <div class="rappels__table-wrap">
                   <table class="rappels__table">
-                    <thead><tr><th class="c-check"><input type="checkbox" id="remCheckAll" aria-label="Tout selectionner" /></th><th>Tache</th><th>Date et heure du rappel</th><th>Frequence</th><th>Statut</th><th class="c-act">Actions</th></tr></thead>
+                    <thead><tr><th>Tâche</th><th>Date &amp; heure du rappel</th><th>Fréquence</th><th>Statut</th><th class="c-act">Actions</th></tr></thead>
                     <tbody id="reminderList"></tbody>
                   </table>
                   <p id="reminderEmpty" class="rappels__empty" hidden>Aucun rappel dans cette vue pour le moment.</p>
@@ -675,7 +670,7 @@
                   <span id="retardsKpiWorst" class="retards-kpi__value">—</span>
                   <span id="retardsKpiWorstSub" class="retards-kpi__sub">Aucune tâche en retard</span>
                 </button>
-              </div>
+                </div>
 
             <div id="retardsChartsAnchor" class="retards-charts2">
               <div class="retards-card retards-evol">
@@ -735,7 +730,7 @@
                 <button type="button" id="retardsViewProofsBtn" class="aside-btn aside-btn--violet">
                   Voir mes preuves <span aria-hidden="true">›</span>
                 </button>
-              </div>
+                </div>
 
               <div class="aside-card aside-card--motivation">
                 <h4>Un petit effort aujourd'hui…</h4>

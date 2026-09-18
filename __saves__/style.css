@@ -1,20 +1,9 @@
-﻿<!DOCTYPE html>
-<html lang="fr" data-theme="dark"><head>
-    <script type="module" src="/@vite/client"></script>
-
-    <meta charset="UTF-8">
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=Plus+Jakarta+Sans:wght@500;600;700;800&amp;display=swap" rel="stylesheet">
-    <title>Doli ÔÇö Gestionnaire de t├óches</title>
-  <style type="text/css" data-vite-dev-id="C:/Users/user/Gestionnaire de t├óche/src/style.css">/* style.css
-   Toute l'apparence de Doli. Les deux th├¿mes sont d├®finis comme deux
+/* style.css
+   Toute l'apparence de Doli. Les deux thèmes sont définis comme deux
    jeux de variables CSS (custom properties) sur [data-theme="dark"]
    et [data-theme="light"]. Le reste du fichier n'utilise jamais de
-   couleur en dur : il lit toujours var(--xxx), donc changer de th├¿me
-   ne demande de toucher qu'├á ce bloc.
+   couleur en dur : il lit toujours var(--xxx), donc changer de thème
+   ne demande de toucher qu'à ce bloc.
 */
 
 * {
@@ -26,7 +15,7 @@
   --radius: 10px;
 }
 
-/* Th├¿me sombre : professionnel, contrastes nets, accent bleu indigo */
+/* Thème sombre : professionnel, contrastes nets, accent bleu indigo */
 :root[data-theme='dark'] {
   --bg: #12141a;
   --bg-elevated: #1a1d26;
@@ -47,7 +36,7 @@
   --badge-done-text: #63d99a;
 }
 
-/* Th├¿me clair : blanc, accent bleu marine professionnel */
+/* Thème clair : blanc, accent bleu marine professionnel */
 :root[data-theme='light'] {
   --bg: #f5f7fb;
   --bg-elevated: #ffffff;
@@ -59,7 +48,7 @@
   --accent-contrast: #ffffff;
   --shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
   --sidebar-bg: #1c2740;
-  /* Blanc adouci pour les cartes de t├óche : plus clair que le fond de page
+  /* Blanc adouci pour les cartes de tâche : plus clair que le fond de page
      (--bg) mais volontairement pas un blanc pur, pour rester distinct. */
   --task-bg: #fafbfc;
   --task-track: #e9edf4;
@@ -106,7 +95,7 @@ input:focus-visible,
   outline-offset: 2px;
 }
 
-/* Ascenseur discret, coh├®rent avec la palette du th├¿me actif. */
+/* Ascenseur discret, cohérent avec la palette du thème actif. */
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;
@@ -141,7 +130,7 @@ input:focus-visible,
   }
 }
 
-/* ---------- Structure g├®n├®rale ---------- */
+/* ---------- Structure générale ---------- */
 .app-shell {
   display: flex;
   min-height: 100vh;
@@ -165,7 +154,7 @@ input:focus-visible,
   transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
-/* En th├¿me clair, la sidebar porte un bleu marine professionnel. */
+/* En thème clair, la sidebar porte un bleu marine professionnel. */
 :root[data-theme='light'] .sidebar-fixed {
   --bg-elevated: #1c2740;
   --bg: #16203a;
@@ -243,7 +232,7 @@ input:focus-visible,
   background: var(--bg-hover);
 }
 
-/* ---------- Compte connect├® (sidebar) ---------- */
+/* ---------- Compte connecté (sidebar) ---------- */
 .account-row {
   display: flex;
   align-items: center;
@@ -255,8 +244,8 @@ input:focus-visible,
 .account-row[hidden] {
   display: none;
 }
-/* Les comptes Doli n'ont pas de photo : toujours la premi├¿re lettre du
-   pr├®nom, sur un rond de la couleur d'accent. */
+/* Les comptes Doli n'ont pas de photo : toujours la première lettre du
+   prénom, sur un rond de la couleur d'accent. */
 .account-row__avatar-fallback {
   width: 24px;
   height: 24px;
@@ -330,7 +319,7 @@ input:focus-visible,
   overflow: hidden;
 }
 
-/* ---------- ├ëcran de connexion ---------- */
+/* ---------- Écran de connexion ---------- */
 .login-screen {
   position: relative;
   min-height: 100vh;
@@ -339,14 +328,14 @@ input:focus-visible,
   justify-content: center;
   overflow: hidden;
   padding: 24px;
-  /* Filet de s├®curit├® : si color-mix() n'est pas support├®, la d├®claration
-     "background" ci-dessous est enti├¿rement invalide et ignor├®e ÔÇö sans ce
-     background-color de secours, l'├®cran retomberait sur le fond blanc/clair
-     du <body> derri├¿re (var(--bg)) au lieu de rester bleu. */
+  /* Filet de sécurité : si color-mix() n'est pas supporté, la déclaration
+     "background" ci-dessous est entièrement invalide et ignorée — sans ce
+     background-color de secours, l'écran retomberait sur le fond blanc/clair
+     du <body> derrière (var(--bg)) au lieu de rester bleu. */
   background-color: var(--sidebar-bg);
-  /* Uniquement les bleus d├®j├á pr├®sents dans l'app (accent + bleu marine de
-     la sidebar) : pas de vert, et une base marine plut├┤t que le fond clair
-     du th├¿me pour que ├ºa ne d├®lave jamais vers du blanc. */
+  /* Uniquement les bleus déjà présents dans l'app (accent + bleu marine de
+     la sidebar) : pas de vert, et une base marine plutôt que le fond clair
+     du thème pour que ça ne délave jamais vers du blanc. */
   background: radial-gradient(circle at 12% 15%, color-mix(in srgb, var(--accent) 45%, transparent) 0%, transparent 55%),
     radial-gradient(circle at 88% 85%, color-mix(in srgb, var(--accent) 30%, transparent) 0%, transparent 55%),
     var(--sidebar-bg);
@@ -354,8 +343,8 @@ input:focus-visible,
 .login-screen[hidden] {
   display: none;
 }
-/* Le m├¬me pictogramme que la marque, agrandi et ├á peine visible derri├¿re la
-   carte : ancre l'├®cran dans l'identit├® de l'app plut├┤t que de rester nu. */
+/* Le même pictogramme que la marque, agrandi et à peine visible derrière la
+   carte : ancre l'écran dans l'identité de l'app plutôt que de rester nu. */
 .login-screen__watermark {
   position: absolute;
   top: 50%;
@@ -368,7 +357,7 @@ input:focus-visible,
   pointer-events: none;
 }
 /* Carte franchement transparente : le filigrane du logo doit se voir
-   clairement au travers. La bordure + l'ombre suffisent ├á garder une
+   clairement au travers. La bordure + l'ombre suffisent à garder une
    silhouette de carte nette sans avoir besoin d'un fond opaque. */
 .login-card {
   position: relative;
@@ -385,7 +374,7 @@ input:focus-visible,
   padding: 40px 32px;
   box-shadow: var(--shadow), 0 0 40px color-mix(in srgb, var(--accent) 25%, transparent);
   text-align: center;
-  /* Texte propre ├á la carte, ind├®pendant du th├¿me. */
+  /* Texte propre à la carte, indépendant du thème. */
   --text: #000000;
   --text-muted: rgba(0, 0, 0, 0.65);
 }
@@ -420,9 +409,9 @@ input:focus-visible,
   letter-spacing: 0.03em;
   color: var(--text-muted);
 }
-/* Les champs restent en verre d├®poli clair, ind├®pendamment du th├¿me : sur
+/* Les champs restent en verre dépoli clair, indépendamment du thème : sur
    la carte bleue translucide, un fond opaque classique (var(--bg), noir en
-   th├¿me sombre) rendrait le texte illisible et casserait l'effet de verre. */
+   thème sombre) rendrait le texte illisible et casserait l'effet de verre. */
 .auth-form .task-form__field input {
   background: rgba(255, 255, 255, 0.18);
   border: 1px solid rgba(255, 255, 255, 0.4);
@@ -494,7 +483,7 @@ input:focus-visible,
 .login-card__error[hidden] {
   display: none;
 }
-/* Rattach├®e juste sous le formulaire (bordure + espace resserr├®), plut├┤t que
+/* Rattachée juste sous le formulaire (bordure + espace resserré), plutôt que
    flottante plus bas dans la carte. */
 .login-card__switch {
   margin: 18px 0 0;
@@ -526,14 +515,18 @@ input:focus-visible,
   z-index: 1;
 }
 
-/* Bandeau plein ├®cran : bleu accent en th├¿me sombre, marine de la barre
-   lat├®rale en th├¿me clair. Le texte et la cloche s'adaptent pour rester
-   lisibles sur chacun des deux fonds. */
+/* Bandeau plein écran : bleu accent en thème sombre, marine de la barre
+   latérale en thème clair. Le texte et la cloche s'adaptent pour rester
+   lisibles sur chacun des deux fonds.
+   La topbar est masquée à la demande (les éléments restent dans le DOM
+   pour que les listeners de main.js — titre de vue, cloche, menu mobile —
+   continuent de fonctionner sans erreur). */
 .app-topbar {
+  /* topbar masquée à la demande de l'utilisateur */
+  display: none;
   position: sticky;
   top: 0;
   z-index: 20;
-  display: flex;
   align-items: center;
   gap: 10px;
   margin: -24px -32px 24px;
@@ -610,7 +603,7 @@ input:focus-visible,
   display: none;
 }
 /* Bloque tout clic/survol sur le reste de la page tant que le menu de la
-   cloche est ouvert (invisible, seulement l├á pour intercepter les clics). */
+   cloche est ouvert (invisible, seulement là pour intercepter les clics). */
 .bell-overlay {
   position: fixed;
   inset: 0;
@@ -773,9 +766,9 @@ input:focus-visible,
     overflow: visible;
   }
 }
-/* Colonnes lat├®rales fig├®es pendant le d├®filement de ┬½ Mes t├óches ┬╗ :
+/* Colonnes latérales figées pendant le défilement de « Mes tâches » :
    elles restent visibles (sticky sous la topbar) sans que leur contenu
-   ne soit modifi├®. D├®sactiv├® sur mobile (voir media query ci-dessus). */
+   ne soit modifié. Désactivé sur mobile (voir media query ci-dessus). */
 .dash__midrow > .dash__kpis--secondary,
 .dash__midrow > .dash__col-side {
   position: sticky;
@@ -819,8 +812,8 @@ input:focus-visible,
   letter-spacing: 0.08em;
   color: var(--text-muted);
 }
-/* Harmonie des titres de cartes : m├¬me police partout sur le dashboard
-   (ancien + nouveau), seule la casse/espacement diff├¿re pour les kickers. */
+/* Harmonie des titres de cartes : même police partout sur le dashboard
+   (ancien + nouveau), seule la casse/espacement diffère pour les kickers. */
 .dash-card__title,
 .dash-task-section__head h4,
 .dash-mini__title {
@@ -922,8 +915,8 @@ input:focus-visible,
   font-weight: 700;
   font-size: 13px;
 }
-/* Uniformisation des 4 cases du haut : m├¬me structure centr├®e, contenus
-   pleine largeur, ├®l├®ments du bas (delta / lien) cal├®s au m├¬me niveau. */
+/* Uniformisation des 4 cases du haut : même structure centrée, contenus
+   pleine largeur, éléments du bas (delta / lien) calés au même niveau. */
 .dash__kpis .dash-kpi {
   align-items: center;
   text-align: center;
@@ -1010,7 +1003,7 @@ input:focus-visible,
 .dash-perf-bar--ok .dash-perf-bar__track span { background: var(--color-success); }
 .dash-perf-bar--mid .dash-perf-bar__track span { background: var(--color-warning); }
 .dash-perf-bar--bad .dash-perf-bar__track span { background: var(--color-error); }
-/* --- Top KPIs : rectangles compacts, r├®duits et magnifiques --- */
+/* --- Top KPIs : rectangles compacts, réduits et magnifiques --- */
 .dash__kpis:not(.dash__kpis--secondary) {
   gap: 12px;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -1080,22 +1073,22 @@ input:focus-visible,
   overflow: hidden;
   margin-top: 0;
 }
-/* Phrase d'alerte de la carte ┬½ T├óches en retard ┬╗ (en haut, comme la
-   section ┬½ T├óches termin├®es ┬╗ a son ┬½ Cette semaine ┬╗) : m├¬me police que
+/* Phrase d'alerte de la carte « Tâches en retard » (en haut, comme la
+   section « Tâches terminées » a son « Cette semaine ») : même police que
    les autres sous-titres pour garder l'harmonie (seule la teinte change). */
 .dash__kpis:not(.dash__kpis--secondary) .dash-kpi__sub--alert {
   color: var(--badge-todo-text);
   font-weight: 600;
 }
-/* Harmonie des grands nombres : m├¬me police/couleur de texte partout
-   (th├¿me sombre comme clair) ; seule la teinte du liser├® de la carte
+/* Harmonie des grands nombres : même police/couleur de texte partout
+   (thème sombre comme clair) ; seule la teinte du liseré de la carte
    distingue les sections (voir accent--late / accent--done ci-dessous). */
 .dash__kpis:not(.dash__kpis--secondary) .dash-bignum,
 .dash__kpis:not(.dash__kpis--secondary) .dash-bignum--late {
   color: var(--text);
 }
-/* Liser├® distinctif par section (harmonie : m├¬me hauteur/gradient, teinte
-   adapt├®e ÔÇö erreur pour les retards, succ├¿s pour les termin├®es). */
+/* Liseré distinctif par section (harmonie : même hauteur/gradient, teinte
+   adaptée — erreur pour les retards, succès pour les terminées). */
 .dash__kpis:not(.dash__kpis--secondary) .dash-kpi--late::before {
   background: linear-gradient(90deg, var(--badge-todo-text), color-mix(in srgb, var(--badge-todo-text) 35%, transparent));
 }
@@ -1106,8 +1099,8 @@ input:focus-visible,
   font-size: 11.5px;
   padding: 2px 0 0;
 }
-/* --- Colonne gauche : comme l'image ÔÇö R├®partition ├á gauche sous la
-   progression globale, Performance : r├®sum├® juste en dessous --- */
+/* --- Colonne gauche : comme l'image — Répartition à gauche sous la
+   progression globale, Performance : résumé juste en dessous --- */
 .dash__kpis--secondary {
   grid-template-columns: 1fr;
   display: grid;
@@ -1126,7 +1119,7 @@ input:focus-visible,
   border-radius: 12px;
   overflow: hidden;
 }
-/* R├®partition : donut ├á gauche + l├®gende ├á droite + total en bas. */
+/* Répartition : donut à gauche + légende à droite + total en bas. */
 .dash__kpis--secondary .dash-card__kicker {
   margin-bottom: 2px;
   text-align: center;
@@ -1177,7 +1170,7 @@ input:focus-visible,
   text-align: center;
   font-size: 10.5px;
 }
-/* Performance : r├®sum├® ÔÇö texte intro, liste ├á pastilles, 3 jauges %. */
+/* Performance : résumé — texte intro, liste à pastilles, 3 jauges %. */
 .dash__kpis--secondary .dash-kpi__perf {
   gap: 7px;
   width: 100%;
@@ -1220,9 +1213,9 @@ input:focus-visible,
 .dash__kpis--secondary .dash-perf-bar__track {
   height: 6px;
 }
-/* ┬½ Comprendre mes statistiques ┬╗ : sous ┬½ Performance : r├®sum├® ┬╗
-   (colonnes empil├®es : R├®partition en haut, puis Performance, puis celle-ci),
-   avec une typo compacte harmonis├®e aux KPIs. */
+/* « Comprendre mes statistiques » : sous « Performance : résumé »
+   (colonnes empilées : Répartition en haut, puis Performance, puis celle-ci),
+   avec une typo compacte harmonisée aux KPIs. */
 .dash-kpi--learn .dash-learn-list {
   margin: 0 0 10px;
   gap: 7px;
@@ -1369,7 +1362,7 @@ input:focus-visible,
   box-shadow: var(--shadow);
 }
 
-/* Titre : une seule ligne, tronqu├® avec ┬½ ÔÇª ┬╗ si trop long (aper├ºu clair). */
+/* Titre : une seule ligne, tronqué avec « … » si trop long (aperçu clair). */
 .dash-task-list .dash-task-card .mtask__title {
   min-width: 0;
   margin-bottom: 0;
@@ -1383,8 +1376,8 @@ input:focus-visible,
   word-break: normal;
 }
 
-/* Avancement : le bloc est un flex vertical centr├®, la barre reste donc
-   exactement au milieu de la carte, au m├¬me niveau partout. */
+/* Avancement : le bloc est un flex vertical centré, la barre reste donc
+   exactement au milieu de la carte, au même niveau partout. */
 .dash-task-list .dash-task-card .dash-task-card__adv {
   display: flex;
   align-items: center;
@@ -1405,7 +1398,7 @@ input:focus-visible,
   min-width: 38px;
 }
 
-/* Situation : une ligne, tronqu├®e elle aussi si trop longue. */
+/* Situation : une ligne, tronquée elle aussi si trop longue. */
 .dash-task-list .dash-task-card .mtask__situation {
   display: block;
   font-size: 10.5px;
@@ -1623,8 +1616,8 @@ input:focus-visible,
   opacity: 0.8;
 }
 
-/* Colonne lat├®rale droite du dashboard ÔÇö contenu intact, seule la position
-   est fig├®e via la r├¿gle sticky sur .dash__midrow > .dash__col-side. */
+/* Colonne latérale droite du dashboard — contenu intact, seule la position
+   est figée via la règle sticky sur .dash__midrow > .dash__col-side. */
 .dash__col-side {
   display: flex;
   flex-direction: column;
@@ -1713,8 +1706,8 @@ input:focus-visible,
 .dash-activity__item--done .dash-activity__icon { color: var(--badge-done-text); }
 .dash-activity__text { font-size: 11px; font-weight: 600; overflow-wrap: anywhere; }
 .dash-activity__time { font-size: 10px; font-weight: 700; color: var(--text-muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
-/* Colonne lat├®rale : titres et liens l├®g├¿rement r├®duits pour rester
-   proportionn├®s aux items compacts de l'activit├® r├®cente. */
+/* Colonne latérale : titres et liens légèrement réduits pour rester
+   proportionnés aux items compacts de l'activité récente. */
 .dash__col-side .dash-card__title { font-size: 12.5px; }
 .dash__col-side .dash-link { font-size: 11.5px; }
 .dash__col-side .dash-learn-list li { font-size: 11.5px; }
@@ -1732,10 +1725,10 @@ input:focus-visible,
   gap: 10px;
   margin-top: 4px;
 }
-/* Chaque palier est un r├®cipient circulaire dont le liquide (fond color├®)
-   monte automatiquement avec le nombre de t├óches ex├®cut├®es. Les deux
-   cercles se partagent la largeur disponible ├á parts ├®gales (avec un
-   plafond pour ne pas devenir d├®mesur├®s sur une case large). */
+/* Chaque palier est un récipient circulaire dont le liquide (fond coloré)
+   monte automatiquement avec le nombre de tâches exécutées. Les deux
+   cercles se partagent la largeur disponible à parts égales (avec un
+   plafond pour ne pas devenir démesurés sur une case large). */
 .achievement {
   position: relative;
   flex: 1 1 0;
@@ -1784,11 +1777,11 @@ input:focus-visible,
   color: var(--text-muted);
 }
 /* Une ligne par semaine (semaine en cours en haut), avec une barre
-   horizontale proportionnelle au nombre de t├óches ex├®cut├®es. */
-/* Occupe deux colonnes de la grille de motivation, juste apr├¿s la case des
-   paliers, ├á une taille plus compacte que lorsqu'elle ├®tait pleine largeur. */
-/* Ligne d├®di├®e : "Paliers" garde une largeur de case normale, "Activit├®"
-   occupe tout le reste de l'espace disponible ├á c├┤t├®. */
+   horizontale proportionnelle au nombre de tâches exécutées. */
+/* Occupe deux colonnes de la grille de motivation, juste après la case des
+   paliers, à une taille plus compacte que lorsqu'elle était pleine largeur. */
+/* Ligne dédiée : "Paliers" garde une largeur de case normale, "Activité"
+   occupe tout le reste de l'espace disponible à côté. */
 .motivation-side-row {
   display: flex;
   align-items: stretch;
@@ -1856,7 +1849,7 @@ input:focus-visible,
   color: var(--text);
 }
 
-/* Confettis : petite c├®l├®bration CSS sans d├®pendance externe. */
+/* Confettis : petite célébration CSS sans dépendance externe. */
 .confetti-burst {
   position: fixed;
   inset: 0;
@@ -1883,8 +1876,8 @@ input:focus-visible,
   }
 }
 
-/* ---------- Vue ┬½ Mes t├óches ┬╗ (maquette : cartes + lignes + 2 panneaux) ----------
-   Typographie Inter, cartes blanches arrondies, lignes espac├®es comme la maquette. */
+/* ---------- Vue « Mes tâches » (maquette : cartes + lignes + 2 panneaux) ----------
+   Typographie Inter, cartes blanches arrondies, lignes espacées comme la maquette. */
 .mtasks2 {
   display: flex;
   gap: 16px;
@@ -1977,27 +1970,6 @@ input:focus-visible,
   justify-content: center;
 }
 .mtasks2__bell-count[hidden] { display: none; }
-.mtasks2__date {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  padding: 6px 10px;
-  border: 1px solid var(--border);
-  border-radius: 9px;
-  background: var(--bg-elevated);
-  color: var(--text-muted);
-}
-.mtasks2__date strong {
-  display: block;
-  font-size: 11.5px;
-  color: var(--text);
-}
-.mtasks2__date em {
-  display: block;
-  font-style: normal;
-  font-size: 10px;
-  color: var(--text-muted);
-}
 .mtasks2__add-btn {
   padding: 8px 13px;
   font-size: 12.5px;
@@ -2022,7 +1994,7 @@ input:focus-visible,
   transform: translateY(-1px);
 }
 
-/* Cartes de comptage (maquette : label haut + ic├┤ne ronde, nombre, % ) */
+/* Cartes de comptage (maquette : label haut + icône ronde, nombre, % ) */
 .mtasks2__counts {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -2100,16 +2072,16 @@ input:focus-visible,
 .mtasks2-count--todo .mtasks2-count__num { color: #64748b; }
 .mtasks2-count--todo .mtasks2-count__icon { color: #64748b; background: #f1f5f9; }
 
-/* Mode sombre : pastilles des 5 cartes de comptage align├®es sur le rendu
-   de la rubrique Retards (.retards-kpi__icon) ÔåÆ fond translucide color├®
-   (au lieu des pastels clairs qui jurent sur fond sombre) + ic├┤ne ├®claircie. */
+/* Mode sombre : pastilles des 5 cartes de comptage alignées sur le rendu
+   de la rubrique Retards (.retards-kpi__icon) → fond translucide coloré
+   (au lieu des pastels clairs qui jurent sur fond sombre) + icône éclaircie. */
 [data-theme='dark'] .mtasks2-count--total .mtasks2-count__icon { color: #60a5fa; background: rgba(59, 130, 246, 0.14); }
 [data-theme='dark'] .mtasks2-count--done .mtasks2-count__icon { color: #4ade80; background: rgba(34, 197, 94, 0.14); }
 [data-theme='dark'] .mtasks2-count--doing .mtasks2-count__icon { color: #fbbf24; background: rgba(245, 158, 11, 0.14); }
 [data-theme='dark'] .mtasks2-count--late .mtasks2-count__icon { color: #f87171; background: rgba(239, 68, 68, 0.14); }
 [data-theme='dark'] .mtasks2-count--todo .mtasks2-count__icon { color: #94a3b8; background: rgba(148, 163, 184, 0.14); }
 
-/* Onglets + recherche + Filtrer (maquette : une seule rang├®e) */
+/* Onglets + recherche + Filtrer (maquette : une seule rangée) */
 .mtasks2__toolbar {
   display: flex;
   align-items: center;
@@ -2136,11 +2108,11 @@ input:focus-visible,
   font-weight: 600;
   cursor: pointer;
   font-family: inherit;
-  /* Couleur d'├®tat (surcharge par onglet ci-dessous). */
+  /* Couleur d'état (surcharge par onglet ci-dessous). */
   --tab-color: var(--text-muted);
   transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
 }
-/* Point ├®vocateur de la couleur d'├®tat, comme les 5 cartes au-dessus. */
+/* Point évocateur de la couleur d'état, comme les 5 cartes au-dessus. */
 .mtasks2-tab::before {
   content: '';
   width: 7px;
@@ -2259,8 +2231,8 @@ input:focus-visible,
   border-color: var(--accent);
 }
 
-/* Lignes de t├óches (maquette : 6 colonnes, avatar rond, cartes).
-   En-t├¬tes et lignes partagent LA M├èME d├®finition de grille (variable
+/* Lignes de tâches (maquette : 6 colonnes, avatar rond, cartes).
+   En-têtes et lignes partagent LA MÊME définition de grille (variable
    CSS) : chaque valeur tombe pile sous le titre de sa colonne. */
 .mtasks2__colhead,
 .mtasks2-row {
@@ -2268,16 +2240,16 @@ input:focus-visible,
   display: grid;
   grid-template-columns: var(--mtasks2-cols);
   gap: 8px;
-  /* Sous ce seuil la zone d├®file horizontalement au lieu d'├®craser les
-     colonnes : l'alignement valeur Ôåö titre reste garanti. */
+  /* Sous ce seuil la zone défile horizontalement au lieu d'écraser les
+     colonnes : l'alignement valeur ↔ titre reste garanti. */
   min-width: 660px;
 }
-/* En-t├¬tes + lignes d├®filent ensemble (├®crans ├®troits). */
+/* En-têtes + lignes défilent ensemble (écrans étroits). */
 .mtasks2__tablewrap {
   overflow-x: auto;
 }
 .mtasks2__colhead {
-  /* Lignes : padding 16px + bordure 1px ÔåÆ m├¬me origine (17px) ici. */
+  /* Lignes : padding 16px + bordure 1px → même origine (17px) ici. */
   padding: 0 17px;
   margin-bottom: 8px;
   font-size: 10px;
@@ -2291,9 +2263,9 @@ input:focus-visible,
   line-height: 1.4;
   white-space: nowrap;
 }
-/* Chaque motif (pastille, jauge, situation, boutons) commence au m├¬me
-   endroit : toutes les cellules de ligne sont align├®es ├á gauche, comme
-   leurs en-t├¬tes de colonne. */
+/* Chaque motif (pastille, jauge, situation, boutons) commence au même
+   endroit : toutes les cellules de ligne sont alignées à gauche, comme
+   leurs en-têtes de colonne. */
 .mtasks2-cell {
   min-width: 0;
   display: flex;
@@ -2313,10 +2285,10 @@ input:focus-visible,
   cursor: pointer;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
-/* Sp├®cificit├® sup├®rieure ├á la r├¿gle g├®n├®rique .task (plus bas dans le
+/* Spécificité supérieure à la règle générique .task (plus bas dans le
    fichier, qui remet 14px 16px) : padding compact identique partout.
-   16px de padding + 1px de bordure = origine du texte ├á 17px, comme
-   l'en-t├¬te ÔåÆ alignement pixel-parfait de chaque colonne. */
+   16px de padding + 1px de bordure = origine du texte à 17px, comme
+   l'en-tête → alignement pixel-parfait de chaque colonne. */
 .mtasks2__list .mtasks2-row {
   padding: 12px 16px;
 }
@@ -2324,10 +2296,10 @@ input:focus-visible,
   border-color: color-mix(in srgb, var(--accent) 30%, var(--border));
   box-shadow: var(--shadow);
 }
-/* Liser├® de statut ├á gauche de chaque carte (maquette) : rouge = en
-   retard, orange = en cours, vert = termin├®e, gris = ├á venir.
-   ::before en absolute : aucun d├®calage de grille (l'origine 17px est
-   pr├®serv├®e) et le menu Ôï» n'est pas rogn├®. */
+/* Liseré de statut à gauche de chaque carte (maquette) : rouge = en
+   retard, orange = en cours, vert = terminée, gris = à venir.
+   ::before en absolute : aucun décalage de grille (l'origine 17px est
+   préservée) et le menu ⋯ n'est pas rogné. */
 .mtasks2-row {
   position: relative;
 }
@@ -2424,8 +2396,8 @@ input:focus-visible,
   font-weight: 500;
 }
 /* Avancement (maquette) : % au-dessus d'une barre compacte, statut
-   dessous. flex:none sur le track : le ┬½ flex: 1 ┬╗ g├®n├®rique (base 0)
-   ├®craserait sa hauteur dans le sens colonne. */
+   dessous. flex:none sur le track : le « flex: 1 » générique (base 0)
+   écraserait sa hauteur dans le sens colonne. */
 .mtasks2__list .mtask__adv {
   flex-direction: column;
   align-items: flex-start;
@@ -2447,15 +2419,15 @@ input:focus-visible,
   background: #e2e8f0;
 }
 .mtasks2__list .task__progress-fill { display: block; height: 100%; border-radius: 999px; }
-/* D├®but/Fin coll├®s au bord gauche, sous ┬½ P├ëRIODE PR├ëVUE ┬╗. */
+/* Début/Fin collés au bord gauche, sous « PÉRIODE PRÉVUE ». */
 .mtasks2__list .mtask__period { align-items: flex-start; }
 .mtasks2__list .mtask__progress-pct { font-size: 11px; font-weight: 700; min-width: 0; text-align: left; }
 .mtasks2__list .mtask__progress-status { font-size: 10.5px; margin-top: 0; font-weight: 500; }
 .mtasks2__list .mtask__situation { font-size: 11px; }
 .mtask__situation-line { display: flex; align-items: center; gap: 4px; font-weight: 600; white-space: nowrap; }
 .mtask__situation-sub { font-weight: 500; }
-/* Actions (maquette) : boutons compacts align├®s ├á droite ÔÇö bouton
-   principal, puis ┬½ Voir d├®tails ┬╗ + menu Ôï» c├┤te ├á c├┤te dessous. */
+/* Actions (maquette) : boutons compacts alignés à droite — bouton
+   principal, puis « Voir détails » + menu ⋯ côte à côte dessous. */
 .mtasks2__list .mtask__actions {
   flex-direction: column;
   align-items: flex-end;
@@ -2610,8 +2582,8 @@ input:focus-visible,
   color: #fff;
   font-weight: 700;
 }
-/* Mode sombre : ┬½ Voir d├®tails ┬╗ / ┬½ Ajouter une preuve ┬╗ sur fond sombre
-   (le blanc pur des cartes claires y est ├®blouissant et cr├®e une tache). */
+/* Mode sombre : « Voir détails » / « Ajouter une preuve » sur fond sombre
+   (le blanc pur des cartes claires y est éblouissant et crée une tache). */
 [data-theme='dark'] .mtask__btn {
   background: color-mix(in srgb, #fff 6%, var(--bg-elevated));
   color: var(--text);
@@ -2631,7 +2603,7 @@ input:focus-visible,
   color: #fff;
 }
 
-/* Pagination (maquette : ┬½ Affichage de 1 ├á 6 ┬╗ + 1 2 3 4 + Suivant) */
+/* Pagination (maquette : « Affichage de 1 à 6 » + 1 2 3 4 + Suivant) */
 .mtasks2__pagination {
   display: flex;
   justify-content: space-between;
@@ -2695,7 +2667,7 @@ input:focus-visible,
   background: #eff6ff;
 }
 
-/* Panneau lat├®ral + filtres rapides + confidentialit├® (maquette) */
+/* Panneau latéral + filtres rapides + confidentialité (maquette) */
 .mtasks2__summary .mtasks-summary__block {
   margin-bottom: 12px;
 }
@@ -2939,8 +2911,8 @@ input:focus-visible,
   .mtasks2__counts {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-  /* Le tableau garde ses colonnes (en-t├¬tes + lignes align├®s) : sous la
-     largeur minimum, .mtasks2__tablewrap d├®file horizontalement au lieu
+  /* Le tableau garde ses colonnes (en-têtes + lignes alignés) : sous la
+     largeur minimum, .mtasks2__tablewrap défile horizontalement au lieu
      d'empiler les valeurs hors de leur colonne. */
 }
 .mtasks-summary__block {
@@ -3100,7 +3072,7 @@ input:focus-visible,
 .sort-picker__toggle:hover {
   border-color: var(--accent);
 }
-/* Se d├®ploie vers le bas, m├¬me logique que le s├®lecteur de statut. */
+/* Se déploie vers le bas, même logique que le sélecteur de statut. */
 .sort-picker__menu {
   position: absolute;
   right: 0;
@@ -3196,9 +3168,9 @@ input:focus-visible,
   box-shadow: var(--shadow);
   padding: 24px;
   animation: popIn 0.18s ease;
-  /* Fond volontairement noir, ind├®pendant du th├¿me, pour bien se
-     d├®tacher de l'arri├¿re-plan : les couleurs internes du formulaire
-     sont donc red├®finies ici pour rester lisibles. */
+  /* Fond volontairement noir, indépendant du thème, pour bien se
+     détacher de l'arrière-plan : les couleurs internes du formulaire
+     sont donc redéfinies ici pour rester lisibles. */
   --bg: #16181f;
   --bg-elevated: #16181f;
   --bg-hover: rgba(255, 255, 255, 0.08);
@@ -3206,8 +3178,8 @@ input:focus-visible,
   --text-muted: rgba(255, 255, 255, 0.7);
   --border: rgba(255, 255, 255, 0.15);
 }
-/* En th├¿me clair, la fen├¬tre reprend la couleur de la barre lat├®rale au
-   lieu du noir par d├®faut. */
+/* En thème clair, la fenêtre reprend la couleur de la barre latérale au
+   lieu du noir par défaut. */
 :root[data-theme='light'] .modal {
   background: var(--sidebar-bg);
   border-color: var(--sidebar-bg);
@@ -3219,8 +3191,8 @@ input:focus-visible,
   font-size: 18px;
   color: var(--text);
 }
-/* Petite fen├¬tre pour un r├®glage rapide (objectif hebdo, paliers...) : pas
-   besoin de la largeur/du padding d'un vrai formulaire de t├óche. */
+/* Petite fenêtre pour un réglage rapide (objectif hebdo, paliers...) : pas
+   besoin de la largeur/du padding d'un vrai formulaire de tâche. */
 .modal--compact {
   max-width: 280px;
   padding: 20px;
@@ -3296,10 +3268,10 @@ input:focus-visible,
 }
 
 /* =====================================================================
-   Fen├¬tre ┬½ Nouvelle t├óche / Modifier ┬╗ : habillage signature Doli.
-   Scopp├® sur #taskModalOverlay ÔåÆ les autres modales (rappel, preuve,
-   r├®glages) gardent leur rendu. Pur visuel : aucun contenu ni structure
-   modifi├®, uniquement la forme.
+   Fenêtre « Nouvelle tâche / Modifier » : habillage signature Doli.
+   Scoppé sur #taskModalOverlay → les autres modales (rappel, preuve,
+   réglages) gardent leur rendu. Pur visuel : aucun contenu ni structure
+   modifié, uniquement la forme.
    ===================================================================== */
 #taskModalOverlay {
   background:
@@ -3319,9 +3291,9 @@ input:focus-visible,
   padding: 28px 26px 24px;
   border-radius: 22px;
   border: 1px solid rgba(255, 255, 255, 0.12);
-  /* Le liser├® signature est peint en couche d'arri├¿re-plan (100 % largeur,
-     3 px en haut) : il reste au-dessus du titre, ne d├®cale aucun contenu et
-     est automatiquement rogn├® par les coins arrondis. */
+  /* Le liseré signature est peint en couche d'arrière-plan (100 % largeur,
+     3 px en haut) : il reste au-dessus du titre, ne décale aucun contenu et
+     est automatiquement rogné par les coins arrondis. */
   background:
     linear-gradient(90deg, transparent, var(--accent) 30%, #9db1ff 62%, transparent) top / 100% 3px no-repeat,
     linear-gradient(160deg, #1a2030 0%, #12141d 55%, #0e1017 100%);
@@ -3329,7 +3301,7 @@ input:focus-visible,
   animation: doliModalIn 0.28s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/* Halo doux dans l'angle sup├®rieur droit (d├®cor uniquement). */
+/* Halo doux dans l'angle supérieur droit (décor uniquement). */
 #taskModalOverlay .modal::after {
   content: '';
   position: absolute;
@@ -3347,7 +3319,7 @@ input:focus-visible,
   to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-/* Titre : grande frappe affirm├®e, sans trait d├®coratif qui le traverse. */
+/* Titre : grande frappe affirmée, sans trait décoratif qui le traverse. */
 #taskModalOverlay .modal h3 {
   margin: 0 0 4px;
   font-size: 20px;
@@ -3355,8 +3327,8 @@ input:focus-visible,
   letter-spacing: -0.01em;
 }
 
-/* Grille : Titre et Description pleine largeur, D├®but / ├ëch├®ance c├┤te ├á
-   c├┤te, Priorit├® pleine largeur ÔÇö m├¬me contenu, meilleure hi├®rarchie. */
+/* Grille : Titre et Description pleine largeur, Début / Échéance côte à
+   côte, Priorité pleine largeur — même contenu, meilleure hiérarchie. */
 #taskModalOverlay form {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -3370,7 +3342,7 @@ input:focus-visible,
   grid-column: 1 / -1;
 }
 
-/* Libell├®s : petites capitales espac├®es, discrets et ├®l├®gants. */
+/* Libellés : petites capitales espacées, discrets et élégants. */
 #taskModalOverlay .task-form__field {
   gap: 6px;
   font-size: 10.5px;
@@ -3384,8 +3356,8 @@ input:focus-visible,
 #taskModalOverlay .task-form__field select {
   padding: 11px 14px;
   border-radius: 12px;
-  /* background-color (et non le raccourci) : le chevron SVG du menu d├®roulant est
-     ainsi pr├®serv├® par les r├¿gles suivantes. */
+  /* background-color (et non le raccourci) : le chevron SVG du menu déroulant est
+     ainsi préservé par les règles suivantes. */
   background-color: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.14);
   color: var(--text);
@@ -3394,23 +3366,23 @@ input:focus-visible,
   transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
 }
 /* -----------------------------------------------------------------------
-   Menu d├®roulant de la priorit├® : forme soign├®e, couleurs de la fen├¬tre.
-   `appearance: none` retire la fl├¿che native (difforme selon l'OS) au profit
-   d'un chevron SVG trac├® au trait, rigoureusement centr├® ; le fond combine un
-   fin d├®grad├® translucide et le chevron, qui s'accentue au survol et au focus.
+   Menu déroulant de la priorité : forme soignée, couleurs de la fenêtre.
+   `appearance: none` retire la flèche native (difforme selon l'OS) au profit
+   d'un chevron SVG tracé au trait, rigoureusement centré ; le fond combine un
+   fin dégradé translucide et le chevron, qui s'accentue au survol et au focus.
    `color-scheme: dark` peint la liste native en sombre, et les `option`
-   reprennent explicitement le bleu nuit de la fen├¬tre pour les navigateurs qui
+   reprennent explicitement le bleu nuit de la fenêtre pour les navigateurs qui
    les stylent (Chrome / Edge / Firefox sous Windows).
    ----------------------------------------------------------------------- */
 #taskModalOverlay .task-form__field select {
-  /* Chevron vectoriel inline : rendu identique sur tous les syst├¿mes. */
+  /* Chevron vectoriel inline : rendu identique sur tous les systèmes. */
   --chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-opacity='0.55' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5.5 9l6.5 6.5L18.5 9'/%3E%3C/svg%3E");
   --chevron-hi: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239db1ff' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5.5 9l6.5 6.5L18.5 9'/%3E%3C/svg%3E");
   color-scheme: dark;
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
-  padding-right: 42px;                 /* r├®serve la place du chevron */
+  padding-right: 42px;                 /* réserve la place du chevron */
   cursor: pointer;
   font-weight: 600;
   letter-spacing: 0.01em;
@@ -3429,24 +3401,24 @@ input:focus-visible,
     var(--chevron-hi),
     linear-gradient(180deg, rgba(255, 255, 255, 0.11), rgba(255, 255, 255, 0.05));
 }
-/* Liste d├®roulante : m├¬mes teintes que la fen├¬tre, entr├®es a├®r├®es. */
+/* Liste déroulante : mêmes teintes que la fenêtre, entrées aérées. */
 #taskModalOverlay .task-form__field select option {
   padding: 9px 14px;
-  background-color: #12141d;   /* c┼ôur du d├®grad├® de la fen├¬tre */
-  color: #ffffff;              /* couleur de texte de la fen├¬tre */
+  background-color: #12141d;   /* cœur du dégradé de la fenêtre */
+  color: #ffffff;              /* couleur de texte de la fenêtre */
   font-size: 13px;
   line-height: 1.5;
 }
 #taskModalOverlay .task-form__field select option:checked {
-  background-color: #1f2740;   /* teinte accent : la priorit├® choisie ressort */
+  background-color: #1f2740;   /* teinte accent : la priorité choisie ressort */
   color: #ffffff;
 }
-/* --- Menu d├®roulant maison (composant doli-select) --------------------
-   Le popup d'un <select> ├®tant peint par le syst├¿me, on dessine la liste
-   nous-m├¬mes : un panneau ┬½ mini-fen├¬tre ┬╗ aux bornes arrondies, reprenant
-   le d├®grad├® bleu nuit et le liser├® accent de la fen├¬tre. */
+/* --- Menu déroulant maison (composant doli-select) --------------------
+   Le popup d'un <select> étant peint par le système, on dessine la liste
+   nous-mêmes : un panneau « mini-fenêtre » aux bornes arrondies, reprenant
+   le dégradé bleu nuit et le liseré accent de la fenêtre. */
 #taskModalOverlay .task-form__field select.doli-select__native {
-  display: none;   /* le <select> reste la source de v├®rit├®, mais invisible */
+  display: none;   /* le <select> reste la source de vérité, mais invisible */
 }
 #taskModalOverlay .doli-select {
   width: 100%;
@@ -3459,7 +3431,7 @@ input:focus-visible,
   width: 100%;
   padding: 11px 14px;
   border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 12px;            /* m├¬me galbe que les autres champs */
+  border-radius: 12px;            /* même galbe que les autres champs */
   background-color: rgba(255, 255, 255, 0.06);
   background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
   color: var(--text);
@@ -3497,17 +3469,17 @@ input:focus-visible,
   color: #9db1ff;
   transform: rotate(180deg);
 }
-/* Champ verrouill├® (mode consultation) : rendu ┬½ d├®sactiv├® ┬╗ conserv├®. */
+/* Champ verrouillé (mode consultation) : rendu « désactivé » conservé. */
 #taskModalOverlay .doli-select[data-disabled='true'] { opacity: 0.55; }
 #taskModalOverlay .doli-select[data-disabled='true'] .doli-select__control {
   cursor: not-allowed;
   border-color: rgba(255, 255, 255, 0.08);
 }
 
-/* Le panneau vit hors de la fen├¬tre (position fixe) : styles non scop├®s. */
+/* Le panneau vit hors de la fenêtre (position fixe) : styles non scopés. */
 .doli-select__list {
   position: fixed;
-  z-index: 45;                    /* juste au-dessus de la fen├¬tre (40) */
+  z-index: 45;                    /* juste au-dessus de la fenêtre (40) */
   margin: 0;
   padding: 6px;
   list-style: none;
@@ -3515,7 +3487,7 @@ input:focus-visible,
   overflow-y: auto;
   overscroll-behavior: contain;
   border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 18px;            /* bornes arrondies, comme la fen├¬tre */
+  border-radius: 18px;            /* bornes arrondies, comme la fenêtre */
   background: linear-gradient(165deg, #1a2030 0%, #12141d 55%, #0e1017 100%);
   box-shadow: 0 18px 42px rgba(3, 6, 18, 0.62), 0 0 0 1px rgba(108, 140, 255, 0.14);
   color: #ffffff;
@@ -3567,13 +3539,13 @@ input:focus-visible,
 #taskModalOverlay .task-form__field input:focus,
 #taskModalOverlay .task-form__field select:focus {
   /* background-color (et non le raccourci background) : le chevron SVG du menu
-     d├®roulant reste affich├® quand le champ a le focus. */
+     déroulant reste affiché quand le champ a le focus. */
   background-color: rgba(255, 255, 255, 0.09);
   border-color: var(--accent);
   box-shadow: 0 0 0 3px rgba(108, 140, 255, 0.22);
   outline: none;
 }
-/* Champs en lecture seule : rendu ┬½ verrouill├® ┬╗ conserv├®. */
+/* Champs en lecture seule : rendu « verrouillé » conservé. */
 #taskModalOverlay .task-form__field input:read-only {
   background: var(--bg-hover);
   border-color: rgba(255, 255, 255, 0.08);
@@ -3581,8 +3553,8 @@ input:focus-visible,
   cursor: default;
 }
 
-/* Boutons : pilules arrondies ÔÇö action principale en d├®grad├® accent avec
-   halo, modifier en contour accent, annuler en fant├┤me discret. */
+/* Boutons : pilules arrondies — action principale en dégradé accent avec
+   halo, modifier en contour accent, annuler en fantôme discret. */
 #taskModalOverlay .modal__actions {
   gap: 12px;
   margin-top: 6px;
@@ -3664,7 +3636,7 @@ input:focus-visible,
   cursor: default;
 }
 
-/* ---------- Liste des t├óches ---------- */
+/* ---------- Liste des tâches ---------- */
 .empty-state {
   text-align: center;
   color: var(--text-muted);
@@ -3733,9 +3705,9 @@ input:focus-visible,
   box-shadow: var(--shadow);
   transform: translateY(-1px);
 }
-/* Pendant que son menu de statut est ouvert, la carte enti├¿re passe devant
+/* Pendant que son menu de statut est ouvert, la carte entière passe devant
    ses voisines : son propre fond opaque les cache, au lieu de laisser le
-   menu se m├®langer visuellement au bouton de statut de la carte suivante. */
+   menu se mélanger visuellement au bouton de statut de la carte suivante. */
 .task--menu-open {
   position: relative;
   z-index: 25;
@@ -3764,8 +3736,8 @@ input:focus-visible,
   color: var(--text-muted);
 }
 
-/* Progression individuelle affich├®e sous les informations de la carte :
-   barre + pourcentage calcul├®s selon la m├®thode Doli (0 % / taux / 100 %). */
+/* Progression individuelle affichée sous les informations de la carte :
+   barre + pourcentage calculés selon la méthode Doli (0 % / taux / 100 %). */
 .task__progress {
   margin-top: 8px;
   max-width: 420px;
@@ -3817,7 +3789,7 @@ input:focus-visible,
   background: var(--badge-done-text);
 }
 
-/* Bouton ┬½ Fournir une preuve ┬╗ sur les tches en cours : enregistre un
+/* Bouton « Fournir une preuve » sur les tches en cours : enregistre un
    horodatage ct serveur pour alimenter le taux d'avancement temporel. */
 .task__proof {
   font-size: 12px;
@@ -3886,8 +3858,8 @@ input:focus-visible,
   position: relative;
 }
 
-/* Menu ┬½ ÔÇª ┬╗ des lignes de t├óches (rubrique Mes t├óches) : options
-   ┬½ Ajouter une preuve ┬╗ et ┬½ Supprimer ┬╗ au bord droit de chaque ligne. */
+/* Menu « … » des lignes de tâches (rubrique Mes tâches) : options
+   « Ajouter une preuve » et « Supprimer » au bord droit de chaque ligne. */
 .row-menu {
   position: relative;
   display: inline-flex;
@@ -3913,7 +3885,7 @@ input:focus-visible,
   min-width: 180px;
   /* Fond opaque volontairement distinct de la carte : clair = blanc pur,
      sombre = teinte nettement plus claire que les lignes (#1a1d26), pour
-     que le menu se d├®tache imm├®diatement quand on clique sur ┬½ Ôï» ┬╗. */
+     que le menu se détache immédiatement quand on clique sur « ⋯ ». */
   background: #fff;
   border: 1px solid #d7ddea;
   border-radius: 10px;
@@ -3928,15 +3900,15 @@ input:focus-visible,
 .row-menu__list[hidden] {
   display: none;
 }
-/* Th├¿me sombre : panneau rehauss├® + liser├® lumineux, ombre profonde ÔÇö
-   bien distinct des lignes de t├óches sombres derri├¿re lui. */
+/* Thème sombre : panneau rehaussé + liseré lumineux, ombre profonde —
+   bien distinct des lignes de tâches sombres derrière lui. */
 [data-theme='dark'] .row-menu__list {
   background: #262c3b;
   border-color: rgba(255, 255, 255, 0.16);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45), 0 18px 40px rgba(0, 0, 0, 0.55);
 }
-/* Mode ┬½ fixed ┬╗ : position calcul├®e en JS depuis le bouton Ôï», pour ne pas
-   ├¬tre rogn├® par le conteneur d├®filant (m├¬me fiabilit├® que le menu Filtrer). */
+/* Mode « fixed » : position calculée en JS depuis le bouton ⋯, pour ne pas
+   être rogné par le conteneur défilant (même fiabilité que le menu Filtrer). */
 .row-menu__list.is-fixed {
   position: fixed;
   inset: auto;
@@ -3984,14 +3956,14 @@ input:focus-visible,
   background: rgba(220, 38, 38, 0.15);
   color: #f87171;
 }
-/* Sur les derni├¿res lignes du tableau, le menu se d├®ploie vers le haut
-   pour ne pas ├¬tre coup├® par l'overflow:hidden de la table. */
+/* Sur les dernières lignes du tableau, le menu se déploie vers le haut
+   pour ne pas être coupé par l'overflow:hidden de la table. */
 .mtasks__table tbody tr.task:nth-last-child(-n + 2) .row-menu__list {
   top: auto;
   bottom: calc(100% + 6px);
 }
-/* Se d├®ploie vers le bas, comme le menu de la cloche ; le z-index ├®lev├®
-   ├®vite qu'il se m├®lange visuellement au bouton de statut de la carte
+/* Se déploie vers le bas, comme le menu de la cloche ; le z-index élevé
+   évite qu'il se mélange visuellement au bouton de statut de la carte
    suivante dans la liste. */
 .status-picker__menu {
   position: absolute;
@@ -4054,7 +4026,7 @@ input:focus-visible,
   color: var(--badge-done-text);
 }
 
-/* Fanion de priorit├® devant le titre : une forme (pas un badge plein) pour
+/* Fanion de priorité devant le titre : une forme (pas un badge plein) pour
    ne pas se confondre visuellement avec le badge de statut. */
 .priority-flag {
   display: inline-flex;
@@ -4072,7 +4044,7 @@ input:focus-visible,
   color: var(--text-muted);
 }
 
-/* ---------- Statistiques (r├®utilis├®es dans le Dashboard) ---------- */
+/* ---------- Statistiques (réutilisées dans le Dashboard) ---------- */
 .stats__label {
   align-self: flex-start;
   margin: 0;
@@ -4090,7 +4062,7 @@ input:focus-visible,
   height: clamp(76px, 7.5vw, 108px);
   border-radius: 50%;
   /* Fond opaque de base : le SVG du disque ne peint que ses segments, sans
-     ├ºa le filigrane appara├«trait dans les interstices/coins transparents. */
+     ça le filigrane apparaîtrait dans les interstices/coins transparents. */
   background-color: var(--bg-elevated);
   display: flex;
   align-items: center;
@@ -4116,7 +4088,7 @@ input:focus-visible,
   font-variant-numeric: tabular-nums;
   color: var(--text);
 }
-/* Centre blanc uniquement en th├¿me clair, pour bien d├®tacher l'anneau. */
+/* Centre blanc uniquement en thème clair, pour bien détacher l'anneau. */
 :root[data-theme='light'] .stats__circle span {
   background: #ffffff;
   color: #111318;
@@ -4137,7 +4109,7 @@ input:focus-visible,
   margin: 24px 0;
 }
 
-/* ---------- Rubrique Preuves (legacy container neutralis├®) ---------- */
+/* ---------- Rubrique Preuves (legacy container neutralisé) ---------- */
 .preuves-container {
   width: 100%;
   max-width: 100%;
@@ -4252,8 +4224,8 @@ input:focus-visible,
   }
 }
 
-/* Bouton Ôÿ░ : n'existe visuellement que sur petit ├®cran, l├á o├╣ la sidebar
-   devient un tiroir plut├┤t qu'une barre ├á ic├┤nes fixe. */
+/* Bouton ☰ : n'existe visuellement que sur petit écran, là où la sidebar
+   devient un tiroir plutôt qu'une barre à icônes fixe. */
 .sidebar-menu-btn {
   display: none;
   align-items: center;
@@ -4276,9 +4248,9 @@ input:focus-visible,
   .sidebar-menu-btn {
     display: flex;
   }
-  /* Le tiroir reprend sa largeur et ses libell├®s complets (il n'est plus
-     une barre ├á ic├┤nes en permanence ├á l'├®cran) : il se glisse depuis le
-     bord gauche par-dessus le contenu au lieu de lui r├®server une colonne. */
+  /* Le tiroir reprend sa largeur et ses libellés complets (il n'est plus
+     une barre à icônes en permanence à l'écran) : il se glisse depuis le
+     bord gauche par-dessus le contenu au lieu de lui réserver une colonne. */
   .sidebar-fixed {
     width: 240px;
     padding: 20px 14px;
@@ -4304,8 +4276,8 @@ input:focus-visible,
   }
 }
 
-/* Assombrit le reste de l'├®cran pendant que le tiroir est ouvert ; un clic
-   dessus le referme, comme le fait d├®j├á le voile derri├¿re le menu cloche. */
+/* Assombrit le reste de l'écran pendant que le tiroir est ouvert ; un clic
+   dessus le referme, comme le fait déjà le voile derrière le menu cloche. */
 .sidebar-overlay {
   position: fixed;
   inset: 0;
@@ -4439,8 +4411,8 @@ input:focus-visible,
   border: 1px solid #e0e0e0;
   border-radius: var(--radius);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-  /* R├®action au curseur identique aux cartes de comptage de ┬½ Mes t├óches ┬╗
-     (.mtasks2-count) et aux KPI de ┬½ Retards ┬╗ (.retards-kpi). */
+  /* Réaction au curseur identique aux cartes de comptage de « Mes tâches »
+     (.mtasks2-count) et aux KPI de « Retards » (.retards-kpi). */
   transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
 }
 
@@ -4461,10 +4433,10 @@ input:focus-visible,
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
-/* Pastille des 5 cartes de progression : m├¬me rendu que les cartes de
-   comptage de ┬½ Mes t├óches ┬╗ (.mtasks2-count__icon) et les KPI de
-   ┬½ Retards ┬╗ (.retards-kpi__icon) ÔÇö ronde 28 px, pictogramme SVG au trait
-   fin h├®ritant la couleur, fond teint├® par ├®tat (translucide en sombre). */
+/* Pastille des 5 cartes de progression : même rendu que les cartes de
+   comptage de « Mes tâches » (.mtasks2-count__icon) et les KPI de
+   « Retards » (.retards-kpi__icon) — ronde 28 px, pictogramme SVG au trait
+   fin héritant la couleur, fond teinté par état (translucide en sombre). */
 .stat-icon {
   width: 28px;
   height: 28px;
@@ -4500,15 +4472,15 @@ input:focus-visible,
   background: #f1f5f9;
 }
 
-/* Mode sombre : fonds translucides + ic├┤nes ├®claircies, align├®s sur les
-   cartes de comptage de ┬½ Mes t├óches ┬╗ et les KPI de ┬½ Retards ┬╗. */
+/* Mode sombre : fonds translucides + icônes éclaircies, alignés sur les
+   cartes de comptage de « Mes tâches » et les KPI de « Retards ». */
 [data-theme='dark'] .stat-icon--list { color: #60a5fa; background: rgba(59, 130, 246, 0.14); }
 [data-theme='dark'] .stat-icon--done { color: #4ade80; background: rgba(34, 197, 94, 0.14); }
 [data-theme='dark'] .stat-icon--doing { color: #fbbf24; background: rgba(245, 158, 11, 0.14); }
 [data-theme='dark'] .stat-icon--delay { color: #f87171; background: rgba(239, 68, 68, 0.14); }
 [data-theme='dark'] .stat-icon--notdone { color: #94a3b8; background: rgba(148, 163, 184, 0.14); }
 
-/* Nombre color├® par ├®tat, comme (.mtasks2-count__num). */
+/* Nombre coloré par état, comme (.mtasks2-count__num). */
 .progression-stat-card .stat-icon--list ~ .stat-content .stat-number { color: #2563eb; }
 .progression-stat-card .stat-icon--done ~ .stat-content .stat-number { color: #16a34a; }
 .progression-stat-card .stat-icon--doing ~ .stat-content .stat-number { color: #d97706; }
@@ -4600,7 +4572,7 @@ input:focus-visible,
   }
 }
 
-/* Section inf├®rieure avec tendance et r├®sum├® */
+/* Section inférieure avec tendance et résumé */
 .progression-bottom {
   display: grid;
   grid-template-columns: 4fr 1fr;
@@ -4733,7 +4705,7 @@ input:focus-visible,
 }
 
 /* ============================================================
-   RUBRIQUE PREUVES ÔÇö Design professionnel harmonis├®
+   RUBRIQUE PREUVES — Design professionnel harmonisé
    ============================================================ */
 
 .pf-header {
@@ -4767,7 +4739,7 @@ input:focus-visible,
   font-weight: 400;
 }
 
-/* Banni├¿re de confidentialit├® */
+/* Bannière de confidentialité */
 .pf-banner {
   display: flex;
   align-items: center;
@@ -5154,7 +5126,7 @@ input:focus-visible,
   color: var(--badge-todo-text);
 }
 
-/* Aper├ºu visuel */
+/* Aperçu visuel */
 .pf-card__preview {
   margin: 0 10px 8px;
   border-radius: 8px;
@@ -5345,7 +5317,7 @@ input:focus-visible,
   border-color: var(--accent);
 }
 
-/* Panneau lat├®ral : D├®tail de la preuve (harmonis├® avec mtasks2__side) */
+/* Panneau latéral : Détail de la preuve (harmonisé avec mtasks2__side) */
 .pf-detail {
   background: #fff;
   border: 1px solid var(--border);
@@ -5514,7 +5486,7 @@ input:focus-visible,
 
 /* ---------- Retards Vue ---------- */
 /* Cartes, graphiques et tableaux reprennent les variables communes
-   (--bg-elevated, --border, --accent, badgesÔÇª) et les m├¬mes tailles de
+   (--bg-elevated, --border, --accent, badges…) et les mêmes tailles de
    police compactes que la rubrique Progression, pour une harmonie totale. */
 .retards-container {
   max-width: 100%;
@@ -5542,7 +5514,7 @@ input:focus-visible,
   color: var(--text-muted);
 }
 
-/* KPI : m├¬mes cartes que la progression, l├®g├¿rement compact├®es. */
+/* KPI : mêmes cartes que la progression, légèrement compactées. */
 .retards-stats {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -5590,7 +5562,7 @@ input:focus-visible,
   max-width: 150px;
 }
 
-/* Graphiques : m├¬mes encadr├®s que .progression-chart. */
+/* Graphiques : mêmes encadrés que .progression-chart. */
 .retards-charts {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -5707,7 +5679,7 @@ input:focus-visible,
   padding: 18px 8px !important;
 }
 
-/* Badges de priorit├® : m├¬mes teintes que les badges de t├óches. */
+/* Badges de priorité : mêmes teintes que les badges de tâches. */
 .retards-prio {
   display: inline-block;
   font-size: 10.5px;
@@ -5732,7 +5704,7 @@ input:focus-visible,
   color: var(--text-muted);
 }
 
-/* Carte conseil : r├®utilise .summary-card de la progression. */
+/* Carte conseil : réutilise .summary-card de la progression. */
 .retards-bottom {
   display: flex;
 }
@@ -5745,9 +5717,9 @@ input:focus-visible,
   font-size: 12px;
 }
 
-/* --- Colonne lat├®rale de la vue retards (maquette) ----------------------
+/* --- Colonne latérale de la vue retards (maquette) ----------------------
    Grille deux colonnes : contenu principal + aside compact (3 mini-cartes)
-   Fid├¿le ├á la r├®f├®rence ┬½ Mes t├óches ┬╗ : colonne droite ├®troite ~260px,
+   Fidèle à la référence « Mes tâches » : colonne droite étroite ~260px,
    petites cartes blanches arrondies, lisibles, laissant l'espace au contenu. */
 .retards-container {
   display: grid;
@@ -5765,9 +5737,9 @@ input:focus-visible,
 
 .retards-aside {
   position: sticky;
-  /* Fig├®e sous la barre sup├®rieure collante (~56px) : les 3 cartes
-     ┬½ ├Ç propos du retard ┬╗, ┬½ Rappel important ┬╗ et ┬½ Un petit effortÔÇª ┬╗
-     restent immobiles pendant le d├®filement de la liste des retards. */
+  /* Figée sous la barre supérieure collante (~56px) : les 3 cartes
+     « À propos du retard », « Rappel important » et « Un petit effort… »
+     restent immobiles pendant le défilement de la liste des retards. */
   top: 76px;
   align-self: start;
   display: flex;
@@ -5820,9 +5792,9 @@ input:focus-visible,
 .aside-strong { font-weight: 800; margin: 10px 0 6px; font-size: 11px; color: var(--text, #1e2430); }
 .aside-checks { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 7px; font-size: 10.5px; line-height: 1.5; color: var(--text-muted, #6b7689); }
 .aside-checks li { position: relative; padding-left: 17px; }
-.aside-checks li::before { content: 'Ô£ô'; position: absolute; left: 0; top: 0; color: #2563eb; font-weight: 800; font-size: 10.5px; }
+.aside-checks li::before { content: '✓'; position: absolute; left: 0; top: 0; color: #2563eb; font-weight: 800; font-size: 10.5px; }
 
-/* Carte ┬½ ├Ç propos du retard ┬╗ : bleu doux, la plus d├®velopp├®e des trois */
+/* Carte « À propos du retard » : bleu doux, la plus développée des trois */
 .aside-card--info {
   border-color: rgba(37, 99, 235, 0.18);
   background: linear-gradient(165deg, rgba(37, 99, 235, 0.08), rgba(37, 99, 235, 0.02) 55%),
@@ -5831,7 +5803,7 @@ input:focus-visible,
 }
 .aside-card--info h4 { color: #1d4ed8; margin-bottom: 10px; }
 .aside-card--info > p:first-of-type { padding-bottom: 4px; line-height: 1.85; }
-/* Bloc ┬½ Pris en compte dans : ┬╗ bien s├®par├® du texte du haut */
+/* Bloc « Pris en compte dans : » bien séparé du texte du haut */
 .aside-card--info .aside-strong {
   margin: 20px 0 11px;
   padding-top: 17px;
@@ -5850,7 +5822,7 @@ input:focus-visible,
 }
 :root[data-theme='dark'] .aside-card--info h4 { color: #8ea2ff; }
 
-/* Carte ┬½ Rappel important ┬╗ : violet doux comme la maquette + bouton */
+/* Carte « Rappel important » : violet doux comme la maquette + bouton */
 .aside-card--rappel,
 .aside-card--warning {
   border-color: rgba(99, 102, 241, 0.22);
@@ -5896,7 +5868,7 @@ input:focus-visible,
 .aside-btn--violet { background: #6366f1; border-color: #6366f1; color: #fff; width: 100%; justify-content: center; }
 .aside-btn--violet:hover { background: #4f46e5; }
 
-/* Carte ┬½ Un petit effort aujourd'huiÔÇª ┬╗ : verte, mini-bandeau motivation */
+/* Carte « Un petit effort aujourd'hui… » : verte, mini-bandeau motivation */
 .aside-card--motivation {
   border-color: rgba(22, 163, 74, 0.2);
   background: linear-gradient(165deg, rgba(34, 197, 94, 0.1), rgba(34, 197, 94, 0.02) 60%),
@@ -5916,7 +5888,7 @@ input:focus-visible,
 }
 :root[data-theme='dark'] .aside-card--motivation h4 { color: #63d99a; }
 
-/* Responsive : aside sous le contenu principal sur ├®cran ├®troit */
+/* Responsive : aside sous le contenu principal sur écran étroit */
 @media (max-width: 1100px) {
   .retards-container {
     grid-template-columns: 1fr;
@@ -5942,6 +5914,113 @@ input:focus-visible,
   }
 }
 
+/* ===== Maquette Progression (fidelite image de reference) ===== */
+.pg { display: flex; flex-direction: column; gap: 14px; max-width: 100%; font-family: var(--font); }
+.pg__topbar { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+.pg__head { display: flex; align-items: center; gap: 12px; }
+.pg__head-ico { width: 40px; height: 40px; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; color: var(--accent-contrast); background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 65%, #7c3aed)); flex: none; box-shadow: 0 4px 12px color-mix(in srgb, var(--accent) 35%, transparent); }
+.pg__title { margin: 0; font-family: 'Plus Jakarta Sans', var(--font); font-size: 22px; font-weight: 800; letter-spacing: -0.02em; color: var(--text); }
+.pg__sub { margin: 2px 0 0; font-size: 12.5px; color: var(--text-muted); }
+.pg__seg { display: inline-flex; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 12px; padding: 4px; gap: 4px; box-shadow: 0 1px 2px rgba(15,23,42,.05); }
+.pg2__seg-btn { border: 0; background: transparent; border-radius: 9px; padding: 8px 16px; font-size: 12px; font-weight: 600; color: var(--text-muted); transition: background .15s ease, color .15s ease; }
+.pg2__seg-btn:hover { color: var(--text); background: var(--bg-hover); }
+.pg2__seg-btn.is-active { background: var(--accent); color: var(--accent-contrast); box-shadow: 0 2px 6px rgba(37,99,235,.35); }
+.pg-card { background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 16px; padding: 16px 18px; box-shadow: var(--shadow); min-width: 0; transition: border-color .15s ease, box-shadow .15s ease; }
+.pg-card:hover { border-color: color-mix(in srgb, var(--accent) 25%, var(--border)); }
+.pg-card__head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.pg-card__ico { width: 30px; height: 30px; border-radius: 9px; display: inline-flex; align-items: center; justify-content: center; color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); flex: none; }
+.pg-card__titles { flex: 1; min-width: 0; }
+.pg-card__titles h3 { margin: 0; font-family: 'Plus Jakarta Sans', var(--font); font-size: 13.5px; font-weight: 800; color: var(--text); }
+.pg-card__titles p { margin: 2px 0 0; font-size: 11.5px; color: var(--text-muted); }
+.pg-dots { color: var(--text-muted); opacity: .6; letter-spacing: 2px; font-size: 12px; }
+.pg__grid-top { display: grid; grid-template-columns: minmax(0,1.55fr) minmax(0,1fr) minmax(0,1.15fr); gap: 14px; align-items: stretch; }
+.pg__grid-mid { display: grid; grid-template-columns: minmax(0,1.55fr) minmax(0,1.35fr); gap: 14px; align-items: stretch; }
+.pg-day__body { display: flex; gap: 22px; align-items: center; }
+.pg-day__left { display: flex; flex-direction: column; align-items: center; gap: 10px; flex: none; }
+.pg-day__right { flex: 1; min-width: 0; border-left: 1px solid var(--border); padding-left: 20px; }
+.pg-day__right h4 { margin: 2px 0 8px; font-size: 12.5px; font-weight: 800; font-family: 'Plus Jakarta Sans', var(--font); color: var(--text); }
+.pg-donut-wrap { position: relative; display: flex; align-items: center; justify-content: center; padding: 2px 0 6px; }
+/* Même facture que le donut « Respect du temps » : canvas HiDPI affiché à 170 px. */
+.pg-donut-wrap canvas { width: 170px; height: 170px; display: block; }
+.pg-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 700; border-radius: 999px; padding: 6px 12px; border: 1px solid transparent; }
+.pg-pill--green { color: var(--badge-done-text); background: var(--badge-done-bg); border-color: color-mix(in srgb, var(--badge-done-text) 25%, transparent); }
+.pg-pill--amber { color: var(--badge-doing-text); background: var(--badge-doing-bg); border-color: color-mix(in srgb, var(--badge-doing-text) 25%, transparent); }
+.pg-pill--red { color: var(--badge-todo-text); background: var(--badge-todo-bg); border-color: color-mix(in srgb, var(--badge-todo-text) 25%, transparent); }
+.pg-pill--center { align-self: center; }
+.pg-repart { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.pg-repart li { display: flex; align-items: center; gap: 8px; padding: 9px 0; border-bottom: 1px solid var(--border); font-size: 12px; color: var(--text); }
+.pg-repart li:last-child { border-bottom: 0; }
+.pg-repart b { margin-left: auto; font-size: 12.5px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--text); }
+.pg-repart em { font-style: normal; font-weight: 700; min-width: 44px; text-align: right; font-variant-numeric: tabular-nums; color: var(--text); }
+.pg-repart__total { font-weight: 800; }
+.pg-dot { width: 11px; height: 11px; border-radius: 50%; flex: none; box-shadow: inset 0 0 0 1px rgba(0,0,0,.06); }
+.pg-dot--green { background: var(--badge-done-text); } .pg-dot--blue { background: var(--accent); }
+.pg-dot--grey { background: var(--text-muted); opacity: .55; } .pg-dot--red { background: var(--badge-todo-text); }
+.pg-card--time { display: flex; flex-direction: column; align-items: center; text-align: center; }
+.pg-card--time .pg-card__head { width: 100%; text-align: left; }
+/* Cercle « Respect du temps » : même facture que le cercle de « Répartition des
+   retards » de la rubrique Retards (canvas HiDPI, anneau épais, segments
+   détachés, valeur centrée). Taille identique pour une harmonie parfaite. */
+.pg-time__donut { display: flex; align-items: center; justify-content: center; padding: 2px 0 6px; }
+.pg-time__donut canvas { width: 170px; height: 170px; display: block; }
+/* La valeur est dessinée dans le canvas : ce texte reste exposé aux lecteurs
+   d'écran sans être affiché en double. */
+.pg-time__pct { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; border: 0; }
+/* La carte s'étire comme ses voisines : l'espace libre se place au-dessus du
+   statut, qui reste collé au bloc « Temps prévu / réellement utilisé ». */
+.pg-card--time .pg-pill--center { margin-top: auto; }
+.pg-time__cols { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; width: 100%; }
+.pg-time__cols > div + div { border-left: 1px solid var(--border); padding-left: 12px; }
+.pg-time__label { margin: 0 0 4px; font-size: 11px; color: var(--text-muted); }
+.pg-time__cols strong { font-size: 16px; font-variant-numeric: tabular-nums; color: var(--text); }
+.pg-evo__wrap { position: relative; height: 218px; min-height: 218px; }
+.pg-evo__wrap canvas { width: 100% !important; height: 100% !important; display: block; }
+/* La carte « Détail » s'étire sur la hauteur de la ligne (align-items: stretch
+   de .pg__grid-mid) : ses tuiles remplissent donc verticalement l'espace libre. */
+.pg-card--detail { display: flex; flex-direction: column; }
+.pg-detail__body { display: flex; flex: 1; min-height: 0; }
+.pg-tiles { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); grid-auto-rows: minmax(112px, 1fr); gap: 12px; flex: 1; min-width: 0; }
+.pg-tile { border-radius: 12px; padding: 18px 14px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7px; transition: transform .15s ease, box-shadow .15s ease; }
+.pg-tile:hover { transform: translateY(-2px); box-shadow: 0 6px 16px color-mix(in srgb, var(--text) 10%, transparent); }
+.pg-tile b { font-size: 12px; font-weight: 700; color: var(--text); }
+.pg-tile strong { font-size: 22px; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--text); }
+.pg-tile em { font-style: normal; font-size: 11.5px; font-weight: 700; }
+.pg-tile__ico { width: 38px; height: 38px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: #fff; flex: none; }
+.pg-tile--green { background: var(--badge-done-bg); } .pg-tile--green strong, .pg-tile--green em { color: var(--badge-done-text); } .pg-tile--green .pg-tile__ico { background: var(--badge-done-text); }
+.pg-tile--blue { background: color-mix(in srgb, var(--accent) 12%, var(--bg-elevated)); } .pg-tile--blue strong, .pg-tile--blue em { color: var(--accent); } .pg-tile--blue .pg-tile__ico { background: var(--accent); }
+.pg-tile--grey { background: var(--bg-hover); } .pg-tile--grey strong, .pg-tile--grey em { color: var(--text-muted); } .pg-tile--grey .pg-tile__ico { background: var(--text-muted); }
+.pg-tile--red { background: var(--badge-todo-bg); } .pg-tile--red strong, .pg-tile--red em { color: var(--badge-todo-text); } .pg-tile--red .pg-tile__ico { background: var(--badge-todo-text); }
+.pg-week__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.pg-mini { border-radius: 12px; padding: 12px 14px; min-width: 0; }
+.pg-mini__row { display: flex; align-items: center; gap: 8px; }
+.pg-mini__row strong { font-size: 19px; font-variant-numeric: tabular-nums; color: var(--text); }
+.pg-mini p { margin: 4px 0 2px; font-size: 11px; color: var(--text-muted); }
+.pg-mini em { font-style: normal; font-size: 11px; font-weight: 700; }
+.pg-mini__ico { width: 26px; height: 26px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: #fff; flex: none; }
+.pg-mini--green { background: var(--badge-done-bg); } .pg-mini--green .pg-mini__ico { background: var(--badge-done-text); }
+.pg-mini--blue { background: color-mix(in srgb, var(--accent) 12%, var(--bg-elevated)); } .pg-mini--blue .pg-mini__ico { background: var(--accent); }
+.pg-mini--rose { background: var(--badge-todo-bg); } .pg-mini--rose .pg-mini__ico { background: var(--badge-todo-text); }
+.pg-mini--violet { background: color-mix(in srgb, #7c3aed 12%, var(--bg-elevated)); } .pg-mini--violet strong { color: #7c3aed; } .pg-mini--violet .pg-mini__ico { background: #7c3aed; }
+.pg-delta--up { color: var(--badge-done-text); } .pg-delta--down { color: var(--badge-todo-text); }
+.pg-banner { display: flex; align-items: center; gap: 14px; background: color-mix(in srgb, var(--accent) 7%, var(--bg-elevated)); border: 1px solid color-mix(in srgb, var(--accent) 18%, var(--border)); border-radius: 16px; padding: 12px 16px; overflow: hidden; position: relative; }
+.pg-banner__ico { width: 34px; height: 34px; border-radius: 50%; background: color-mix(in srgb, var(--accent) 14%, var(--bg-elevated)); color: var(--accent); display: inline-flex; align-items: center; justify-content: center; flex: none; box-shadow: var(--shadow); }
+.pg-banner__text { flex: 1; min-width: 0; }
+.pg-banner__text strong { display: block; font-size: 13px; font-family: 'Plus Jakarta Sans', var(--font); color: var(--text); }
+.pg-banner__text p { margin: 2px 0 0; font-size: 11.5px; color: var(--text-muted); }
+.pg-banner__art { height: 52px; width: auto; flex: none; }
+.pg-banner__btn { flex: none; border: 0; border-radius: 999px; background: var(--accent); color: var(--accent-contrast); font-weight: 700; font-size: 12px; padding: 9px 16px; transition: filter .15s ease, transform .15s ease; }
+.pg-banner__btn:hover { filter: brightness(1.07); transform: translateY(-1px); }
+[data-theme='dark'] .pg-track { stroke: #2b3242; }
+[data-theme='dark'] .pg__seg { background: var(--bg-elevated); }
+[data-theme='dark'] .pg2__seg-btn.is-active { background: var(--accent); color: var(--accent-contrast); }
+[data-theme='dark'] .pg-banner { background: #1c2740; border-color: #2b3752; }
+[data-theme='dark'] .pg-banner__ico { background: rgba(108,140,255,.18); color: #8ea2ff; }
+[data-theme='dark'] .pg-banner__text p { color: var(--text-muted); }
+[data-theme='dark'] .pg-mini p { color: var(--text-muted); }
+[data-theme='dark'] .pg-mini--violet strong { color: #b79bff; }
+@media (max-width: 1200px) { .pg__grid-top { grid-template-columns: 1fr 1fr; } .pg-card--evo { grid-column: 1 / -1; } .pg__grid-mid { grid-template-columns: 1fr; } }
+@media (max-width: 760px) { .pg__grid-top { grid-template-columns: 1fr; } .pg-day__body { flex-direction: column; } .pg-day__right { border-left: 0; padding-left: 0; width: 100%; } .pg-tiles { grid-template-columns: 1fr 1fr; } .pg-banner { flex-wrap: wrap; } .pg-banner__art { display: none; } }
+
 /* ===== Maquette Retards (fidelite image de reference) ===== */
 .retards-pagehead {
   display: flex;
@@ -5952,11 +6031,12 @@ input:focus-visible,
 .retards-pagehead__icon {
   width: 40px;
   height: 40px;
-  border-radius: 50%;
+  border-radius: 12px;
   display: grid;
   place-items: center;
-  color: #ef4444;
-  background: linear-gradient(160deg, #fecaca, #fca5a5);
+  color: var(--accent-contrast);
+  background: linear-gradient(135deg, #ef4444, #f97316);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35);
   flex: none;
 }
 .retards-pagehead__title {
@@ -5977,8 +6057,8 @@ input:focus-visible,
   gap: 14px;
   margin-bottom: 16px;
 }
-/* KPI Retards : m├¬me mise en forme que les cartes de comptage ┬½ Mes t├óches ┬╗
-   (.mtasks2-count) ÔÇö colonne label+ic├┤ne / grand nombre color├® / sous-titre. */
+/* KPI Retards : même mise en forme que les cartes de comptage « Mes tâches »
+   (.mtasks2-count) — colonne label+icône / grand nombre coloré / sous-titre. */
 .retards-kpi {
   display: flex;
   flex-direction: column;
@@ -6062,9 +6142,9 @@ input:focus-visible,
 }
 .retards-card__head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
 .retards-card__head h3 { margin: 0; font-family: 'Plus Jakarta Sans', Inter, system-ui, sans-serif; font-size: 13px; font-weight: 700; }
-/* Motif ├®vocateur devant les titres de cartes (┬½ ├ëvolution des retards ┬╗) :
-   m├¬me ADN que .retards-pagehead__icon ÔÇö pastille ronde en d├®grad├® rose,
-   glyphe de la couleur du retard, d├®clin├®e pour les deux th├¿mes. */
+/* Motif évocateur devant les titres de cartes (« Évolution des retards ») :
+   même ADN que .retards-pagehead__icon — pastille ronde en dégradé rose,
+   glyphe de la couleur du retard, déclinée pour les deux thèmes. */
 .retards-card__title { display: inline-flex; align-items: center; gap: 9px; }
 .retards-card__icon {
   width: 26px;
@@ -6096,18 +6176,18 @@ input:focus-visible,
 .retards-donut-legend { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
 .retards-leg {
   display: grid;
-  /* 3 colonnes sur une seule ligne : statut (├®crit en texte) ┬À espace souple ┬À
-     pourcentage. Le libell├® est dimensionn├® en ┬½ auto ┬╗ : il s'├®crit toujours en
-     entier, jamais tronqu├®, et le pourcentage reste align├® d'une ligne ├á l'autre. */
+  /* 3 colonnes sur une seule ligne : statut (écrit en texte) · espace souple ·
+     pourcentage. Le libellé est dimensionné en « auto » : il s'écrit toujours en
+     entier, jamais tronqué, et le pourcentage reste aligné d'une ligne à l'autre. */
   grid-template-columns: auto minmax(0, 1fr) auto;
   column-gap: 10px;
   align-items: center;
-  font-size: 11px;              /* align├® sur .retards-legend de la rubrique */
+  font-size: 11px;              /* aligné sur .retards-legend de la rubrique */
   line-height: 1.3;
   font-variant-numeric: tabular-nums;
 }
-/* Le statut est ├®crit EN TEXTE, dans la couleur de sa priorit├® : le point
-   color├® est remplac├® par le libell├® lui-m├¬me ÔÇö plus rien ├á d├®coder. */
+/* Le statut est écrit EN TEXTE, dans la couleur de sa priorité : le point
+   coloré est remplacé par le libellé lui-même — plus rien à décoder. */
 .retards-leg__label {
   grid-column: 1;
   justify-self: start;
@@ -6117,9 +6197,9 @@ input:focus-visible,
   white-space: nowrap;
   color: var(--leg-color, var(--text));
 }
-/* Nombre de t├óches retir├® : seule la part de chaque priorit├® est affich├®e
-   (pourcentage), en colonne fixe align├®e ├á droite pour s'empiler proprement.
-   Le nombre de t├óches reste disponible dans l'infobulle de la ligne. */
+/* Nombre de tâches retiré : seule la part de chaque priorité est affichée
+   (pourcentage), en colonne fixe alignée à droite pour s'empiler proprement.
+   Le nombre de tâches reste disponible dans l'infobulle de la ligne. */
 .retards-leg__pct {
   grid-column: 3;
   justify-self: end;
@@ -6131,8 +6211,8 @@ input:focus-visible,
   color: var(--text-muted);
   text-align: right;
 }
-/* La l├®gende se lit sur une seule ligne : statut ├®crit en texte ┬À pourcentage.
-   Le nombre de t├óches reste disponible dans l'infobulle de chaque ligne. */
+/* La légende se lit sur une seule ligne : statut écrit en texte · pourcentage.
+   Le nombre de tâches reste disponible dans l'infobulle de chaque ligne. */
 [data-theme='dark'] .retards-leg__label { color: color-mix(in srgb, var(--leg-color, #94a3b8) 60%, #ffffff); }
 .retards-leg--empty { opacity: 0.45; }
 @media (max-width: 560px) {
@@ -6153,8 +6233,8 @@ input:focus-visible,
 .retards-t2__ico--high { background: #ffedd5; color: #ea580c; }
 .retards-t2__ico--medium { background: #dbeafe; color: #2563eb; }
 .retards-t2__ico--low { background: #dcfce7; color: #16a34a; }
-/* Badges priorit├® / statut : m├¬me style que ┬½ Mes t├óches ┬╗ (.mtask__priority)
-   ÔåÆ pastille transparente, point de couleur + texte color├®. */
+/* Badges priorité / statut : même style que « Mes tâches » (.mtask__priority)
+   → pastille transparente, point de couleur + texte coloré. */
 .retards-pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; white-space: nowrap; }
 .retards-pill::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: currentColor; flex: none; }
 .retards-pill--urgent { color: #dc2626; }
@@ -6170,7 +6250,7 @@ input:focus-visible,
 .retards-more { border: 1px solid transparent; background: transparent; color: var(--text-muted); font-size: 14px; letter-spacing: 1px; padding: 4px 8px; border-radius: 8px; }
 .retards-more:hover { background: var(--bg-hover); color: var(--text); }
 .retards-table2__empty { text-align: center; color: var(--text-muted); padding: 22px 10px; }
-/* (r├¿gles aside compactes d├®finies plus haut ÔÇö ne pas dupliquer ici) */
+/* (règles aside compactes définies plus haut — ne pas dupliquer ici) */
 .retards-floatmenu {
   z-index: 90;
   min-width: 190px;
@@ -6196,15 +6276,15 @@ input:focus-visible,
 .retards-floatmenu button:hover { background: var(--bg-hover); }
 .retards-floatmenu button.is-danger { color: #dc2626; }
 
-/* Liste des t├óches en retard : adaptation au th├¿me sombre.
-   M├¬me logique que les KPI ci-dessus : fonds translucides (teinte ├á ~12-14 %),
-   textes en teinte claire, bordures subtiles ÔÇö lisibles sur fond sombre. */
+/* Liste des tâches en retard : adaptation au thème sombre.
+   Même logique que les KPI ci-dessus : fonds translucides (teinte à ~12-14 %),
+   textes en teinte claire, bordures subtiles — lisibles sur fond sombre. */
 :root[data-theme='dark'] .retards-t2__ico--urgent { background: rgba(239,68,68,0.14); color: #f87171; }
 :root[data-theme='dark'] .retards-t2__ico--high { background: rgba(249,115,22,0.14); color: #fb923c; }
 :root[data-theme='dark'] .retards-t2__ico--medium { background: rgba(59,130,246,0.14); color: #60a5fa; }
 :root[data-theme='dark'] .retards-t2__ico--low { background: rgba(34,197,94,0.14); color: #4ade80; }
-/* Priorit├® & statut : m├¬mes couleurs que ┬½ Mes t├óches ┬╗, valables dans les
-   deux th├¿mes ÔåÆ aucun override sombre n├®cessaire. */
+/* Priorité & statut : mêmes couleurs que « Mes tâches », valables dans les
+   deux thèmes → aucun override sombre nécessaire. */
 :root[data-theme='dark'] .retards-t2__delay { color: #f87171; }
 :root[data-theme='dark'] .retards-floatmenu button.is-danger { color: #f87171; }
 .pf-detail__main-btn:hover {
@@ -6290,7 +6370,7 @@ input:focus-visible,
   font-weight: 500;
 }
 
-/* Modal Plein ├ëcran pour pr├®visualisation */
+/* Modal Plein Écran pour prévisualisation */
 .pf-modal-overlay {
   position: fixed;
   inset: 0;
@@ -6400,7 +6480,7 @@ input:focus-visible,
   padding: 0;
 }
 
-/* ├ëtat vide */
+/* État vide */
 .pf-empty {
   grid-column: 1 / -1;
   text-align: center;
@@ -6473,741 +6553,122 @@ input:focus-visible,
     flex: 1 1 100%;
   }
 }
-</style></head>
-  <body>
-    <svg class="defs-only" aria-hidden="true">
-      <symbol id="doliMark" viewBox="0 0 20 20">
-        <polygon points="4,11 7.5,14.5 16,5 14.5,3.5 7.5,11.5 5.5,9.5" fill="currentColor"></polygon>
-        <g stroke="currentColor" stroke-width="1.3" stroke-linecap="round" opacity="0.75">
-          <line x1="12.5" y1="4.2" x2="15" y2="1.2"></line>
-          <line x1="15" y1="3.4" x2="17" y2="1.2"></line>
-          <line x1="17.2" y1="2.6" x2="18.6" y2="1.2"></line>
-        </g>
-      </symbol>
-      <symbol id="eyeIcon" viewBox="0 0 20 20">
-        <path d="M2 10c1.8-3.3 4.7-5.2 8-5.2s6.2 1.9 8 5.2c-1.8 3.3-4.7 5.2-8 5.2s-6.2-1.9-8-5.2z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path>
-        <circle cx="10" cy="10" r="2.3" fill="none" stroke="currentColor" stroke-width="1.6"></circle>
-      </symbol>
-      <symbol id="eyeOffIcon" viewBox="0 0 20 20">
-        <path d="M9.1 5.1A8.6 8.6 0 0110 5c3.3 0 6.2 1.9 8 5.2-.6 1.1-1.3 2-2.1 2.8M6.2 6.2C4.6 7.2 3.2 8.7 2 10.2c1.8 3.3 4.7 5.2 8 5.2 1.1 0 2.1-.2 3.1-.6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path>
-        <path d="M8.2 8.2a2.3 2.3 0 003.3 3.3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
-        <line x1="3" y1="3" x2="17" y2="17" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></line>
-      </symbol>
-    </svg>
+/* ===== Rubrique Rappels — fidele image de reference ===== */
+.rappels{display:grid;grid-template-columns:minmax(0,1fr) 228px;gap:12px;align-items:start;max-width:100%}
+.rappels__main{min-width:0;display:flex;flex-direction:column;gap:10px}
+.rappels__head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.rappels__title-wrap{display:flex;gap:9px;align-items:flex-start}
+.rappels__icon{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;flex:none;color:#4f46e5;background:linear-gradient(150deg,#e0e7ff,#ede9fe);border:1px solid rgba(99,102,241,.25)}
+.rappels__title{margin:0;font-size:19px;font-weight:800;letter-spacing:-.02em;color:var(--text)}
+.rappels__sub{margin:3px 0 0;font-size:11px;line-height:1.5;color:var(--text-muted);max-width:460px}
+.rappels__new{border:none;border-radius:8px;padding:7px 12px;font-size:11.5px;font-weight:700;color:#fff;background:linear-gradient(135deg,#2563eb,#4f46e5);cursor:pointer;white-space:nowrap}
+.rappels__new:hover{filter:brightness(1.07)}
+.rappels__kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+/* Même gabarit et même survol que les cartes de comptage de Mes tâches. */
+.rappel-kpi{display:flex;flex-direction:column;gap:2px;background:#fff;border:1px solid var(--border);border-radius:12px;padding:12px 14px;min-width:0;text-align:left;font-family:inherit;color:var(--text);transition:border-color .15s ease,transform .15s ease,box-shadow .15s ease}
+.rappel-kpi:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+.rappel-kpi__top{display:flex;align-items:center;justify-content:space-between;gap:6px;min-height:28px}
+.rappel-kpi__ico{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:800;flex:none}
+.rappel-kpi--blue .rappel-kpi__ico{background:#2563eb;color:#fff}
+.rappel-kpi--violet .rappel-kpi__ico{background:#7c3aed;color:#fff}
+.rappel-kpi--green .rappel-kpi__ico{background:#16a34a;color:#fff}
+.rappel-kpi--mint .rappel-kpi__ico{background:#10b981;color:#fff}
+.rappel-kpi__label{margin:0;font-size:11px;font-weight:600;color:#475569;min-width:0}
+.rappel-kpi__num{margin:0;font-size:24px;font-weight:800;line-height:1.1;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.rappel-kpi__sub{margin:0;font-size:11px;font-weight:500;color:var(--text-muted);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.rappels__card{background:#fff;border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.rappels__tabs-row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px 0}
+.rappels__tabs{display:flex;gap:12px;flex-wrap:wrap}
+.rappels__tab{border:none;background:none;padding:6px 1px;font-size:11px;font-weight:600;color:#64748b;cursor:pointer;border-bottom:2px solid transparent}
+.rappels__tab.is-active{color:#2563eb;border-bottom-color:#2563eb}
+.rappels__count{background:#eef2ff;color:#4f46e5;border-radius:999px;font-size:9.5px;font-weight:700;padding:1px 6px;margin-left:4px}
+.rappels__filter select{font-size:10.5px;padding:5px 8px;border-radius:7px;border:1px solid var(--border);background:#fff;color:#334155;max-width:140px}
+.rappels__table-wrap{overflow-x:auto;padding:4px 6px 8px}
+.rappels__table{width:100%;border-collapse:separate;border-spacing:0;font-size:11px;min-width:620px}
+.rappels__table thead th{text-align:left;font-size:10px;font-weight:600;color:#64748b;padding:7px 8px;background:#f8fafc;white-space:nowrap}
+.rappels__table tbody td{padding:7px 8px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+.rappels__table tbody tr:last-child td{border-bottom:none}
+.rappels__table tbody tr:hover{background:#f8fafc}
+.rappels__empty{margin:10px;font-size:11.5px;color:var(--text-muted);text-align:center}
+.rem-task{display:flex;align-items:center;gap:8px;min-width:0}
+.rem-ico{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;color:#fff;font-size:12px;flex:none}
+.rem-task strong{display:block;font-size:11px;color:#0f172a;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:190px}
+.rem-task span{display:block;font-size:10px;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:190px}
+.rem-date{display:flex;align-items:center;gap:6px;font-size:10.5px;font-weight:600;color:#0f172a;white-space:nowrap;line-height:1.3}
+.rem-date small{display:block;font-weight:500;color:#64748b;font-size:10px}
+.rem-freq{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;color:#475569;white-space:nowrap}
+.rem-status{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:999px;font-size:10px;font-weight:700;white-space:nowrap}
+.rem-status--todo{background:#fef2f2;color:#dc2626}
+.rem-status--doing{background:#eff6ff;color:#2563eb}
+.rem-status--soon{background:#fffbeb;color:#d97706}
+.rem-status--future{background:#eef2ff;color:#4f46e5}
+.rem-status--done{background:#f0fdf4;color:#16a34a}
+.rem-actions{display:flex;align-items:center;gap:2px;justify-content:flex-end}
+.rem-act{border:none;background:none;color:#64748b;font-size:13px;padding:3px 5px;border-radius:6px;cursor:pointer}
+.rem-act:hover{background:#eef2ff;color:#2563eb}
+.rappels__aside{display:flex;flex-direction:column;gap:12px;flex:0 0 260px;position:sticky;top:76px;min-width:0}
+.rappels__panel{background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px;font-size:11px}
+.rappels__today-head{display:flex;gap:7px;align-items:center;padding-bottom:8px;border-bottom:1px solid #f1f5f9;margin-bottom:8px}
+.rappels__today-head strong{display:block;font-size:12px;color:#0f172a}
+.rappels__today-head span{font-size:10px;color:#64748b}
+.rappels__today-list{list-style:none;margin:0 0 8px;padding:0;display:flex;flex-direction:column;gap:7px}
+.rappels__today-list li{display:flex;gap:7px;align-items:flex-start;font-size:10.5px;color:#0f172a;line-height:1.35}
+.rappels__today-list .dot{width:7px;height:7px;border-radius:50%;flex:none;margin-top:4px}
+.rappels__today-list time{color:#64748b;font-weight:700;margin-right:2px;white-space:nowrap}
+.rappels__encart{display:flex;align-items:center;gap:7px;background:#eff6ff;border:1px solid #dbeafe;border-radius:8px;padding:8px;font-size:10.5px;color:#1e3a8a}
+.rappels__encart strong{display:block;font-size:10.5px}
+.rappels__encart span{font-size:10px;color:#64748b}
+.rappels__panel-title{margin:0 0 8px;font-size:11.5px;font-weight:800;color:#0f172a}
+.rappels__switch-row{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:10.5px;font-weight:600;color:#0f172a;padding:6px 0}
+.switch{position:relative;width:32px;height:18px;border-radius:999px;border:none;background:#cbd5e1;cursor:pointer;flex:none}
+.switch span{position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.switch.is-on{background:#2563eb}.switch.is-on span{left:16px}
+.rappels__field-label{margin:8px 0 5px;font-size:10.5px;font-weight:700;color:#0f172a}
+.rappels__freq select{width:100%;font-size:10.5px;padding:6px 8px;border-radius:7px;border:1px solid var(--border);background:#fff;color:#334155}
+.rappels__motivation{background:linear-gradient(150deg,#eef2ff,#f5f3ff);border:1px solid #e0e7ff;border-radius:10px;padding:12px 10px}
+.rappels__motivation p{margin:0;font-size:11px;line-height:1.5;color:#1e1b4b}
+.rappels__bar{display:block;width:32px;height:3px;border-radius:999px;background:#818cf8;margin-top:8px}
+[data-theme='dark'] .rappel-kpi{background:var(--bg-elevated)}
+[data-theme='dark'] .rappel-kpi__label,[data-theme='dark'] .rappel-kpi__num{color:var(--text)}
+[data-theme='dark'] .rappel-kpi__sub{color:var(--text-muted)}
+[data-theme='dark'] .rappels__card,[data-theme='dark'] .rappels__panel,[data-theme='dark'] .rappels__motivation{background:var(--bg-elevated);border-color:var(--border)}
+[data-theme='dark'] .rappels__table thead th{background:var(--bg);color:var(--text-muted)}
+[data-theme='dark'] .rappels__table tbody td{border-color:var(--border)}
+[data-theme='dark'] .rem-task strong,[data-theme='dark'] .rem-date{color:var(--text)}
+[data-theme='dark'] .rappels__today-head strong,[data-theme='dark'] .rappels__panel-title{color:var(--text)}
+[data-theme='dark'] .rappels__motivation p{color:var(--text)}
+[data-theme='dark'] .rappels__encart{background:rgba(37,99,235,.12);border-color:rgba(37,99,235,.3);color:var(--text)}
+@media (max-width:1100px){.rappels{grid-template-columns:1fr}.rappels__kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:560px){.rappels__kpis{grid-template-columns:1fr}.rappels__head{flex-direction:column;align-items:stretch}}
+/* ===== Motifs d'en-tete reutilisables (identite « Progression ») =====
+   Carré arrondi 40px + dégradé, comme .pg__head-ico ; la couleur varie
+   selon le contexte de chaque rubrique. */
+.vhead-ico{width:40px;height:40px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;flex:none;color:var(--accent-contrast);background:linear-gradient(135deg,var(--accent),color-mix(in srgb,var(--accent) 65%,#7c3aed));box-shadow:0 4px 12px color-mix(in srgb,var(--accent) 35%,transparent)}
+.vhead-ico--rappels{background:linear-gradient(135deg,#6366f1,#8b5cf6);box-shadow:0 4px 12px rgba(99,102,241,.35)}
+.vhead-ico--retards{background:linear-gradient(135deg,#ef4444,#f97316);box-shadow:0 4px 12px rgba(239,68,68,.35)}
+.vhead-ico--preuves{background:linear-gradient(135deg,#10b981,#0d9488);box-shadow:0 4px 12px rgba(16,185,129,.35)}
+.vhead-ico svg{display:block}
+/* Dashboard et Mes tâches : motif à gauche du titre, comme Retards. */
+.dash__hello,
+.mtasks2__header-text {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+.dash__hello > div,
+.mtasks2__header-text > div {
+  min-width: 0;
+}
+/* Dashboard : kickers de sections avec petit motif */
+.dash-card__kicker{display:flex;align-items:center;gap:6px}
+.kick-ico{width:20px;height:20px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;flex:none;color:#fff}
+.kick-ico--accent{background:linear-gradient(135deg,#3b5bdb,#6d28d9)}
+.kick-ico--late{background:linear-gradient(135deg,#ef4444,#f97316)}
+.kick-ico--done{background:linear-gradient(135deg,#16a34a,#10b981)}
+.kick-ico--perf{background:linear-gradient(135deg,#7c3aed,#6366f1)}
+.kick-ico--dist{background:linear-gradient(135deg,#0ea5e9,#3b5bdb)}
+/* Preuves : motif a gauche du titre, texte flexible */
+.pf-header__text{flex:1;min-width:0}
+[data-theme='dark'] .kick-ico{filter:brightness(1.1)}
 
-    <div id="loginScreen" class="login-screen">
-      <svg class="login-screen__watermark" aria-hidden="true"><use href="#doliMark"></use></svg>
-      <div class="login-card">
-        <div class="login-card__icon"><svg width="32" height="32"><use href="#doliMark"></use></svg></div>
 
-        <div id="loginPanel">
-          <h1>Connecte-toi ├á Doli</h1>
-          <form id="loginForm" class="auth-form">
-            <label class="task-form__field">Email
-              <input type="email" id="loginEmail" required="">
-            </label>
-            <label class="task-form__field">Mot de passe
-              <div class="password-field">
-                <input type="password" id="loginPassword" required="">
-                <button type="button" class="password-field__toggle" data-target="loginPassword" aria-label="Afficher le mot de passe">
-                  <svg width="16" height="16"><use href="#eyeIcon"></use></svg>
-                </button>
-              </div>
-            </label>
-            <button type="submit" class="login-card__submit">Se connecter</button>
-          </form>
-          <p id="loginError" class="login-card__error" hidden=""></p>
-          <p class="login-card__switch">Pas encore de compte ? <button type="button" id="showRegisterBtn" class="login-card__link">Cr├®er un compte</button></p>
-        </div>
-
-        <div id="registerPanel" hidden="">
-          <h1>Cr├®er un compte Doli</h1>
-          <form id="registerForm" class="auth-form">
-            <label class="task-form__field">Nom
-              <input type="text" id="registerName" required="">
-            </label>
-            <label class="task-form__field">Email
-              <input type="email" id="registerEmail" required="">
-            </label>
-            <label class="task-form__field">Mot de passe
-              <div class="password-field">
-                <input type="password" id="registerPassword" required="">
-                <button type="button" class="password-field__toggle" data-target="registerPassword" aria-label="Afficher le mot de passe">
-                  <svg width="16" height="16"><use href="#eyeIcon"></use></svg>
-                </button>
-              </div>
-            </label>
-            <label class="task-form__field">Confirmer le mot de passe
-              <div class="password-field">
-                <input type="password" id="registerConfirmPassword" required="">
-                <button type="button" class="password-field__toggle" data-target="registerConfirmPassword" aria-label="Afficher le mot de passe">
-                  <svg width="16" height="16"><use href="#eyeIcon"></use></svg>
-                </button>
-              </div>
-            </label>
-            <button type="submit" class="login-card__submit">Cr├®er mon compte</button>
-          </form>
-          <p id="registerError" class="login-card__error" hidden=""></p>
-          <p class="login-card__switch">D├®j├á un compte ? <button type="button" id="showLoginBtn" class="login-card__link">Se connecter</button></p>
-        </div>
-      </div>
-    </div>
-
-    <div class="app-shell" hidden="">
-      <aside class="sidebar-fixed">
-        <div class="sidebar-fixed__brand">Doli</div>
-
-        <nav class="sidebar-nav">
-          <button type="button" class="sidebar-nav__item is-active" data-view="dashboard">
-            <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="2.5" width="6.5" height="6.5" rx="1"></rect><rect x="11" y="2.5" width="6.5" height="6.5" rx="1"></rect><rect x="2.5" y="11" width="6.5" height="6.5" rx="1"></rect><rect x="11" y="11" width="6.5" height="6.5" rx="1"></rect></svg>
-            <span class="sidebar-nav__label">Dashboard</span>
-          </button>
-          <button type="button" class="sidebar-nav__item" data-view="tasks">
-            <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="4" cy="5" r="1.3"></circle><circle cx="4" cy="10" r="1.3"></circle><circle cx="4" cy="15" r="1.3"></circle><line x1="8" y1="5" x2="17" y2="5"></line><line x1="8" y1="10" x2="17" y2="10"></line><line x1="8" y1="15" x2="17" y2="15"></line></svg>
-            <span class="sidebar-nav__label">Mes t├óches</span>
-          </button>
-          <button type="button" class="sidebar-nav__item" data-view="reminders">
-            <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="11" r="6"></circle><line x1="10" y1="11" x2="10" y2="7.5"></line><line x1="10" y1="11" x2="12.5" y2="12.5"></line><line x1="4" y1="3" x2="6" y2="5"></line><line x1="16" y1="3" x2="14" y2="5"></line></svg>
-            <span class="sidebar-nav__label">Rappel</span>
-            <span id="reminderNavCount" class="sidebar-nav__badge" hidden=""></span>
-          </button>
-          <button type="button" class="sidebar-nav__item" data-view="retards">
-            <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="11" r="7"></circle><line x1="10" y1="7" x2="10" y2="11"></line><line x1="10" y1="11" x2="13" y2="12.5"></line><line x1="7" y1="2.5" x2="13" y2="2.5"></line></svg>
-            <span class="sidebar-nav__label">Retards</span>
-            <span id="retardsNavCount" class="sidebar-nav__badge" hidden=""></span>
-          </button>
-          <button type="button" class="sidebar-nav__item" data-view="progression">
-            <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="13" width="3" height="4" rx="0.5"></rect><rect x="8.5" y="9" width="3" height="8" rx="0.5"></rect><rect x="14" y="5" width="3" height="12" rx="0.5"></rect></svg>
-            <span class="sidebar-nav__label">Progression</span>
-          </button>
-          <button type="button" class="sidebar-nav__item" data-view="preuves">
-            <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 2.5h8v15l-4-2-4 2z"></path><path d="M8.5 9l1.2 1.2L12 7.4"></path></svg>
-            <span class="sidebar-nav__label">Preuves</span>
-          </button>
-        </nav>
-
-        <div class="sidebar-illustration" aria-hidden="true">
-          <svg viewBox="0 0 160 160" width="90" height="90" fill="none">
-            <rect x="30" y="20" width="100" height="130" rx="12" stroke="var(--border)" stroke-width="2" fill="var(--bg)"></rect>
-            <rect x="55" y="10" width="50" height="20" rx="6" stroke="var(--border)" stroke-width="2" fill="var(--bg)"></rect>
-
-            <circle cx="55" cy="55" r="8" fill="var(--accent)"></circle>
-            <polyline points="51,55 54,58 60,51" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"></polyline>
-            <line x1="72" y1="55" x2="108" y2="55" stroke="var(--border)" stroke-width="3" stroke-linecap="round"></line>
-
-            <circle cx="55" cy="85" r="8" fill="var(--accent)"></circle>
-            <polyline points="51,85 54,88 60,81" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"></polyline>
-            <line x1="72" y1="85" x2="108" y2="85" stroke="var(--border)" stroke-width="3" stroke-linecap="round"></line>
-
-            <circle cx="55" cy="115" r="8" stroke="var(--border)" stroke-width="2" fill="var(--bg)"></circle>
-            <line x1="72" y1="115" x2="100" y2="115" stroke="var(--border)" stroke-width="3" stroke-linecap="round"></line>
-          </svg>
-        </div>
-
-        <div class="sidebar-footer">
-          <div id="accountRow" class="account-row" hidden="">
-            <span id="accountAvatarFallback" class="account-row__avatar-fallback"></span>
-            <span class="account-row__info">
-              <span id="accountName" class="account-row__name"></span>
-              <span class="account-row__status"><span class="account-row__dot"></span>En ligne</span>
-            </span>
-            <button type="button" id="logoutBtn" class="account-row__logout" aria-label="Se d├®connecter" title="Se d├®connecter">
-              <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4H4v12h4"></path><path d="M13 14l4-4-4-4"></path><line x1="17" y1="10" x2="7" y2="10"></line></svg>
-            </button>
-          </div>
-          <button type="button" id="themeToggleBtn" class="theme-toggle-discreet" aria-label="Changer de th├¿me"></button>
-        </div>
-      </aside>
-      <div id="sidebarOverlay" class="sidebar-overlay" hidden=""></div>
-
-      <div class="app-main">
-        <header class="app-topbar">
-          <button type="button" id="sidebarMenuBtn" class="sidebar-menu-btn" aria-label="Ouvrir le menu">
-            <svg viewBox="0 0 20 20" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="3" y1="5.5" x2="17" y2="5.5"></line><line x1="3" y1="10" x2="17" y2="10"></line><line x1="3" y1="14.5" x2="17" y2="14.5"></line></svg>
-          </button>
-          <h2 id="viewTitle">Dashboard</h2>
-          <div class="bell">
-            <button type="button" id="bellBtn" class="bell__btn" aria-label="T├óches en retard">
-              <svg viewBox="0 0 20 20" width="16" height="16" fill="currentColor"><path d="M10 2a1 1 0 011 1v.6a5.5 5.5 0 014.5 5.4v2.6l1.2 2.1a.8.8 0 01-.7 1.3H4a.8.8 0 01-.7-1.3L4.5 11.6V9a5.5 5.5 0 014.5-5.4V3a1 1 0 011-1zM8.3 17a1.8 1.8 0 003.4 0h-3.4z"></path></svg>
-              <span id="bellCount" class="bell__count" hidden=""></span>
-            </button>
-            <div id="bellMenu" class="bell__menu" hidden=""></div>
-          </div>
-          <div id="bellOverlay" class="bell-overlay" hidden=""></div>
-        </header>
-
-        <section id="viewDashboard" class="view">
-          <div class="dash">
-            <div class="dash__header">
-              <div>
-                <h2 class="dash__greeting" id="dashGreeting">Bonjour !</h2>
-                <p class="dash__subtitle">Voici un aper├ºu clair de votre activit├® aujourd'hui.</p>
-              </div>
-              <div class="dash__header-side">
-                <span class="dash__date">
-                  <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="14" height="13" rx="2"></rect><line x1="3" y1="8" x2="17" y2="8"></line><line x1="7" y1="2" x2="7" y2="5"></line><line x1="13" y1="2" x2="13" y2="5"></line></svg>
-                  <span id="dashDate"></span>
-                </span>
-                <button type="button" id="addTaskBtn" class="mtasks__add-btn">
-                  <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="10" y1="4" x2="10" y2="16"></line><line x1="4" y1="10" x2="16" y2="10"></line></svg>
-                  Nouvelle t├óche
-                </button>
-              </div>
-            </div>
-
-            <div class="dash__kpis">
-              <div class="dash-card dash-kpi dash-kpi--progress">
-                <h4 class="dash-card__kicker">Progression globale</h4>
-                <div class="dash-kpi__ring stats__circle" id="dashProgressRing" style="--percent:0"><span id="dashProgressPct">0 %</span></div>
-                <span class="dash-kpi__delta" id="dashProgressDelta">ÔÇö % par rapport ├á hier</span>
-              </div>
-              <div class="dash-card dash-kpi dash-kpi--late">
-                <h4 class="dash-card__kicker">T├óches en retard</h4>
-                <span class="dash-kpi__sub dash-kpi__sub--alert" id="dashLateSub">├Ç rattraper au plus vite</span>
-                <div class="dash-bignum dash-bignum--late" id="dashLateCount">0</div>
-                <button type="button" id="dashViewLate" class="dash-link">Voir les t├óches ÔåÆ</button>
-              </div>
-              <div class="dash-card dash-kpi dash-kpi--done">
-                <h4 class="dash-card__kicker">T├óches termin├®es</h4>
-                <span class="dash-kpi__sub">Cette semaine</span>
-                <div class="dash-bignum" id="dashDoneWeek">0</div>
-                <button type="button" id="dashViewDone" class="dash-link">Voir les t├óches ÔåÆ</button>
-              </div>
-              <div class="dash-card dash-kpi">
-                <h4 class="dash-card__kicker">Performance</h4>
-                <div class="dash-kpi__ring stats__circle" id="dashPerformance" style="--percent:0"><span id="dashPerformancePct">0 %</span></div>
-                <span class="dash-kpi__delta">Score actuel</span>
-                <span class="dash-kpi__sub">Votre score d├®pend de votre progression et de votre performance</span>
-              </div>
-            </div>
-
-            <div class="dash__midrow">
-            <div class="dash__kpis dash__kpis--secondary">
-              <div class="dash-card dash-kpi dash-kpi--dist">
-                <h4 class="dash-card__kicker">R├®partition des t├óches</h4>
-                <div class="dash-kpi__dist">
-                  <div class="dash-donut" id="dashDonut"><span class="dash-donut__hole"><strong id="dashDonutTotal">0</strong><em>t├óches</em></span></div>
-                  <ul class="dash-legend" id="dashLegend"></ul>
-                </div>
-                <span class="dash-kpi__delta" id="dashDistTotal"></span>
-              </div>
-              <div class="dash-card dash-kpi dash-kpi--perf">
-                <h4 class="dash-card__kicker">Performance : r├®sum├®</h4>
-                <p class="dash-perf-intro">Vue d'ensemble sur la qualit├® d'ex├®cution de vos t├óches : respect des d├®lais et gravit├® des retards.</p>
-                <div class="dash-kpi__perf">
-                  <ul id="dashPerfList" class="dash-perf-list"></ul>
-                  <div id="dashPerfBars" class="dash-perf-bars"></div>
-                </div>
-                <span class="dash-kpi__delta">Score actuel</span>
-              </div>
-              <div class="dash-card dash-kpi dash-kpi--learn">
-                <h4 class="dash-card__title">Comprendre mes statistiques</h4>
-                <ul class="dash-learn-list">
-                  <li>Retards et gravit├®</li>
-                  <li>Priorit├®s et influence</li>
-                </ul>
-                <button type="button" id="dashLearnStats" class="dash-link">Expliquer mes statistiques ÔåÆ</button>
-              </div>
-            </div>
-              <div class="dash-card dash-tasks">
-                <div class="dash-card__head">
-                  <h4 class="dash-card__title">Mes t├óches</h4>
-                  <div id="dashTabs" class="mtasks__tabs"></div>
-                </div>
-                <div class="dash-card__filters">
-                  <div class="tasks-search">
-                    <svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="9" cy="9" r="6"></circle><line x1="13.5" y1="13.5" x2="18" y2="18"></line></svg>
-                    <input type="search" id="dashSearchInput" placeholder="Rechercher une t├óche..." aria-label="Rechercher une t├óche">
-                  </div>
-                  <div class="sort-picker">
-                    <button type="button" id="dashSortBtn" class="mtasks__apply" aria-haspopup="true" aria-expanded="false">Filtrer</button>
-                    <div id="dashSortMenu" class="sort-picker__menu" hidden="">
-                      <button type="button" class="sort-picker__option is-current" data-sort="default">Par d├®faut</button>
-                      <button type="button" class="sort-picker__option" data-sort="urgency">Urgence</button>
-                      <button type="button" class="sort-picker__option" data-sort="priority">Priorit├®</button>
-                      <button type="button" class="sort-picker__option" data-sort="due">├ëch├®ance</button>
-                      <button type="button" class="sort-picker__option" data-sort="title">Titre (A ÔåÆ Z)</button>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="dash-task-sections">
-                  <div class="dash-task-section">
-                    <div id="dashAllTasks" class="dash-task-list"></div>
-                  </div>
-                </div>
-
-                <div class="dash-card__links">
-                  <button type="button" id="dashViewAll" class="dash-link">Voir toutes les t├óches ÔåÆ</button>
-                  <button type="button" id="dashViewDetails" class="dash-link">Voir tous les d├®tails ÔåÆ</button>
-                </div>
-              </div>
-
-              <div class="dash__col-side">
-                <div class="dash-card">
-                  <h4 class="dash-card__title">Prochaines ├®ch├®ances</h4>
-                  <div id="dashUpcoming" class="dash-minilist"></div>
-                  <button type="button" id="dashViewUpcoming" class="dash-link">Voir toutes les ├®ch├®ances ÔåÆ</button>
-                </div>
-                <div class="dash-card">
-                  <h4 class="dash-card__title">Activit├® r├®cente</h4>
-                  <div id="dashActivity" class="dash-activity"></div>
-                  <button type="button" id="dashViewActivity" class="dash-link">Voir toute l'activit├® ÔåÆ</button>
-                </div>
-              </div>
-            </div>
-
-            <p class="dash-quote">┬½ La discipline aujourd'hui, c'est la libert├® demain. Restez concentr├® et continuez ├á avancer ! ┬╗</p>
-
-            <button type="button" id="addTaskBtn2" hidden=""></button>
-            <div class="dashboard-legacy" hidden="">
-              <div id="dashboardCounts"></div>
-              <div id="dashboardDistribution"></div>
-              <div id="dashboardPercent"></div>
-              <div id="dashboardTrend"></div>
-              <div id="dashboardMotivation"></div>
-              <div id="dashboardStreak"></div>
-              <div id="dashboardWeekSummary"></div>
-              <div id="dashboardComparison"></div>
-              <div id="dashboardWeeklyGoal"></div>
-              <div id="dashboardBestDay"></div>
-              <div id="dashboardAvgDelay"></div>
-              <div id="dashboardProjection"></div>
-              <div id="dashboardAchievements"></div>
-              <div id="dashboardHeatmap"></div>
-              <ul id="recentTasksList"></ul>
-              <div id="tasksAddRow" hidden=""></div>
-            </div>
-                  </div></section>
-
-        <section id="viewTasks" class="view" hidden="">
-          <div class="mtasks2">
-            <div class="mtasks2__main">
-              <div class="mtasks2__header">
-                <div class="mtasks2__header-text">
-                  <h2>Mes t├óches</h2>
-                  <p>G├®rez, suivez et accomplissez toutes vos t├óches au quotidien.</p>
-                </div>
-                <div class="mtasks2__header-side">
-                  <button type="button" id="tasksBellBtn" class="mtasks2__bell" aria-label="Notifications">
-                    <svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2.5a5.5 5.5 0 015.5 5.5v2.4l1.3 2.3a.7.7 0 01-.6 1H3.8a.7.7 0 01-.6-1L4.5 10.4V8A5.5 5.5 0 0110 2.5z"></path><path d="M8.3 16.5a1.8 1.8 0 003.4 0"></path></svg>
-                    <span id="tasksBellCount" class="mtasks2__bell-count" hidden=""></span>
-                  </button>
-                  <span class="mtasks2__date">
-                    <svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="3" y="4" width="14" height="13" rx="2"></rect><line x1="3" y1="8" x2="17" y2="8"></line><line x1="7" y1="2" x2="7" y2="5"></line><line x1="13" y1="2" x2="13" y2="5"></line></svg>
-                    <span><strong id="tasksTodayDate">ÔÇö</strong><em id="tasksTodayWeekday"></em></span>
-                  </span>
-                  <button type="button" id="addTaskBtn3" class="mtasks__add-btn mtasks2__add-btn">
-                    <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="10" y1="4" x2="10" y2="16"></line><line x1="4" y1="10" x2="16" y2="10"></line></svg>
-                    Nouvelle t├óche
-                  </button>
-                </div>
-              </div>
-
-              <div id="tasksCounts" class="mtasks2__counts"></div>
-
-              <div class="mtasks2__toolbar">
-                <div class="mtasks2__toolbar-right">
-                  <div class="tasks-search mtasks2__search">
-                    <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="9" cy="9" r="6"></circle><line x1="13.5" y1="13.5" x2="18" y2="18"></line></svg>
-                    <input type="search" id="taskSearchInput" placeholder="Rechercher une t├óche..." aria-label="Rechercher une t├óche">
-                  </div>
-                  <!-- Bouton ┬½ Trier ┬╗ : menu de tri (ordre d'affichage),
-                       m├¬me structure que le dashboard pour l'ancrage du
-                       menu et la fermeture au clic ext├®rieur. -->
-                  <div class="sort-picker">
-                    <button type="button" id="taskSortBtn" class="mtasks2__filter-btn" aria-haspopup="true" aria-expanded="false">
-                      <svg viewBox="0 0 20 20" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="3" y1="5" x2="17" y2="5"></line><line x1="6" y1="10" x2="14" y2="10"></line><line x1="9" y1="15" x2="11" y2="15"></line></svg>
-                      Trier
-                    </button>
-                    <div id="taskSortMenu" class="sort-picker__menu" hidden="">
-                      <button type="button" class="sort-picker__option is-current" data-sort="default">Par d├®faut</button>
-                      <button type="button" class="sort-picker__option" data-sort="urgency">Urgence</button>
-                      <button type="button" class="sort-picker__option" data-sort="priority">Priorit├®</button>
-                      <button type="button" class="sort-picker__option" data-sort="title">Titre (A ÔåÆ Z)</button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="mtasks2__tablewrap">
-                <div class="mtasks2__colhead" aria-hidden="true">
-                  <span>T├óche</span><span>Priorit├®</span><span>P├®riode pr├®vue</span><span>Avancement</span><span>Situation</span><span>Actions</span>
-                </div>
-                <div id="taskList" class="mtasks2__list" aria-live="polite"></div>
-              </div>
-
-              <div class="mtasks2__pagination">
-                <span id="tasksPageInfo" class="mtasks2__page-info"></span>
-                <div class="mtasks2__page-btns">
-                  <button type="button" id="tasksPrevBtn" class="mtasks2__page-btn">ÔÇ╣ Pr├®c├®dent</button>
-                  <span id="tasksPageNums" class="mtasks2__page-nums"></span>
-                  <button type="button" id="tasksNextBtn" class="mtasks2__page-btn">Suivant ÔÇ║</button>
-                </div>
-              </div>
-              <!-- Bouton d'ajout de la vue ┬½ Mes t├óches ┬╗ (version stable 01/09) :
-                   existe dans main.js via tasksAddRowEl ; gard├® invisible car
-                   l'ajout passe par le bouton d'en-t├¬te (#addTaskBtn3). -->
-              <div id="tasksAddRow" hidden=""><button type="button" id="addTaskBtn3b" hidden=""></button></div>
-            </div>
-
-            <aside class="mtasks2__side">
-              <div class="mtasks2__card">
-                <h3 class="mtasks2__card-title">R├®sum├® de la journ├®e</h3>
-                <div id="tasksSummary" class="mtasks2__summary"></div>
-              </div>
-              <div class="mtasks2__card">
-                <h3 class="mtasks2__card-title">Filtres rapides</h3>
-                <label class="mtasks2__field">Trier par
-                  <select id="taskQuickSort" class="mtasks2__select">
-                    <option value="default">Par d├®faut</option>
-                    <option value="urgency">Urgence</option>
-                    <option value="priority">Priorit├®</option>
-                    <option value="title">Titre (A ÔåÆ Z)</option>
-                  </select>
-                </label>
-                <label class="mtasks2__field">Priorit├®
-                  <select id="taskQuickPriority" class="mtasks2__select">
-                    <option value="all">Toutes</option>
-                    <option value="high">Urgente / Haute</option>
-                    <option value="medium">Normale</option>
-                    <option value="low">Basse</option>
-                  </select>
-                </label>
-                <label class="mtasks2__field">Statut
-                  <select id="taskQuickStatus" class="mtasks2__select">
-                    <option value="all">Tous les statuts</option>
-                    <option value="doing">En cours</option>
-                    <option value="done">Termin├®es</option>
-                    <option value="delayed">En retard</option>
-                    <option value="todo">Non ex├®cut├®es</option>
-                  </select>
-                </label>
-                <label class="mtasks2__field">P├®riode
-                  <select id="taskPeriodFilter" class="mtasks2__select" aria-label="P├®riode">
-                    <option value="week">Cette semaine</option>
-                    <option value="all">Tout le temps</option>
-                    <option value="today">Aujourd'hui</option>
-                    <option value="month">Ce mois</option>
-                  </select>
-                </label>
-                <button type="button" id="taskResetFiltersBtn" class="mtasks2__reset">
-                  <svg viewBox="0 0 20 20" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10a6 6 0 0110.5-4M16 10a6 6 0 01-10.5 4"></path><polyline points="14.5,2.5 14.5,6 11,6"></polyline><polyline points="5.5,17.5 5.5,14 9,14"></polyline></svg>
-                  R├®initialiser les filtres
-                </button>
-              </div>
-              <div class="mtasks2__card mtasks2__card--info">
-                <h3 class="mtasks2__card-title mtasks2__card-title--blue">
-                  <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2l7 3v5c0 4.5-3 7.5-7 8.5-4-1-7-4-7-8.5V5z"></path><polyline points="7,10 9,12 13,8"></polyline></svg>
-                  Confidentialit├® garantie
-                </h3>
-                <p>Seul vous pouvez voir vos t├óches, vos preuves et vos donn├®es.</p>
-                <button type="button" class="dash-link" id="tasksPrivacyBtn">En savoir plus sur la confidentialit├®</button>
-              </div>
-            </aside>
-          </div>
-        </section>
-
-        <section id="viewReminders" class="view" hidden="">
-          <div id="reminderList" class="task-list task-list--list" aria-live="polite"></div>
-        </section>
-
-        <section id="viewProgression" class="view" hidden="">
-          <div class="progression-container">
-            <div class="progression-header">
-              <div class="progression-period-selector">
-                <button type="button" id="progressionFilterBtn" class="progression-period-btn">
-                  P├®riode d'analyse
-                  <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 10 13 14 9"></polyline></svg>
-                </button>
-                <div id="progressionFilterMenu" class="progression-period-menu" hidden="">
-                  <button type="button" class="period-menu-item is-active" data-period="1">Aujourd'hui</button>
-                  <button type="button" class="period-menu-item" data-period="7">1 semaine</button>
-                  <button type="button" class="period-menu-item" data-period="14">2 semaines</button>
-                  <button type="button" class="period-menu-item" data-period="30">1 mois</button>
-                  <button type="button" class="period-menu-item" data-period="90">3 mois</button>
-                  <button type="button" class="period-menu-item" data-period="180">6 mois</button>
-                  <button type="button" class="period-menu-item" data-period="365">1 an</button>
-                </div>
-              </div>
-              <div class="progression-title-row">
-                <h2 hidden="">Progression</h2>
-                <p class="progression-subtitle" hidden=""></p>
-              </div>
-            </div>
-            
-            <div class="progression-stats">
-              <div class="progression-stat-card">
-                <div class="stat-icon stat-icon--list" aria-hidden="true"><svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="12" height="14" rx="2"></rect><line x1="7" y1="7" x2="13" y2="7"></line><line x1="7" y1="10.2" x2="13" y2="10.2"></line><line x1="7" y1="13.5" x2="11" y2="13.5"></line></svg></div>
-                <div class="stat-content">
-                  <div id="progressionStatTotal" class="stat-number">0</div>
-                  <div class="stat-label">T├óches pr├®vues</div>
-                  <div id="progressionStatTotalPercent" class="stat-percent">100%</div>
-                </div>
-              </div>
-              
-              <div class="progression-stat-card">
-                <div class="stat-icon stat-icon--done" aria-hidden="true"><svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7.5"></circle><polyline points="7,10.2 9.3,12.5 13.4,7.6"></polyline></svg></div>
-                <div class="stat-content">
-                  <div id="progressionStatDone" class="stat-number">0</div>
-                  <div class="stat-label">T├óches ex├®cut├®es</div>
-                  <div id="progressionStatDonePercent" class="stat-percent">0%</div>
-                </div>
-              </div>
-              
-              <div class="progression-stat-card">
-                <div class="stat-icon stat-icon--doing" aria-hidden="true"><svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7.5"></circle><polygon points="8.2,7 13.6,10 8.2,13" fill="currentColor" stroke="none"></polygon></svg></div>
-                <div class="stat-content">
-                  <div id="progressionStatDoing" class="stat-number">0</div>
-                  <div class="stat-label">En cours</div>
-                  <div id="progressionStatDoingPercent" class="stat-percent">0%</div>
-                </div>
-              </div>
-              
-              <div class="progression-stat-card">
-                <div class="stat-icon stat-icon--delay" aria-hidden="true"><svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7.5"></circle><polyline points="10,5.6 10,10 12.9,11.7"></polyline></svg></div>
-                <div class="stat-content">
-                  <div id="progressionStatDelay" class="stat-number">0</div>
-                  <div class="stat-label">En retard</div>
-                  <div id="progressionStatDelayPercent" class="stat-percent">0%</div>
-                </div>
-              </div>
-              
-              <div class="progression-stat-card">
-                <div class="stat-icon stat-icon--notdone" aria-hidden="true"><svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="10" cy="10" r="7.5"></circle><line x1="7.6" y1="10" x2="7.6" y2="10"></line><line x1="12.4" y1="10" x2="12.4" y2="10"></line></svg></div>
-                <div class="stat-content">
-                  <div id="progressionStatNotDone" class="stat-number">0</div>
-                  <div class="stat-label">Non ex├®cut├®e</div>
-                  <div id="progressionStatNotDonePercent" class="stat-percent">0%</div>
-                </div>
-              </div>
-            </div>
-            
-            <div class="progression-charts">
-              <div class="progression-chart">
-                <h3 id="progressionDistributionTitle">R├®partition des t├óches</h3>
-                <canvas id="progressionDayDistributionChart" width="400" height="300"></canvas>
-              </div>
-              
-              <div class="progression-chart">
-                <h3 id="progressionComparisonTitle">Comparaison sur la semaine</h3>
-                <canvas id="progressionWeeklyComparisonChart" width="400" height="300"></canvas>
-              </div>
-            </div>
-            
-            <div class="progression-bottom">
-              <div class="progression-chart progression-chart--trend">
-                <h3 id="progressionTrendTitle">├ëvolution de la progression</h3>
-                <canvas id="progressionTrendChart" width="800" height="250"></canvas>
-              </div>
-              
-              <div class="progression-summary">
-                <div class="summary-card">
-                  <div class="summary-icon-wrapper">
-                    <div class="summary-icon">Ô£ô</div>
-                  </div>
-                  <div class="summary-content">
-                    <h4 id="progressionSummaryTitle">Bilan du jour</h4>
-                    <div id="progressionTodayPercent" class="summary-big">0%</div>
-                    <div id="progressionTodayLabel" class="summary-label">de t├óches ex├®cut├®es</div>
-                    <div id="progressionProgressBar" class="progress-bar"></div>
-                    <div id="progressionMessage" class="summary-message"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section id="viewRetards" class="view" hidden="">
-          <div class="retards-container">
-            <div class="retards-main">
-              <div class="retards-pagehead">
-                <div class="retards-pagehead__icon" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><polyline points="12 7 12 12 15.5 14"></polyline></svg>
-                </div>
-                <div>
-                  <h2 class="retards-pagehead__title">Retards</h2>
-                  <p id="retardsSubtitle" class="retards-pagehead__sub">Suivez les t├óches qui accusent un retard et analysez leur impact sur votre progression.</p>
-                </div>
-              </div>
-
-              <div class="retards-kpis">
-                <button type="button" class="retards-kpi retards-kpi--rose" data-goto="table">
-                  <span class="retards-kpi__top"><span class="retards-kpi__label">T├óches en retard</span><span class="retards-kpi__icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"></circle><polyline points="12 7.5 12 12 15 13.8"></polyline></svg></span></span>
-                  <span id="retardsKpiCount" class="retards-kpi__value">0</span>
-                  <span id="retardsKpiCountSub" class="retards-kpi__sub">sur 0 t├óches au total</span>
-                </button>
-                <button type="button" class="retards-kpi retards-kpi--blue" data-goto="table">
-                  <span class="retards-kpi__top"><span class="retards-kpi__label">Retard total cumul├®</span><span class="retards-kpi__icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13.5" r="7.5"></circle><path d="M12 10v3.5l2.5 2.5"></path><path d="M9.5 2.5h5"></path></svg></span></span>
-                  <span id="retardsKpiTotal" class="retards-kpi__value">0 h 00</span>
-                  <span id="retardsKpiTotalSub" class="retards-kpi__sub">sur 0 h pr├®vues</span>
-                </button>
-                <button type="button" class="retards-kpi retards-kpi--amber" data-goto="charts">
-                  <span class="retards-kpi__top"><span class="retards-kpi__label">Taux de retard</span><span class="retards-kpi__icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"></circle><path d="M9.3 9.2a2.7 2.7 0 0 1 5.2.8c0 1.8-2.6 2.1-2.6 3.5"></path><circle cx="11.9" cy="17" r="0.4" fill="currentColor"></circle></svg></span></span>
-                  <span id="retardsKpiRate" class="retards-kpi__value">0 %</span>
-                  <span class="retards-kpi__sub">de la dur├®e totale pr├®vue</span>
-                </button>
-                <button type="button" class="retards-kpi retards-kpi--green" data-goto="table">
-                  <span class="retards-kpi__top"><span class="retards-kpi__label">Plus longue dur├®e de retard</span><span class="retards-kpi__icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"></rect><line x1="3.5" y1="10" x2="20.5" y2="10"></line><line x1="8" y1="3" x2="8" y2="7"></line><line x1="16" y1="3" x2="16" y2="7"></line></svg></span></span>
-                  <span id="retardsKpiWorst" class="retards-kpi__value">ÔÇö</span>
-                  <span id="retardsKpiWorstSub" class="retards-kpi__sub">Aucune t├óche en retard</span>
-                </button>
-              </div>
-
-            <div id="retardsChartsAnchor" class="retards-charts2">
-              <div class="retards-card retards-evol">
-                <div class="retards-card__head">
-                  <h3 class="retards-card__title"><span class="retards-card__icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 5.6 13.5 14.1 8.5 9.1 2 15.6"></path><path d="M15.8 5.6H22v6.2"></path><path d="M2.4 19.6h19.2"></path></svg></span>├ëvolution des retards</h3>
-                  <div class="retards-legend"><span class="retards-dot retards-dot--red"></span>Retard<span class="retards-dot retards-dot--grey"></span>├Ç l'heure</div>
-                </div>
-                <canvas id="retardsBarChart" width="640" height="300"></canvas>
-              </div>
-
-              <div class="retards-card retards-donut-card">
-                <div class="retards-card__head"><h3>R├®partition des retards</h3></div>
-                <div class="retards-donut-row">
-                  <canvas id="retardsDonutChart" width="300" height="300"></canvas>
-                  <div id="retardsDonutLegend" class="retards-donut-legend"></div>
-                </div>
-              </div>
-            </div>
-
-            <div id="retardsTableAnchor" class="retards-card retards-table-card2">
-              <div class="retards-card__head"><h3>Liste des t├óches en retard</h3></div>
-              <div class="retards-table-wrap">
-                <table class="retards-table2">
-                  <thead>
-                    <tr>
-                      <th class="c-num">N┬░</th>
-                      <th>Titre de la t├óche</th>
-                      <th>Priorit├®</th>
-                      <th>Date pr├®vue</th>
-                      <th>Date r├®elle de d├®but</th>
-                      <th>Retard</th>
-                      <th>Statut</th>
-                      <th class="c-act">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody id="retardsTableBody"></tbody>
-                </table>
-              </div>
-            </div>
-            </div>
-
-            <aside class="retards-aside">
-              <div class="aside-card aside-card--info">
-                <h4>├Ç propos du retard</h4>
-                <p>Retard calcul├® entre l'heure pr├®vue et l'heure r├®elle.</p>
-                <p class="aside-strong">Pris en compte dans :</p>
-                <ul class="aside-checks">
-                  <li>Progression globale</li>
-                  <li>Score de performance</li>
-                  <li>Rythme personnel</li>
-                </ul>
-              </div>
-
-              <div class="aside-card aside-card--rappel">
-                <h4>Rappel important</h4>
-                <p>Passer en ┬½ En cours ┬╗ ou ┬½ Ex├®cut├®e ┬╗ n├®cessite une preuve.</p>
-                <button type="button" id="retardsViewProofsBtn" class="aside-btn aside-btn--violet">
-                  Voir mes preuves <span aria-hidden="true">ÔÇ║</span>
-                </button>
-              </div>
-
-              <div class="aside-card aside-card--motivation">
-                <h4>Un petit effort aujourd'huiÔÇª</h4>
-                <p>ÔÇª fait une grande diff├®rence demain !</p>
-              </div>
-            </aside>
-          </div>
-        </section>
-
-        <section id="viewPreuves" class="view" hidden="">
-          <div id="preuvesList" class="preuves-container"></div>
-        </section>
-
-      </div>
-    </div>
-
-    <div id="taskModalOverlay" class="modal-overlay" hidden="">
-      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-        <h3 id="modalTitle">Nouvelle t├óche</h3>
-        <form id="taskForm">
-          <input type="hidden" id="taskId">
-          <label class="task-form__field">Titre
-            <input type="text" id="taskTitle" required="" maxlength="80">
-          </label>
-          <label class="task-form__field">Description
-            <input type="text" id="taskDesc" maxlength="240">
-          </label>
-          <label class="task-form__field">D├®but
-            <input type="datetime-local" id="taskStart">
-          </label>
-          <label class="task-form__field">├ëch├®ance
-            <input type="datetime-local" id="taskDue">
-          </label>
-          <label class="task-form__field">Priorit├®
-            <select id="taskPriority" data-doli-select="on" class="doli-select__native" aria-hidden="true" tabindex="-1">
-              <option value="low">Basse</option>
-              <option value="medium" selected="">Moyenne</option>
-              <option value="high">Haute</option>
-              <option value="urgent">Urgente</option>
-            </select><div class="doli-select" data-disabled="false"><button type="button" class="doli-select__control" role="combobox" aria-haspopup="listbox" aria-expanded="false" aria-label="Priorit├®" aria-controls="doli-list-taskPriority"><span class="doli-select__value">Moyenne</span><span class="doli-select__chev" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5.5 9l6.5 6.5L18.5 9"></path></svg></span></button></div>
-          </label>
-          <div class="modal__actions">
-            <button type="button" id="taskCancelBtn">Annuler</button>
-            <button type="button" id="taskEditBtn" hidden="">Modifier</button>
-            <button type="submit" id="taskSubmitBtn">Ajouter</button>
-          </div>
-        </form>
-      </div>
-    </div>
-
-    <div id="reminderDeleteOverlay" class="modal-overlay" hidden="">
-      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="reminderDeleteTitle">
-        <h3 id="reminderDeleteTitle">Que faire de ce rappel ?</h3>
-        <p id="reminderDeleteText" class="modal__text"></p>
-        <div class="modal__actions modal__actions--stack">
-          <button type="button" id="reminderDeleteFullBtn" class="modal__action--danger">Supprimer d├®finitivement la t├óche</button>
-          <button type="button" id="reminderDeleteDismissBtn" class="modal__action--neutral">Retirer seulement du Rappel</button>
-          <button type="button" id="reminderDeleteCancelBtn">Annuler</button>
-        </div>
-      </div>
-    </div>
-
-    <div id="proofAddOverlay" class="modal-overlay" hidden="">
-      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="proofAddTitle">
-        <h3 id="proofAddTitle">Ajouter une preuve</h3>
-        <p id="proofAddText" class="modal__text"></p>
-        <div class="modal__actions modal__actions--stack">
-          <button type="button" id="proofAddFileBtn" class="modal__action--neutral">Importer un fichier ou une photo</button>
-          <button type="button" id="proofAddPhotoBtn">Prendre une photo</button>
-          <button type="button" id="proofAddSimpleBtn">Preuve simple (sans fichier)</button>
-          <button type="button" id="proofAddCancelBtn">Annuler</button>
-        </div>
-      </div>
-    </div>
-
-    <div id="settingsEditOverlay" class="modal-overlay" hidden="">
-      <div class="modal modal--compact" role="dialog" aria-modal="true" aria-labelledby="settingsEditTitle">
-        <h3 id="settingsEditTitle">Objectif hebdomadaire</h3>
-        <form id="settingsEditForm">
-          <label class="task-form__field" id="settingsEditField1Label">Nombre de t├óches par semaine
-            <input type="number" id="settingsEditField1" min="1" required="">
-          </label>
-          <label class="task-form__field" id="settingsEditField2Label" hidden="">Deuxi├¿me palier
-            <input type="number" id="settingsEditField2" min="1">
-          </label>
-          <div class="modal__actions">
-            <button type="button" id="settingsEditCancelBtn">Annuler</button>
-            <button type="submit" id="settingsEditSubmitBtn" class="modal__action--primary">Enregistrer</button>
-          </div>
-        </form>
-      </div>
-    </div>
-
-    <script type="module" src="/src/main.js"></script>
-  
-
-<ul class="doli-select__list" id="doli-list-taskPriority" role="listbox" hidden=""><li class="doli-select__opt" id="doli-list-taskPriority-0" role="option" data-value="low" data-selected="false" aria-selected="false"><span class="doli-select__opt-label">Basse</span><span class="doli-select__tick" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"></path></svg></span></li><li class="doli-select__opt" id="doli-list-taskPriority-1" role="option" data-value="medium" data-selected="true" aria-selected="true"><span class="doli-select__opt-label">Moyenne</span><span class="doli-select__tick" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"></path></svg></span></li><li class="doli-select__opt" id="doli-list-taskPriority-2" role="option" data-value="high" data-selected="false" aria-selected="false"><span class="doli-select__opt-label">Haute</span><span class="doli-select__tick" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"></path></svg></span></li><li class="doli-select__opt" id="doli-list-taskPriority-3" role="option" data-value="urgent" data-selected="false" aria-selected="false"><span class="doli-select__opt-label">Urgente</span><span class="doli-select__tick" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"></path></svg></span></li></ul></body></html>

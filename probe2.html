@@ -1,8 +1,0 @@
-out.textContent = logs.join('\n')
-      // Canal fiable : on renvoie les mesures à un petit serveur de log local.
-      try {
-        await fetch('http://127.0.0.1:5198/' + encodeURIComponent(logs.join(' ~ ')))
-      } catch (e) {
-        logs.push('envoi log !! ' + e.message)
-      }
-    </script>
