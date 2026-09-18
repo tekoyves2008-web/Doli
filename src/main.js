@@ -899,6 +899,7 @@ async function submitProofFile(id, filePayload) {
   const task = await findTask(id)
   if (!task) return
   await provideProof(id, filePayload)
+  await autoCompleteIfDone(id)
   render.__proofsSynced = false
   await syncUserProofs()
   render()
@@ -913,7 +914,16 @@ async function submitSimpleProof(id) {
   const task = await findTask(id)
   if (!task) return
   await provideProof(id)
+  await autoCompleteIfDone(id)
   render()
+}
+
+// Complétion automatique : une tâche dont la progression individuelle atteint
+// 100 % (méthode Doli) est automatiquement marquée terminée.
+async function autoCompleteIfDone(id) {
+  const task = await findTask(id)
+  if (!task || task.status === STATUS.DONE) return
+  if (computeTaskProgress(task) === 100) await setStatus(id, STATUS.DONE)
 }
 
 // Ponts utilisés par le mini-menu (dashboard) et la petite fenêtre
@@ -1102,6 +1112,7 @@ const taskActions = {
     const task = await findTask(id)
     if (!task) return
     await provideProof(id)
+    await autoCompleteIfDone(id)
     render()
   },
   async onDelete(id) {

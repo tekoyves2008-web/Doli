@@ -6682,3 +6682,10 @@ input:focus-visible,
 [data-theme='dark'] .kick-ico{filter:brightness(1.1)}
 
 
+.mtasks2__unmeasured {
+  margin: 4px 0 0;
+  font-size: 11px;
+  font-style: italic;
+  color: var(--text-muted);
+  text-align: left;
+}

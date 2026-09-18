@@ -75,13 +75,47 @@ function countByCategory(tasks) {
   return { done, doing, todo, delayed }
 }
 
-// Moyenne des progressions individuelles calculables (100 % pour une tâche
-// terminée, 0 % pour une tâche non exécutée, taux pour une tâche en cours).
+// Poids des tâches selon la priorité (formule de progression globale) :
+// urgente / haute = 1,5 ; normale = 1 ; basse = 0,5.
+// Toute autre valeur (ou absence) revient au poids « normale » = 1.
+export const PRIORITY_WEIGHTS = { urgent: 1.5, high: 1.5, medium: 1, low: 0.5 }
+
+export function taskWeight(task) {
+  const p = String((task && task.priority) || 'medium').trim().toLowerCase()
+  return PRIORITY_WEIGHTS[p] !== undefined ? PRIORITY_WEIGHTS[p] : 1
+}
+
+// Progression globale pondérée : PG = Σ(Pi × Wi) / Σ(Wi)
+//   Pi = progression individuelle de la tâche i (computeTaskProgress)
+//   Wi = poids de la tâche i selon sa priorité (taskWeight)
+// Les tâches à progression incalculable (null : en cours sans preuve) sont
+// exclues du numérateur ET du dénominateur : elles ne sont ni comptées à 0 %
+// (pénalité injuste) ni comptées à 100 %. Une tâche terminée compte toujours
+// 100 % (règle : progression à 100 % = tâche terminée).
+export function computeGlobalProgress(tasks) {
+  let sumProgressWeight = 0
+  let sumWeight = 0
+  for (const task of tasks) {
+    const p = computeTaskProgress(task)
+    if (p === null) continue
+    const w = taskWeight(task)
+    sumProgressWeight += p * w
+    sumWeight += w
+  }
+  return sumWeight > 0 ? Math.round(sumProgressWeight / sumWeight) : 0
+}
+
+// Nombre de tâches exclues du calcul global (progression incalculable :
+// en cours sans preuve, sans début réel ou sans échéance). Affiché en
+// complément dans le résumé pour rendre l'exclusion transparente.
+export function countUnmeasuredTasks(tasks) {
+  return tasks.filter((t) => computeTaskProgress(t) === null).length
+}
+
+// Moyenne de la période : désormais pondérée par priorité (computeGlobalProgress),
+// alimentant tendance et bilan sans changer leurs appelants.
 function averageProgress(tasks) {
-  const progresses = tasks.map(computeTaskProgress).filter((p) => p !== null)
-  return progresses.length
-    ? Math.round(progresses.reduce((a, b) => a + b, 0) / progresses.length)
-    : 0
+  return computeGlobalProgress(tasks)
 }
 // --- Statistiques de progression sur une période ------------------------
 export function computeProgressionStats(tasks, days = 7) {

@@ -1,10 +1,10 @@
-﻿// ui.js
+// ui.js
 // Transforme les donnes (tches) en HTML affich, et capte les clics
 // de l'utilisateur pour les retransmettre au reste de l'application.
 // Ce module est le seul  toucher au DOM pour la liste de tches.
 
 import { STATUS } from './tasks.js'
-import { computeTaskProgress } from './progression.js'
+import { computeTaskProgress, computeGlobalProgress, countUnmeasuredTasks } from './progression.js'
 import { taskMotif } from './retards.js'
 
 const STATUS_LABEL = {
@@ -2086,14 +2086,9 @@ export function renderTasksSummary(el, tasks) {
   const todo = tasks.filter((t) => t.status === STATUS.TODO)
   const late = tasks.filter((t) => isOverdue(t))
 
-  const doingProgresses = doing.map(computeTaskProgress).filter((p) => p !== null)
-  const doingPct = doingProgresses.length
-    ? Math.round(doingProgresses.reduce((a, b) => a + b, 0) / doingProgresses.length)
-    : 0
-  const allProgresses = tasks.map(computeTaskProgress).filter((p) => p !== null)
-  const globalPct = allProgresses.length
-    ? Math.round(allProgresses.reduce((a, b) => a + b, 0) / allProgresses.length)
-    : 0
+  const doingPct = computeGlobalProgress(doing)
+  const globalPct = computeGlobalProgress(tasks)
+  const unmeasured = countUnmeasuredTasks(tasks)
 
   // Prochain démarrage à venir (le plus proche).
   const upcoming = tasks
@@ -2131,6 +2126,7 @@ export function renderTasksSummary(el, tasks) {
         <li><i style="background:var(--badge-todo-text)"></i>En retard<b>${late.length}</b></li>
         <li><i style="background:var(--text-muted)"></i>À venir<b>${todo.length}</b></li>
       </ul>
+      ${unmeasured > 0 ? `<p class="mtasks2__unmeasured">${unmeasured} tâche${unmeasured !== 1 ? "s" : ""} sans preuve (non comptée)</p>` : ""}
     </div>
     <div class="mtasks2__motivation">
       <span class="mtasks2__motivation-icon" aria-hidden="true">🏆</span>
