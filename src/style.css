@@ -5136,6 +5136,41 @@ input:focus-visible,
   .sidebar-menu-btn {
     display: flex;
   }
+
+  /* Bandeau réduit au strict minimum : le bouton ☰ seul.
+     POURQUOI : c'est le SEUL moyen d'ouvrir le tiroir, or il vit dans
+     .app-topbar, masqué par `display: none` depuis le 18/09/2026 (commit
+     dcc12c6). Un élément dont un ancêtre est `display: none` n'est ni
+     affiché NI cliquable : la navigation était donc IMPOSSIBLE sur
+     téléphone, alors que tout le reste du tiroir (CSS de ce bloc) était
+     prêt et correct.
+
+     Ni le titre de rubrique ni la cloche ne réapparaissent : ils restent
+     masqués, comme le voulait la demande d'origine.
+
+     `pointer-events: none` est INDISPENSABLE, pas décoratif : le bandeau
+     occupe toute la largeur en z-index 20, donc il passerait au-dessus du
+     tiroir (10) et du voile (9) ; sans cette ligne, le haut de la barre
+     latérale deviendrait incliquable dès qu'elle est ouverte. Seul le
+     bouton, en dessous, récupère les clics.
+
+     Les marges négatives annulent le padding de .app-main pour que le
+     bouton touche le bord, comme le faisait déjà la version bureau. */
+  .app-topbar {
+    display: flex;
+    margin: -16px -14px 16px;
+    padding: 8px 14px;
+    background: transparent;
+    pointer-events: none;
+  }
+  .app-topbar > * {
+    pointer-events: auto;
+  }
+  .app-topbar h2,
+  .app-topbar .bell {
+    display: none;
+  }
+
   /* Le tiroir reprend sa largeur et ses libellés complets (il n'est plus
      une barre à icônes en permanence à l'écran) : il se glisse depuis le
      bord gauche par-dessus le contenu au lieu de lui réserver une colonne. */
@@ -5144,6 +5179,17 @@ input:focus-visible,
     padding: 20px 14px;
     transform: translateX(-100%);
     transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+    /* Le tiroir fait 100vh de haut. Son contenu total (logo + 7 rubriques +
+       illustration + pied de page) dépasse cette hauteur sur un écran court
+       ou en paysage : sans ce défilement, le pied de page — donc les boutons
+       « Se déconnecter » et « Changer de thème » — était hors d'écran et donc
+       INATTEIGNABLE. */
+    overflow-y: auto;
+  }
+  /* Les rubriques ne doivent jamais se comprimer pour laisser la place au
+     pied de page : ce sont elles qui donnent accès à l'application. */
+  .sidebar-nav {
+    flex-shrink: 0;
   }
   .sidebar-fixed.is-open {
     transform: translateX(0);
@@ -5161,6 +5207,17 @@ input:focus-visible,
   .app-main {
     margin-left: 0;
     padding: 16px 14px 40px;
+  }
+}
+
+/* Écran bas (paysage de téléphone, petits appareils) : le tiroir n'a plus la
+   place de tout afficher confortablement. On retire l'illustration — un dessin
+   purement décoratif, marqué aria-hidden="true" dans le HTML (90px + 48px de
+   marges) — pour que les 7 rubriques ET le pied de page tiennent sans avoir à
+   défiler. Sans effet sur les autres tailles, où le défilement prend le relais. */
+@media (max-width: 600px) and (max-height: 620px) {
+  .sidebar-illustration {
+    display: none;
   }
 }
 
