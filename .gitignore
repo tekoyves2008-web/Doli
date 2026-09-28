@@ -33,6 +33,9 @@ dist-ssr
 __saves__/
 archives/
 backups_before_restore/
+# Sauvegarde figée de l'état précédant le travail responsive (28/09/2026).
+# Volontairement hors dépôt : c'est une copie de secours locale, pas du code.
+backups_avant_responsive_2026-09-28/
 
 # Fichiers de secrets. `.env` contient REGISTRATION_SECRET (la clé
 # d'invitation) : le publier reviendrait à ouvrir les inscriptions à tout le
