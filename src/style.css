@@ -644,6 +644,28 @@ input:focus-visible,
   padding: 24px 32px 48px;
 }
 
+/* Largeur de lecture maximale.
+   SANS elle, sur un grand écran (1920px et au-delà) les colonnes s'étirent sur
+   toute la largeur : les cartes KPI deviennent des boîtes de 500px avec un
+   titre minuscule au centre, et les lignes de texte deviennent pénibles à lire
+   (le regard parcourt des dizaines de caractères d'un coup). C'est ce qui donne
+   l'impression d'une application « étirée » plutôt que maîtrisée.
+
+   Le plafond recentre le contenu comme le ferait une page web classique.
+   Il est placé sur les VUES et non sur .app-main volontairement :
+   - la sidebar (fixed) et le bandeau .app-topbar (masqué à la demande) sont
+     ainsi laissés intacts, donc aucun de leurs calculs n'est perturbé ;
+   - sous 1472px de fenêtre, le plafond n'est jamais atteint : téléphones,
+     tablettes et portables moyens/grands sont rigoureusement inchangés.
+
+   1472px = 1440px de contenu + les 32px de marge interne de chaque côté.
+   Marge automatique : dès que la fenêtre dépasse le plafond, le contenu se
+   centre au lieu de rester collé à gauche. */
+.app-main > .view {
+  max-width: 1440px;
+  margin-inline: auto;
+}
+
 .view {
   position: relative;
   z-index: 1;
