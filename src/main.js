@@ -1728,7 +1728,55 @@ document.addEventListener('click', (event) => {
 })
 document.addEventListener('keydown', (event) => { if (event.key === 'Escape') closeReminderMenu() })
 document.addEventListener('scroll', () => closeReminderMenu(), true)
-window.addEventListener('resize', () => closeReminderMenu())
+
+// --- Redessin des graphiques au redimensionnement -------------------------
+// Les 6 canvas (pgDayDonut, pgTimeDonut, pgEvoChart, pgPerfDonut,
+// retardsBarChart, retardsDonutChart) sont dimensionnés au moment du RENDU
+// seulement : prepareCanvasForHiDpi() (modules/ui.js) et le tracé de la courbe
+// y lisent getBoundingClientRect(). Rien ne les redessinait ensuite — réduire
+// la fenêtre laissait donc les donuts et la courbe figés à la taille qu'ils
+// avaient au premier affichage (étirés ou rognés), alors que tout le texte
+// autour se réajustait. C'est le seul vrai bug de responsive restant.
+//
+// On rappelle render() plutôt que chaque fonction de dessin : celles-ci ont
+// besoin des données (tâches, statistiques) qu'il faudrait reconstruire ici.
+// render() va les chercher et refait les calculs : c'est exactement le chemin
+// déjà emprunté après chaque changement de donnée, donc le même code éprouvé.
+const CANVAS_IDS = [
+  'pgDayDonut', 'pgTimeDonut', 'pgEvoChart', 'pgPerfDonut',
+  'retardsBarChart', 'retardsDonutChart',
+]
+// En dessous de cet écart de largeur, rien ne change réellement à l'écran :
+// on évite de redessiner pour un pixel.
+const REDRAW_MIN_WIDTH_DELTA = 2
+// Le redessin est différé : l'événement « resize » arrive en rafale pendant
+// que l'utilisateur fait glisser la fenêtre. Sans ce délai, on appellerait
+// l'API des centaines de fois par seconde.
+const REDRAW_DELAY_MS = 200
+let lastCanvasWidth = window.innerWidth
+let redrawTimer = 0
+
+window.addEventListener('resize', () => {
+  closeReminderMenu()
+
+  // Aucune des vues concernées n'a de graphique visible ? inutile d'appeler
+  // l'API : Dashboard, Mes tâches et Paramètres n'en ont aucun.
+  const visible = CANVAS_IDS.some((id) => {
+    const c = document.getElementById(id)
+    // getClientRects() est vide sur un élément `hidden` (display:none).
+    return c && c.getClientRects().length > 0
+  })
+  if (!visible) return
+
+  // Seule la largeur compte : un changement de hauteur seul (barre d'adresse
+  // de mobile qui se cache) ne change pas la taille des graphiques, et
+  // redessiner sur ce genre de micro-variation martèlerait l'API.
+  if (Math.abs(window.innerWidth - lastCanvasWidth) < REDRAW_MIN_WIDTH_DELTA) return
+  lastCanvasWidth = window.innerWidth
+
+  clearTimeout(redrawTimer)
+  redrawTimer = setTimeout(() => { render() }, REDRAW_DELAY_MS)
+})
 // Filtres « Période » et « Tâche » : <select> natifs habillés en menus
 // déroulants maison (doliSelect) ; le « change » natif pilote le rendu.
 const remPeriodEl = document.getElementById('reminderPeriodFilter')
