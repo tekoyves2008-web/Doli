@@ -13,7 +13,27 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 // sauvegardes, déploiement). Sans cette variable, le comportement est
 // exactement celui d'avant : server/doli.sqlite.
 const db = new Database(process.env.DB_PATH || path.join(__dirname, 'doli.sqlite'))
-db.pragma('journal_mode = WAL')
+
+// Mode de journalisation.
+//
+// WAL reste le défaut : c'est le comportement historique, et il est plus
+// rapide (lectures concurrentes pendant les écritures).
+//
+// MAIS WAL s'appuie sur des fonctions de mémoire partagée (mmap) qui ne sont
+// pas fiables sur un système de fichiers réseau. Or un volume Railway est
+// précisément un tel stockage. Symptômes possibles sur Railway : « disk I/O
+// error », ou une base qui refuse de s'ouvrir au démarrage.
+//
+// Sur ce type de volume, il faut passer DB_JOURNAL_MODE=DELETE (voir
+// .env.example). En local, WAL reste inchangé.
+//
+// La valeur est filtrée sur une liste blanche : elle finit dans une requête
+// SQL, et une variable d'environnement ne doit jamais pouvoir injecter
+// quoi que ce soit.
+const JOURNAL_MODES = ['WAL', 'DELETE', 'TRUNCATE', 'PERSIST', 'MEMORY']
+const askedMode = String(process.env.DB_JOURNAL_MODE || 'WAL').toUpperCase()
+const journalMode = JOURNAL_MODES.includes(askedMode) ? askedMode : 'WAL'
+db.pragma(`journal_mode = ${journalMode}`)
 
 db.exec(`
   CREATE TABLE IF NOT EXISTS tasks (
