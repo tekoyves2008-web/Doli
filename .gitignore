@@ -46,6 +46,14 @@ backups_avant_responsive_2026-09-28/
 
 # Fichiers temporaires
 ocr_out.txt
+
+# Images de travail (captures des formules, vues de la maquette).
+# Elles restent sur le disque, mais ne sont PAS suivies : le dépôt GitHub est
+# public et n'a pas à héberger ces 4 Mo de captures de travail.
+*.jpg
+*.jpeg
+*.png
+docs_maquette/
 backups_before_restore/
 archives/
 

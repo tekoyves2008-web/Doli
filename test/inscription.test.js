@@ -155,6 +155,11 @@ function freePort() {
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 
+// Délai maximal pour constater la mort d'un serveur de test après SIGKILL.
+// Au-delà, on renonce à attendre : mieux vaut laisser un fichier verrouillé
+// qu'un test bloqué indéfiniment.
+const STOP_GRACE_MS = 3000
+
 // Chaque test a sa PROPRE base : aucun accès à server/doli.sqlite. Le pid rend
 // le nom unique : si une suppression échoue, le test suivant n'hérite pas d'une
 // base laissée par un run précédent (ce qui ferait échouer « doublon » en 201).
@@ -185,6 +190,11 @@ async function startServer(name, vars = {}) {
   let log = ''
   child.stdout.on('data', (b) => { log += b })
   child.stderr.on('data', (b) => { log += b })
+  // sans ces unref, le runner node --test reste « en vie » à cause des
+  // serveurs de test enfants, même une fois tous les tests terminés.
+  child.unref()
+  child.stdout.unref?.()
+  child.stderr.unref?.()
   let exited = false
   child.on('exit', () => { exited = true })
 
@@ -206,11 +216,23 @@ async function startServer(name, vars = {}) {
   // asynchrone, et sous Windows le fichier sqlite reste verrouillé quelques
   // millisecondes après le signal (EPERM sur rmSync).
   let stopped = false
+  const alive = () => !exited && child.exitCode === null && child.signalCode === null
   const stop = async () => {
     if (stopped) return
     stopped = true
-    if (!exited) {
-      const dead = new Promise((resolve) => child.once('exit', resolve))
+    if (alive()) {
+      // On ne peut PAS se contenter d'attendre l'événement « exit ».
+      // Fenêtre de course réelle : si le processus meurt ENTRE le test
+      // `alive()` ci-dessus et l'enregistrement de l'écouteur, l'événement
+      // est déjà passé — `dead` ne se résoudrait jamais et le test resterait
+      // BLOQUÉ ÉTERNELLEMENT. Le minuteur est donc le filet de sécurité.
+      // (Symptôme observé le 28/09 : machine chargée par Vite + serveur de
+      // dev, un serveur de test est resté orphelin et le runner ne finissait
+      // pas.)
+      const dead = new Promise((resolve) => {
+        child.once('exit', resolve)
+        setTimeout(resolve, STOP_GRACE_MS)
+      })
       child.kill('SIGKILL')
       await dead
     }
