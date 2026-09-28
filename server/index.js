@@ -37,10 +37,17 @@ app.set('trust proxy', 1)
 // Limite des corps de requête. Elle doit rester supérieure au plus gros envoi
 // possible, preuve comprise : une preuve est envoyée en base64, ce qui agrandit
 // la donnée d'environ 33 %.
-// TODO(phase 5) : passer à 4 Mo en même temps que PROOF_FILE_MAX_BYTES (8 → 2 Mo
-// côté route). Les deux doivent changer ensemble, sinon un fichier de 3 à 8 Mo
-// se ferait rejeter ici avec une erreur brute, avant même d'atteindre la route.
-app.use(express.json({ limit: '12mb' }))
+//
+// Le calcul : 2 Mo de fichier → ×4/3 en base64 → ≈ 2,7 Mo de corps JSON.
+// 4 Mo laisse donc une marge confortable, sans accepter un envoi absurde.
+//
+// ⚠️ À MODIFIER EN MEME TEMPS que PROOF_FILE_MAX_BYTES (server/routes/tasks.js,
+// aujourd'hui 2 Mo) : les deux valeurs forment une paire. Si la limite du
+// corps restait supérieure à ce que la route accepte, un fichier entre les
+// deux seuils serait rejeté ICI, avec une erreur 413 brute, avant même
+// d'atteindre le message clair « Fichier trop volumineux ».
+// Un test verrouille ce couplage : test/preuves-limite.test.js
+app.use(express.json({ limit: '4mb' }))
 app.use(cookieParser())
 
 // Sonde de santé : Railway interroge cette adresse pour savoir si le service

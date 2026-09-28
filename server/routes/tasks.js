@@ -199,7 +199,16 @@ router.get('/proofs/:proofId/file', (req, res) => {
   res.json({ fileName: row.file_name, mimeType: row.mime_type, dataBase64: row.data_base64 })
 })
 
-const PROOF_FILE_MAX_BYTES = 8 * 1024 * 1024 // 8 Mo : photo / document raisonnable.
+// Taille maximale d'une preuve : 2 Mo.
+//
+// Couplée à la limite du corps de requête dans server/index.js (`4mb`) : les
+// deux SE CHANGENT ENSEMBLE. Voir le commentaire détaillé à cet endroit.
+//
+// 2 Mo n'est pas un cap arbitraire : c'est ce qui tient dans les 0,5 Go de
+// volume du palier gratuit Railway. À 8 Mo, une preuve occupait ~10,7 Mo en
+// base64 et le volume était plein après 45 proofs ; à 2 Mo, ~2,7 Mo, soit
+// environ 185. Les preuves n'étant jamais purgées, c'est le facteur limitant.
+const PROOF_FILE_MAX_BYTES = 2 * 1024 * 1024
 
 // Types réellement acceptés pour une preuve. Le client déclare le type de son
 // fichier : sans cette liste blanche, il pourrait déclarer « text/html » ou
@@ -261,10 +270,14 @@ router.post('/:id/proofs', (req, res) => {
       return res.status(415).json({ error: 'Ce type de fichier n’est pas accepté.' })
     }
     dataBase64 = String(req.body.dataBase64 || '')
-    // Taille réelle estimée depuis le base64 (×3/4) : refuse au-delà de 8 Mo.
+    // Taille réelle estimée depuis le base64 (×3/4) : refuse au-delà de la limite.
     sizeBytes = Math.floor((dataBase64.length * 3) / 4)
     if (!dataBase64 || sizeBytes > PROOF_FILE_MAX_BYTES) {
-      return res.status(413).json({ error: 'Fichier trop volumineux (8 Mo maximum).' })
+      // Le message est CALCULÉ depuis la constante, jamais écrit en dur : c'est
+      // le moyen le plus sûr qu'il ne puisse pas annoncer une limite différente
+      // de celle réellement appliquée.
+      const maxMo = Math.round(PROOF_FILE_MAX_BYTES / (1024 * 1024))
+      return res.status(413).json({ error: `Fichier trop volumineux (${maxMo} Mo maximum).` })
     }
   }
 
