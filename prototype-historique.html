@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="dark">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Prototype — Rubrique Historique</title>
+<style>
+/* ============================================================
+   PROTOTYPE (fichier autonome, données fictives)
+   Reprend les VRAIES variables de l'application (src/style.css)
+   pour juger le rendu en conditions réelles.
+   ============================================================ */
+* { box-sizing: border-box; }
+:root {
+  --font: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  --font-display: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+  --radius: 10px;
+  /* Historique : magenta/rose — teinte libre vs Dashboard, Tâches,
+     Rappel, Retards, Preuves, Progression, Paramètres. */
+  --hist: #db2777;
+  --hist-2: #a855f7;
+  --hist-soft: rgba(219,39,119,.14);
+  --ok: #10b981;
+  --late: #f97316;
+}
+:root[data-theme='dark'] {
+  --bg: #12141a;
+  --bg-elevated: #1a1d26;
+  --bg-hover: #22262f;
+  --text: #e6e8ec;
+  --text-muted: #9199a6;
+  --border: #2b2f3a;
+  --accent: #6c8cff;
+  --accent-contrast: #0b0d12;
+  --shadow: 0 8px 24px rgba(0,0,0,.35);
+}
+:root[data-theme='light'] {
+  --bg: #f5f7fb;
+  --bg-elevated: #ffffff;
+  --bg-hover: #eceff4;
+  --text: #1c2536;
+  --text-muted: #6b7689;
+  --border: #e6eaf1;
+  --accent: #2563eb;
+  --accent-contrast: #ffffff;
+  --shadow: 0 8px 24px rgba(15,23,42,.08);
+}
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: var(--font);
+  color: var(--text);
+  min-height: 100vh;
+  background: linear-gradient(145deg,#16121d 0%,#131a24 52%,#1a1420 100%);
+}
+:root[data-theme='dark'] body {
+  background:
+    radial-gradient(ellipse 800px 520px at 90% 2%, rgba(219,39,119,.11), transparent 68%),
+    radial-gradient(ellipse 700px 560px at 2% 100%, rgba(168,85,247,.075), transparent 72%),
+    linear-gradient(145deg,#16121d 0%,#131a24 52%,#1a1420 100%);
+}
+:root[data-theme='light'] body {
+  background:
+    radial-gradient(ellipse 800px 500px at 88% 3%, rgba(219,39,119,.08), transparent 68%),
+    radial-gradient(ellipse 700px 520px at 3% 97%, rgba(168,85,247,.05), transparent 72%),
+    linear-gradient(145deg,#fdf8fb 0%,#f7f8fc 52%,#faf7fd 100%);
+}
+/* Grille de repères, comme les autres rubriques de l'app. */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(219,39,119,.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(219,39,119,.05) 1px, transparent 1px);
+  background-size: 42px 42px;
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,.7), transparent 80%);
+  mask-image: linear-gradient(to bottom, rgba(0,0,0,.7), transparent 80%);
+}
+.wrap { position: relative; z-index: 1; max-width: 1120px; margin: 0 auto; padding: 28px 22px 80px; }
+
+/* ---------- Barre supérieure ---------- */
+.top {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+}
+.vico {
+  width: 40px; height: 40px; flex: none;
+  display: grid; place-items: center;
+  border-radius: 12px; color: #fff;
+  background: linear-gradient(135deg,#db2777,#9333ea);
+  box-shadow: 0 4px 12px rgba(219,39,119,.35);
+}
+.top h1 { margin: 0; font-family: var(--font-display); font-size: 1.4rem; font-weight: 700; letter-spacing: -.02em; }
+.top p { margin: 4px 0 0; font-size: .875rem; color: var(--text-muted); }
+.top__spacer { flex: 1 1 auto; }
+
+/* ---------- Sélecteur segmenté ---------- */
+.seg { display: inline-flex; padding: 3px; gap: 2px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 10px; }
+.seg button {
+  appearance: none; border: none; cursor: pointer;
+  padding: 7px 16px; font: inherit; font-size: .8125rem;
+  color: var(--text-muted); background: transparent; border-radius: 8px;
+  transition: background .15s ease, color .15s ease;
+}
+.seg button:hover { color: var(--text); }
+.seg button.is-on { color: #fff; font-weight: 600; background: linear-gradient(135deg, var(--hist), var(--hist-2)); }
+.ghost {
+  appearance: none; cursor: pointer; font: inherit; font-size: .8125rem;
+  padding: 8px 14px; color: var(--text); background: var(--bg-elevated);
+  border: 1px solid var(--border); border-radius: 10px;
+}
+.ghost:hover { background: var(--bg-hover); }
+
+/* ---------- Blocs communs ---------- */
+.panel {
+  margin-top: 26px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.panel__head {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid var(--border);
+}
+.panel__ico { width: 32px; height: 32px; flex: none; display: grid; place-items: center; border-radius: 9px; color: var(--hist); background: var(--hist-soft); }
+.panel__head h2 { margin: 0; font-family: var(--font-display); font-size: 1rem; font-weight: 650; }
+.panel__head p { margin: 3px 0 0; font-size: .8125rem; color: var(--text-muted); }
+.panel__body { padding: 18px 20px 20px; }
+.tag {
+  display: inline-block; margin-left: 8px; padding: 2px 8px;
+  font-size: .6875rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+  color: var(--hist); background: var(--hist-soft); border-radius: 999px; vertical-align: middle;
+}
+
+/* ---------- Variante A : frise chronologique ---------- */
+.frise { display: flex; align-items: flex-end; gap: 6px; height: 190px; padding-top: 8px; }
+.frise__col { flex: 1 1 0; display: flex; flex-direction: column; justify-content: flex-end; gap: 3px; min-width: 0; height: 100%; }
+.frise__bar { width: 100%; border-radius: 4px 4px 2px 2px; min-height: 3px; }
+.frise__bar--done { background: linear-gradient(180deg, var(--hist), var(--hist-2)); }
+.frise__bar--late { background: var(--late); }
+.frise__labels { display: flex; gap: 6px; margin-top: 8px; }
+.frise__labels span { flex: 1 1 0; min-width: 0; text-align: center; font-size: .6875rem; color: var(--text-muted); overflow: hidden; }
+.legend { display: flex; gap: 16px; margin-top: 14px; font-size: .8125rem; color: var(--text-muted); }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+
+/* ---------- Variante B : cartes de périodes ---------- */
+.pcards { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px; }
+.pcard {
+  padding: 14px 16px; border: 1px solid var(--border); border-radius: 12px;
+  background: var(--bg); transition: border-color .15s ease, transform .12s ease;
+}
+.pcard:hover { border-color: color-mix(in srgb, var(--hist) 45%, var(--border)); transform: translateY(-2px); }
+.pcard__date { font-family: var(--font-display); font-size: .9375rem; font-weight: 650; }
+.pcard__sub { font-size: .75rem; color: var(--text-muted); margin-top: 2px; }
+.pcard__nums { display: flex; gap: 14px; margin-top: 12px; }
+.pcard__num { display: flex; flex-direction: column; }
+.pcard__num b { font-family: var(--font-display); font-size: 1.125rem; line-height: 1.1; }
+.pcard__num span { font-size: .6875rem; color: var(--text-muted); }
+.pcard__goal { margin-top: 12px; height: 5px; border-radius: 999px; background: var(--bg-hover); overflow: hidden; }
+.pcard__goal i { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--hist), var(--hist-2)); }
+
+/* ---------- Variante C : calendrier ---------- */
+.cal { display: grid; grid-auto-flow: column; grid-template-rows: repeat(7, 12px); gap: 3px; overflow-x: auto; padding-bottom: 6px; }
+.cal__d { width: 12px; height: 12px; border-radius: 3px; background: var(--bg-hover); }
+.cal__d[data-l='1'] { background: color-mix(in srgb, var(--hist) 28%, transparent); }
+.cal__d[data-l='2'] { background: color-mix(in srgb, var(--hist) 52%, transparent); }
+.cal__d[data-l='3'] { background: color-mix(in srgb, var(--hist) 76%, transparent); }
+.cal__d[data-l='4'] { background: var(--hist); }
+.calfoot { display: flex; align-items: center; gap: 8px; margin-top: 12px; font-size: .75rem; color: var(--text-muted); }
+.calfoot i { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+
+/* ---------- Variante D : combinée ---------- */
+.combo { display: grid; grid-template-columns: 1.35fr .65fr; gap: 18px; }
+.kpis { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.kpi { padding: 12px 14px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg); }
+.kpi b { display: block; font-family: var(--font-display); font-size: 1.5rem; line-height: 1.1; }
+.kpi span { font-size: .75rem; color: var(--text-muted); }
+.kpi--ok b { color: var(--ok); }
+.kpi--late b { color: var(--late); }
+.kpi--hist b { color: var(--hist); }
+
+.empty { padding: 28px; text-align: center; color: var(--text-muted); font-size: .875rem; }
+@media (max-width: 780px) { .combo { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <span class="vico" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 12a8.5 8.5 0 108.5-8.5"/><path d="M3.5 4.5V9H8"/><path d="M12 7.5V12l3 2"/></svg>
+    </span>
+    <div>
+      <h1>Historique</h1>
+      <p>Vos résultats dans le temps : jours, semaines, mois.</p>
+    </div>
+    <span class="top__spacer"></span>
+    <div class="seg" id="seg">
+      <button type="button" data-g="day" class="is-on">Jour</button>
+      <button type="button" data-g="week">Semaine</button>
+      <button type="button" data-g="month">Mois</button>
+    </div>
+    <button type="button" class="ghost" id="themeBtn">Thème clair</button>
+  </header>
+
+
+  <!-- ================= Variante A : frise chronologique ================= -->
+  <section class="panel">
+    <div class="panel__head">
+      <span class="panel__ico" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V9M9.3 19V5M14.7 19v-7M20 19v-4"/></svg>
+      </span>
+      <div>
+        <h2>Frise chronologique <span class="tag">Variante A</span></h2>
+        <p>Une colonne par période : tâches terminées et retards, dans l'ordre du temps.</p>
+      </div>
+    </div>
+    <div class="panel__body">
+      <div class="frise" id="frise"></div>
+      <div class="frise__labels" id="friseLabels"></div>
+      <div class="legend">
+        <span><i style="background:linear-gradient(180deg,var(--hist),var(--hist-2))"></i>Tâches terminées</span>
+        <span><i style="background:var(--late)"></i>Tâches en retard</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= Variante B : cartes de périodes ================= -->
+  <section class="panel">
+    <div class="panel__head">
+      <span class="panel__ico" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><path d="M8 3v3M16 3v3M3.5 9.5h17"/></svg>
+      </span>
+      <div>
+        <h2>Cartes de périodes <span class="tag">Variante B</span></h2>
+        <p>Un bloc chiffré par période, avec l'atteinte de l'objectif hebdomadaire.</p>
+      </div>
+    </div>
+    <div class="panel__body">
+      <div class="pcards" id="pcards"></div>
+    </div>
+  </section>
+
+  <!-- ================= Variante C : calendrier ================= -->
+  <section class="panel">
+    <div class="panel__head">
+      <span class="panel__ico" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+      </span>
+      <div>
+        <h2>Calendrier d'activité <span class="tag">Variante C</span></h2>
+        <p>Chaque case = un jour, teintée selon le nombre de preuves fournies. Vue d'ensemble immédiate.</p>
+      </div>
+    </div>
+    <div class="panel__body">
+      <div class="cal" id="cal"></div>
+      <div class="calfoot">
+        <span>Moins</span>
+        <i style="background:var(--bg-hover)"></i>
+        <i style="background:color-mix(in srgb,var(--hist) 28%,transparent)"></i>
+        <i style="background:color-mix(in srgb,var(--hist) 52%,transparent)"></i>
+        <i style="background:color-mix(in srgb,var(--hist) 76%,transparent)"></i>
+        <i style="background:var(--hist)"></i>
+        <span>Plus</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= Variante D : combinée ================= -->
+  <section class="panel">
+    <div class="panel__head">
+      <span class="panel__ico" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17.5l4.5-5 3.5 3 7.5-8"/><path d="M16 7.5h4.5V12"/></svg>
+      </span>
+      <div>
+        <h2>Vue combinée <span class="tag">Variante D</span></h2>
+        <p>La frise pour l'ensemble, les indicateurs de la période sélectionnée à droite.</p>
+      </div>
+    </div>
+    <div class="panel__body">
+      <div class="combo">
+        <div>
+          <div class="frise" id="frise2" style="height:150px"></div>
+          <div class="frise__labels" id="friseLabels2"></div>
+        </div>
+        <div class="kpis" id="kpis"></div>
+      </div>
+    </div>
+  </section>
+
+  <p style="margin-top:26px;font-size:.75rem;color:var(--text-muted)">
+    Prototype — données fictives (générées pour la démonstration), Independent de l'application réelle.
+  </p>
+</div>
+
+<script>
+// Données FICTIVES, générées de façon déterministe (même affichage à chaque
+// ouverture). Le but est de juger le rendu avec un volume réaliste ; la vraie
+// rubrique calculera sur les données du compte connecté.
+function rng(seed) { let s = seed; return () => (s = (s * 1103515245 + 12345) % 2147483648) / 2147483648 }
+const rand = rng(20260926)
+const DAY = 86400000
+const DAYS = 190
+const today = new Date(); today.setHours(0, 0, 0, 0)
+
+const dayData = []
+for (let i = DAYS - 1; i >= 0; i--) {
+  const date = new Date(today.getTime() - i * DAY)
+  const weekend = date.getDay() === 0 || date.getDay() === 6
+  const season = 1 + 0.35 * Math.sin(i / 9)           // des périodes plus ou moins chargées
+  const done = Math.max(0, Math.round((weekend ? 0.5 : 1.9) * season + rand() * 2.4 - 0.7))
+  dayData.push({
+    date,
+    done,
+    proofs: done + Math.round(rand() * 1.6),
+    late: Math.max(0, Math.round(rand() * (weekend ? 1.1 : 0.7))),
+    created: Math.max(0, Math.round(rand() * 1.5)),
+  })
+}
+
+const MONTHS = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre']
+const DAYS_SHORT = ['D','L','M','M','J','V','S']
+const fmtDay = (d) => d.getDate() + ' ' + MONTHS[d.getMonth()].slice(0, 4) + '.'
+const fmtDayLong = (d) => DAYS_SHORT[d.getDay()] + ' ' + d.getDate() + ' ' + MONTHS[d.getMonth()].slice(0, 4) + '.'
+
+// Semaine ISO : elle commence le lundi (convention FR, cohérente avec l'app).
+function weekStart(d) {
+  const x = new Date(d); x.setHours(0, 0, 0, 0)
+  const shift = (x.getDay() + 6) % 7
+  return new Date(x.getTime() - shift * DAY)
+}
+
+/** Regroupe les jours en seaux : jour | semaine (lundi) | mois. */
+function bucketise(granularity, limit) {
+  const out = []
+  for (const d of dayData) {
+    let key, label, sub
+    if (granularity === 'day') {
+      key = d.date.toISOString().slice(0, 10)
+      label = fmtDay(d.date); sub = fmtDayLong(d.date)
+    } else if (granularity === 'week') {
+      const ws = weekStart(d.date)
+      key = 'S' + ws.toISOString().slice(0, 10)
+      label = 'Sem. ' + ws.getDate() + '/' + (ws.getMonth() + 1)
+      sub = 'à partir du ' + ws.getDate() + ' ' + MONTHS[ws.getMonth()].slice(0, 4) + '.'
+    } else {
+      key = d.date.getFullYear() + '-' + d.date.getMonth()
+      label = MONTHS[d.date.getMonth()]; sub = d.date.getFullYear()
+    }
+    let b = out.find((x) => x.key === key)
+    if (!b) { b = { key, label, sub, done: 0, proofs: 0, late: 0, created: 0, days: 0 }; out.push(b) }
+    b.done += d.done; b.proofs += d.proofs; b.late += d.late; b.created += d.created; b.days++
+  }
+  return out.slice(-limit)
+}
+
+const LIMITS = { day: 30, week: 16, month: 12 }
+let granularity = 'day'
+
+
+// --- Variantes A et D : frise ---------------------------------------------
+function renderFrise(barId, labId) {
+  const bars = document.getElementById(barId)
+  const labs = document.getElementById(labId)
+  const buckets = bucketise(granularity, LIMITS[granularity])
+  const max = Math.max(1, ...buckets.map((b) => b.done + b.late))
+  bars.textContent = ''; labs.textContent = ''
+  for (const b of buckets) {
+    const col = document.createElement('div'); col.className = 'frise__col'
+    const late = document.createElement('div')
+    late.className = 'frise__bar frise__bar--late'
+    late.style.height = (b.late / max) * 50 + '%'
+    late.title = b.late + ' tâche(s) en retard'
+    const done = document.createElement('div')
+    done.className = 'frise__bar frise__bar--done'
+    done.style.height = (b.done / max) * 50 + '%'
+    done.title = b.done + ' tâche(s) terminée(s)'
+    col.append(late, done)
+    bars.append(col)
+    const s = document.createElement('span')
+    s.textContent = b.label
+    if (b.label.length > 9) s.style.fontSize = '.6rem'
+    labs.append(s)
+  }
+}
+
+// --- Variante B : cartes de périodes --------------------------------------
+function renderCards() {
+  const wrap = document.getElementById('pcards')
+  const buckets = bucketise(granularity, granularity === 'day' ? 9 : LIMITS[granularity])
+  wrap.textContent = ''
+  if (buckets.length === 0) { wrap.innerHTML = '<p class="empty">Rien à afficher pour le moment.</p>'; return }
+  for (const b of buckets.slice().reverse()) {
+    const goal = Math.min(100, Math.round((b.done / 10) * 100))
+    const card = document.createElement('div'); card.className = 'pcard'
+    card.innerHTML =
+      '<div class="pcard__date">' + b.label + '</div>' +
+      '<div class="pcard__sub">' + b.sub + '</div>' +
+      '<div class="pcard__nums">' +
+        '<div class="pcard__num"><b>' + b.done + '</b><span>terminées</span></div>' +
+        '<div class="pcard__num"><b>' + b.proofs + '</b><span>preuves</span></div>' +
+        '<div class="pcard__num"><b style="color:var(--late)">' + b.late + '</b><span>retards</span></div>' +
+      '</div>' +
+      '<div class="pcard__goal" title="Objectif hebdomadaire : ' + goal + ' %"><i style="width:' + goal + '%"></i></div>'
+    wrap.append(card)
+  }
+}
+
+// --- Variante C : calendrier d'activité -----------------------------------
+function renderCal() {
+  const grid = document.getElementById('cal')
+  grid.textContent = ''
+  const first = new Date(dayData[0].date)
+  const pad = (first.getDay() + 6) % 7            // aligne la 1re ligne sur le lundi
+  for (let i = 0; i < pad; i++) {
+    const e = document.createElement('div')
+    e.className = 'cal__d'; e.style.visibility = 'hidden'
+    grid.append(e)
+  }
+  for (const d of dayData) {
+    const e = document.createElement('div')
+    e.className = 'cal__d'
+    e.dataset.l = d.proofs === 0 ? 0 : d.proofs === 1 ? 1 : d.proofs === 2 ? 2 : d.proofs === 3 ? 3 : 4
+    e.title = fmtDayLong(d.date) + ' — ' + d.proofs + ' preuve(s), ' + d.done + ' terminée(s)'
+    grid.append(e)
+  }
+}
+
+// --- Variante D : indicateurs de la dernière période ----------------------
+function renderKpis() {
+  const wrap = document.getElementById('kpis')
+  const buckets = bucketise(granularity, LIMITS[granularity])
+  const b = buckets[buckets.length - 1] || { done: 0, proofs: 0, late: 0 }
+  const total = b.done + b.late
+  const onTime = total === 0 ? 0 : Math.round((b.done / total) * 100)
+  wrap.innerHTML =
+    '<div class="kpi kpi--hist"><b>' + b.done + '</b><span>Tâches terminées</span></div>' +
+    '<div class="kpi"><b>' + b.proofs + '</b><span>Preuves fournies</span></div>' +
+    '<div class="kpi kpi--ok"><b>' + onTime + ' %</b><span>À l’heure</span></div>' +
+    '<div class="kpi kpi--late"><b>' + b.late + '</b><span>En retard</span></div>'
+}
+
+function renderAll() {
+  renderFrise('frise', 'friseLabels')
+  renderFrise('frise2', 'friseLabels2')
+  renderCards()
+  renderCal()
+  renderKpis()
+}
+
+document.getElementById('seg').addEventListener('click', (e) => {
+  const b = e.target.closest('button[data-g]')
+  if (!b) return
+  granularity = b.dataset.g
+  for (const x of document.querySelectorAll('#seg button')) x.classList.toggle('is-on', x === b)
+  renderAll()
+})
+
+const themeBtn = document.getElementById('themeBtn')
+themeBtn.addEventListener('click', () => {
+  const dark = document.documentElement.dataset.theme === 'dark'
+  document.documentElement.dataset.theme = dark ? 'light' : 'dark'
+  themeBtn.textContent = dark ? 'Thème sombre' : 'Thème clair'
+})
+
+renderAll()
+</script>
+</body>
+</html>
+
+

@@ -22,7 +22,7 @@ export function enhanceDoliSelect(selectEl) {
   const overlay = selectEl.closest('.modal-overlay')
   const firstText =
     field && Array.from(field.childNodes).find((n) => n.nodeType === 3 && n.textContent.trim())
-  const fieldLabel = firstText ? firstText.textContent.trim() : selectEl.id
+  const fieldLabel = firstText ? firstText.textContent.trim() : (selectEl.getAttribute('aria-label') || selectEl.id)
 
   /* --- Structure : bouton (fermé) + panneau (ouvert) -------------------- */
   const wrap = document.createElement('div')
@@ -49,7 +49,10 @@ export function enhanceDoliSelect(selectEl) {
 
   const listId = `doli-list-${selectEl.id || Math.random().toString(36).slice(2, 7)}`
   const list = document.createElement('ul')
-  list.className = 'doli-select__list'
+  // Les panneaux des menus places dans un champ court recoivent la classe
+  // --compact : leur rendu est decrit par une seule regle CSS valable pour
+  // tous les menus, au lieu d'une liste d'ids a tenir a jour a la main.
+  list.className = 'doli-select__list' + (selectEl.closest('.mtasks2__field') ? ' doli-select__list--compact' : '')
   list.id = listId
   list.setAttribute('role', 'listbox')
   list.hidden = true

@@ -6,11 +6,24 @@
 import { Router } from 'express'
 import db from '../db.js'
 import { requireAuth } from '../middleware/requireAuth.js'
+import { UPSERT_SETTINGS_SQL } from '../settings-sql.js'
 
 const router = Router()
 router.use(requireAuth)
 
-const DEFAULTS = { theme: 'dark', viewMode: 'list', bestStreak: 0, weeklyGoal: 10, achievementThresholds: [10, 50] }
+const DEFAULTS = { theme: 'dark', viewMode: 'list', bestStreak: 0, weeklyGoal: 10, achievementThresholds: [10, 50], prefs: {} }
+
+// La colonne prefs contient du JSON libre : une donnée corrompue ne doit
+// jamais empêcher l'application de démarrer, d'où le repli silencieux.
+function parsePrefs(raw) {
+  if (!raw) return {}
+  try {
+    const parsed = JSON.parse(raw)
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {}
+  } catch {
+    return {}
+  }
+}
 
 function rowToSettings(row) {
   if (!row) return { ...DEFAULTS }
@@ -20,27 +33,31 @@ function rowToSettings(row) {
     bestStreak: row.best_streak,
     weeklyGoal: row.weekly_goal,
     achievementThresholds: JSON.parse(row.achievement_thresholds),
+    prefs: parsePrefs(row.prefs),
   }
 }
 
 const getStmt = db.prepare('SELECT * FROM settings WHERE user_email = ?')
-const upsertStmt = db.prepare(`
-  INSERT INTO settings (user_email, theme, view_mode, best_streak, weekly_goal, achievement_thresholds)
-  VALUES (@user_email, @theme, @view_mode, @best_streak, @weekly_goal, @achievement_thresholds)
-  ON CONFLICT(user_email) DO UPDATE SET
-    theme = excluded.theme,
-    view_mode = excluded.view_mode,
-    best_streak = excluded.best_streak,
-    weekly_goal = excluded.weekly_goal,
-    achievement_thresholds = excluded.achievement_thresholds
-`)
+// La colonne `prefs` doit figurer dans l'INSERT **et** dans le DO UPDATE.
+// Sans elle, better-sqlite3 ignore silencieusement le paramètre `prefs` passé
+// à run() : la requête renvoie 200 (donc l'interface affiche « enregistré »)
+// alors que rien n'est écrit. Les préférences disparaissaient à chaque
+// rechargement, sans la moindre erreur visible.
+const upsertStmt = db.prepare(UPSERT_SETTINGS_SQL)
 
 router.get('/', (req, res) => {
   res.json(rowToSettings(getStmt.get(req.user.email)))
 })
 
 router.put('/', (req, res) => {
-  const merged = { ...rowToSettings(getStmt.get(req.user.email)), ...req.body }
+  const current = rowToSettings(getStmt.get(req.user.email))
+  // `prefs` est fusionné clé par clé : un client qui n'envoie qu'un réglage
+  // ne doit surtout pas effacer les autres, et un `null` maladroit non plus.
+  const merged = {
+    ...current,
+    ...req.body,
+    prefs: { ...current.prefs, ...(req.body.prefs || {}) },
+  }
   upsertStmt.run({
     user_email: req.user.email,
     theme: merged.theme,
@@ -48,6 +65,7 @@ router.put('/', (req, res) => {
     best_streak: merged.bestStreak,
     weekly_goal: merged.weeklyGoal,
     achievement_thresholds: JSON.stringify(merged.achievementThresholds),
+    prefs: JSON.stringify(merged.prefs),
   })
   res.json(merged)
 })

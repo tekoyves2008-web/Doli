@@ -12,6 +12,8 @@
 
 :root {
   --font: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  /* Police d'affichage : titres et chiffres cles (voir bloc de hierarchie en fin de fichier). */
+  --font-display: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --radius: 10px;
 }
 
@@ -333,18 +335,28 @@ input:focus-visible,
      background-color de secours, l'écran retomberait sur le fond blanc/clair
      du <body> derrière (var(--bg)) au lieu de rester bleu. */
   background-color: var(--sidebar-bg);
-  /* Uniquement les bleus déjà présents dans l'app (accent + bleu marine de
-     la sidebar) : pas de vert, et une base marine plutôt que le fond clair
-     du thème pour que ça ne délave jamais vers du blanc. */
-  background: radial-gradient(circle at 12% 15%, color-mix(in srgb, var(--accent) 45%, transparent) 0%, transparent 55%),
-    radial-gradient(circle at 88% 85%, color-mix(in srgb, var(--accent) 30%, transparent) 0%, transparent 55%),
+  /* Palette 100 % doli : l'indigo et l'émeraude sont déjà ceux des cartes du
+     couloir Retards (.aside-card--rappel / .aside-card--motivation), l'accent
+     et le bleu marine sont les variables de l'app. Trois halos discrets
+     sur la base marine — jamais de fond clair, pour que le texte blanc
+     (cf. .login-card) garde toujours son contraste. */
+  background: radial-gradient(circle at 15% 12%, color-mix(in srgb, #6366f1 40%, transparent) 0%, transparent 52%),
+    radial-gradient(circle at 85% 88%, color-mix(in srgb, #10b981 24%, transparent) 0%, transparent 52%),
+    radial-gradient(circle at 50% 105%, color-mix(in srgb, var(--accent) 32%, transparent) 0%, transparent 58%),
     var(--sidebar-bg);
+  background-size: 160% 160%, 160% 160%, 160% 160%, 100% 100%;
+  background-position: 0% 0%, 100% 100%, 50% 100%, 0% 0%;
+  /* Les halos respirent lentement et sont décalés de phase : la page est
+     vivante sans jamais distraire de la saisie. */
+  animation: loginAmbient 14s ease-in-out infinite alternate;
 }
 .login-screen[hidden] {
   display: none;
 }
 /* Le même pictogramme que la marque, agrandi et à peine visible derrière la
-   carte : ancre l'écran dans l'identité de l'app plutôt que de rester nu. */
+   carte : ancre l'écran dans l'identité de l'app plutôt que de rester nu.
+   Volontairement STATIQUE (ni rotation ni blend) : c'était le rendu choisi
+   initialement, seul le fond d'ambiance de .login-screen respire. */
 .login-screen__watermark {
   position: absolute;
   top: 50%;
@@ -359,24 +371,85 @@ input:focus-visible,
 /* Carte franchement transparente : le filigrane du logo doit se voir
    clairement au travers. La bordure + l'ombre suffisent à garder une
    silhouette de carte nette sans avoir besoin d'un fond opaque. */
+/* ---------- Champ de logos de l'écran de connexion ----------
+   Le semis est dessiné par loginAmbience.js : ce bloc ne décrit que le
+   rendu, et surtout les deux masques qui le protègent.
+
+   1. Le masque elliptique EFFACE les logos dans la zone de la carte. Sans
+      lui on les verrait au travers de la carte, qui est translucide.
+   2. Le fondu des bords évite qu'un logo soit coupé net par l'écran. */
+.login-screen__marks {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  color: var(--accent);
+  /* Masque central : les logos ne sont pas EFFACÉS derrière la carte, ils
+     sont ATTÉNUÉS (28 %) — sinon, la carte étant translucide, ils y
+     resteraient parfaitement invisibles. */
+  -webkit-mask-image: radial-gradient(ellipse 430px 570px at 50% 50%, rgba(0,0,0,.28) 0%, rgba(0,0,0,.28) 55%, #000 100%),
+    linear-gradient(#000 0 calc(100% - 40px), transparent calc(100% - 40px));
+  mask-image: radial-gradient(ellipse 430px 570px at 50% 50%, rgba(0,0,0,.28) 0%, rgba(0,0,0,.28) 55%, #000 100%),
+    linear-gradient(#000 0 calc(100% - 40px), transparent calc(100% - 40px));
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+}
+/* Position : variables posées par le script (--x/--y) + le déplacement
+   dû au curseur (--dx/--dy). Un seul transform, recalculé par le
+   navigateur, donc aucun effet sur la mise en page. */
+.login-mark {
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: var(--o, 0.1);
+  transform: translate(calc(var(--x) + var(--dx, 0px)), calc(var(--y) + var(--dy, 0px)));
+  will-change: transform, opacity;
+}
+/* Couche la plus lointaine : floutée, c'est ce qui donne la profondeur. */
+.login-mark--far {
+  filter: blur(0.5px);
+}
+/* La dérive est sur un groupe intermédiaire : elle ne peut pas entrer en
+   conflit avec le transform ci-dessus. */
+@keyframes loginMarkDrift {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(var(--x, 10px), var(--y, 8px)); }
+}
+.login-mark__drift {
+  animation: loginMarkDrift var(--dur, 24s) linear infinite;
+  animation-delay: var(--delay, 0s);
+}
+/* Aucun halo ici : le fond doit rester net, pas brumeux. */
+.login-screen__watermark {
+  z-index: 1;
+}
+/* La carte reste au-dessus du champ de logos. */
 .login-card {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   width: 100%;
   max-width: 360px;
   background: linear-gradient(
     160deg,
-    color-mix(in srgb, var(--accent) 22%, transparent),
-    color-mix(in srgb, var(--sidebar-bg) 38%, transparent)
+    color-mix(in srgb, var(--accent) 24%, transparent),
+    color-mix(in srgb, var(--sidebar-bg) 58%, transparent)
   );
   border: 1.5px solid color-mix(in srgb, var(--accent) 65%, transparent);
   border-radius: 20px;
   padding: 40px 32px;
   box-shadow: var(--shadow), 0 0 40px color-mix(in srgb, var(--accent) 25%, transparent);
   text-align: center;
-  /* Texte propre à la carte, indépendant du thème. */
-  --text: #000000;
-  --text-muted: rgba(0, 0, 0, 0.65);
+  /* Texte BLANC : la carte est translucide sur un fond marine, un texte noir
+     y manquait de contraste. Hiérarchie en trois niveaux de blanc, comme le
+     reste de l'application. */
+  --text: #ffffff;
+  --text-muted: rgba(255, 255, 255, 0.72);
+  --label: rgba(255, 255, 255, 0.62);
+  /* Entrée douce : la carte monte, se densifie et se stabilise. */
+  animation: loginCardIn 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 .login-card__icon {
   width: 72px;
@@ -386,9 +459,13 @@ input:focus-visible,
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  background: color-mix(in srgb, var(--accent) 30%, transparent);
+  background: color-mix(in srgb, var(--accent) 26%, transparent);
   border: 1.5px solid color-mix(in srgb, var(--accent) 60%, transparent);
   color: var(--accent);
+  /* Halo assorti + flottement vertical très lent. */
+  box-shadow: 0 0 0 8px color-mix(in srgb, var(--accent) 10%, transparent),
+    0 8px 24px color-mix(in srgb, var(--accent) 30%, transparent);
+  animation: loginFloat 6s ease-in-out infinite;
 }
 .login-card h1 {
   font-size: 19px;
@@ -407,7 +484,7 @@ input:focus-visible,
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.03em;
-  color: var(--text-muted);
+  color: var(--label);
 }
 /* Les champs restent en verre dépoli clair, indépendamment du thème : sur
    la carte bleue translucide, un fond opaque classique (var(--bg), noir en
@@ -415,18 +492,18 @@ input:focus-visible,
 .auth-form .task-form__field input {
   background: rgba(255, 255, 255, 0.18);
   border: 1px solid rgba(255, 255, 255, 0.4);
-  color: #000000;
+  color: #ffffff;
   font-size: 14px;
   font-weight: 600;
   text-transform: none;
   letter-spacing: normal;
 }
 .auth-form .task-form__field input::placeholder {
-  color: rgba(0, 0, 0, 0.4);
+  color: rgba(255, 255, 255, 0.55);
   font-weight: 500;
 }
 .auth-form .task-form__field input:focus {
-  background: rgba(255, 255, 255, 0.26);
+  background: rgba(255, 255, 255, 0.28);
   border-color: var(--accent);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 35%, transparent);
 }
@@ -451,34 +528,39 @@ input:focus-visible,
   border: none;
   background: transparent;
   border-radius: 6px;
-  color: rgba(0, 0, 0, 0.55);
+  color: rgba(255, 255, 255, 0.7);
   transition: background-color 0.12s ease, color 0.12s ease;
 }
 .password-field__toggle:hover {
-  background: rgba(0, 0, 0, 0.08);
-  color: #000000;
+  background: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
 }
 .login-card__submit {
   margin-top: 4px;
   padding: 11px 14px;
   border: none;
   border-radius: 999px;
-  background: var(--accent);
+  background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 72%, #6366f1));
   color: var(--accent-contrast);
   font-weight: 700;
   font-size: 14px;
-  transition: filter 0.15s ease, transform 0.15s ease;
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--accent) 32%, transparent);
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.18s ease, filter 0.15s ease;
 }
+/* Le bouton se souleve et son halo s elargit : le geste est lisible sans
+   changer d aspect au survol. */
 .login-card__submit:hover {
-  filter: brightness(1.08);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 26px color-mix(in srgb, var(--accent) 45%, transparent);
 }
 .login-card__submit:active {
-  transform: scale(0.98);
+  transform: translateY(0) scale(0.98);
 }
 .login-card__error {
   margin: 10px 0 0;
   font-size: 12.5px;
-  color: var(--badge-todo-text);
+  color: #ffb4b4;
+  animation: loginFadeIn 0.25s ease both;
 }
 .login-card__error[hidden] {
   display: none;
@@ -499,8 +581,60 @@ input:focus-visible,
   padding: 0;
   font: inherit;
   font-weight: 700;
-  color: var(--accent);
-  text-decoration: underline;
+  color: #ffffff;
+  position: relative;
+}
+/* Le soulignement se deploie depuis la gauche au survol, au lieu d etre
+   statique : meme libelle, geste plus vivant. */
+.login-card__link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2px;
+  height: 1.5px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.login-card__link:hover::after,
+.login-card__link:focus-visible::after {
+  transform: scaleX(1);
+}
+
+/* ===== Animations de l'ecran de connexion ============================= */
+/* Les halos d'ambiance respirent lentement et sont decales de phase. */
+@keyframes loginAmbient {
+  from { background-position: 0% 0%, 100% 100%, 50% 100%, 0% 0%; }
+  to   { background-position: 12% 10%, 88% 90%, 50% 92%, 0% 0%; }
+}
+/* Entree de la carte : elle monte, se densifie et se stabilise. */
+@keyframes loginCardIn {
+  from { opacity: 0; transform: translateY(16px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+/* Flottement de l'icone. */
+@keyframes loginFloat {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-5px); }
+}
+/* Apparition du message d'erreur. */
+@keyframes loginFadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+/* Accessibilite : toute personne ayant demande a limiter les animations
+   (preference systeme) obtient un ecran strictement statique. */
+@media (prefers-reduced-motion: reduce) {
+  .login-screen,
+  .login-screen__watermark,
+  .login-card,
+  .login-card__icon,
+  .login-card__error {
+    animation: none;
+  }
+  .login-card__link::after { transition: none; }
 }
 
 .app-main {
@@ -562,7 +696,385 @@ input:focus-visible,
   display: none;
 }
 
-/* ---------- Cloche de notification ---------- */
+/* ---------- Ambiance visuelle du Dashboard ------------------------------
+   Le fond reste propre à #viewDashboard : aucune autre rubrique, modale ou
+   menu n'hérite de cette composition. Deux halos très discrets évoquent la
+   vision d'ensemble et la progression ; une grille de repères s'estompe vers
+   le bas. Les cartes restent opaques et passent toujours au premier plan. */
+#viewDashboard {
+  position: relative;
+  isolation: isolate;
+  min-height: calc(100vh - 72px);
+  margin: -24px -32px -48px;
+  padding: 24px 32px 48px;
+  overflow: hidden;
+  background: linear-gradient(145deg,#111722 0%,#12141a 48%,#151225 100%);
+  transition: background 0.2s ease;
+}
+:root[data-theme='dark'] #viewDashboard {
+  background:
+    radial-gradient(ellipse 780px 520px at 90% 2%,rgba(59,130,246,.13),transparent 68%),
+    radial-gradient(ellipse 700px 560px at 0% 100%,rgba(99,102,241,.09),transparent 70%),
+    linear-gradient(145deg,#111722 0%,#12141a 48%,#151225 100%);
+}
+:root[data-theme='light'] #viewDashboard {
+  background:
+    radial-gradient(ellipse 760px 480px at 88% 4%,rgba(59,130,246,.09),transparent 68%),
+    radial-gradient(ellipse 680px 520px at 4% 96%,rgba(99,102,241,.055),transparent 70%),
+    linear-gradient(145deg,#f8fbff 0%,#f5f7fb 48%,#f3f6fd 100%);
+}
+#viewDashboard::before,
+#viewDashboard::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+#viewDashboard::after {
+  background-image:
+    linear-gradient(rgba(108,140,255,.065) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(108,140,255,.065) 1px,transparent 1px);
+  background-size: 42px 42px;
+  -webkit-mask-image: linear-gradient(to bottom,rgba(0,0,0,.7),transparent 78%);
+  mask-image: linear-gradient(to bottom,rgba(0,0,0,.7),transparent 78%);
+}
+:root[data-theme='light'] #viewDashboard::after {
+  background-image:
+    linear-gradient(rgba(37,99,235,.06) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(37,99,235,.06) 1px,transparent 1px);
+}
+#viewDashboard .dash {
+  position: relative;
+  z-index: 1;
+}
+@media (max-width: 720px) {
+  #viewDashboard {
+    min-height: calc(100vh - 60px);
+    margin: -20px -16px -40px;
+    padding: 20px 16px 40px;
+  }
+  #viewDashboard::after { background-size: 34px 34px; opacity: .65; }
+}
+@media (max-width: 600px) {
+  #viewDashboard {
+    min-height: calc(100vh - 56px);
+    margin: -16px -14px -40px;
+    padding: 16px 14px 40px;
+  }
+}
+
+/* ---------- Ambiance visuelle de « Mes tâches » --------------------------
+   Le fond évoque l'organisation et le passage à l'action : bleu saphir,
+   cyan discret et grille de repères. Il reste propre à #viewTasks et ne
+   touche ni le Dashboard, ni les cartes, ni le tableau, ni les menus. */
+#viewTasks {
+  position: relative;
+  isolation: isolate;
+  min-height: calc(100vh - 72px);
+  margin: -24px -32px -48px;
+  padding: 24px 32px 48px;
+  overflow: hidden;
+  background: linear-gradient(145deg,#101923 0%,#111923 48%,#0f1d1d 100%);
+  transition: background 0.2s ease;
+}
+:root[data-theme='dark'] #viewTasks {
+  background:
+    radial-gradient(ellipse 780px 520px at 90% 2%,rgba(14,165,233,.12),transparent 68%),
+    radial-gradient(ellipse 700px 560px at 0% 100%,rgba(16,185,129,.07),transparent 72%),
+    linear-gradient(145deg,#101923 0%,#111923 48%,#0f1d1d 100%);
+}
+:root[data-theme='light'] #viewTasks {
+  background:
+    radial-gradient(ellipse 760px 500px at 88% 4%,rgba(14,165,233,.08),transparent 68%),
+    radial-gradient(ellipse 650px 520px at 4% 96%,rgba(16,185,129,.055),transparent 72%),
+    linear-gradient(145deg,#f8fbff 0%,#f4f8fb 48%,#f0f7f7 100%);
+}
+#viewTasks::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(103,232,249,.06) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(103,232,249,.06) 1px,transparent 1px);
+  background-size: 40px 40px;
+  -webkit-mask-image: linear-gradient(to bottom,rgba(0,0,0,.72),transparent 82%);
+  mask-image: linear-gradient(to bottom,rgba(0,0,0,.72),transparent 82%);
+}
+:root[data-theme='light'] #viewTasks::after {
+  background-image:
+    linear-gradient(rgba(14,116,144,.06) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(14,116,144,.06) 1px,transparent 1px);
+}
+#viewTasks .mtasks2 {
+  position: relative;
+  z-index: 1;
+}
+@media (max-width: 720px) {
+  #viewTasks {
+    min-height: calc(100vh - 60px);
+    margin: -20px -16px -40px;
+    padding: 20px 16px 40px;
+  }
+  #viewTasks::after { background-size: 32px 32px; opacity: .65; }
+}
+@media (max-width: 600px) {
+  #viewTasks {
+    min-height: calc(100vh - 56px);
+    margin: -16px -14px -40px;
+    padding: 16px 14px 40px;
+  }
+}
+
+/* ---------- Ambiance visuelle de « Progression » --------------------------
+   Indigo et vert très discret évoquent les mesures, les tendances et la
+   progression vers les objectifs. Le décor reste propre à #viewProgression
+   et ne modifie ni les graphiques, ni les cartes, ni les menus. */
+#viewProgression {
+  position: relative;
+  isolation: isolate;
+  min-height: calc(100vh - 72px);
+  margin: -24px -32px -48px;
+  padding: 24px 32px 48px;
+  overflow: hidden;
+  background: linear-gradient(145deg,#101521 0%,#17172b 48%,#101d22 100%);
+  transition: background 0.2s ease;
+}
+:root[data-theme='dark'] #viewProgression {
+  background:
+    radial-gradient(ellipse 780px 520px at 90% 2%,rgba(99,102,241,.11),transparent 68%),
+    radial-gradient(ellipse 700px 560px at 0% 100%,rgba(16,185,129,.055),transparent 72%),
+    linear-gradient(145deg,#101521 0%,#17172b 48%,#101d22 100%);
+}
+:root[data-theme='light'] #viewProgression {
+  background:
+    radial-gradient(ellipse 780px 520px at 90% 3%,rgba(79,70,229,.085),transparent 68%),
+    radial-gradient(ellipse 700px 540px at 2% 98%,rgba(16,185,129,.05),transparent 72%),
+    linear-gradient(145deg,#f9faff 0%,#f5f8fd 48%,#f5faf9 100%);
+}
+#viewProgression::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(79,70,229,.06) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(79,70,229,.06) 1px,transparent 1px);
+  background-size: 40px 40px;
+  -webkit-mask-image: linear-gradient(to bottom,rgba(0,0,0,.68),transparent 84%);
+  mask-image: linear-gradient(to bottom,rgba(0,0,0,.68),transparent 84%);
+}
+:root[data-theme='light'] #viewProgression::after {
+  background-image:
+    linear-gradient(rgba(79,70,229,.06) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(79,70,229,.06) 1px,transparent 1px);
+}
+#viewProgression .pg {
+  position: relative;
+  z-index: 1;
+}
+@media (max-width: 720px) {
+  #viewProgression {
+    min-height: calc(100vh - 60px);
+    margin: -20px -16px -40px;
+    padding: 20px 16px 40px;
+  }
+  #viewProgression::after { background-size: 32px 32px; opacity: .65; }
+}
+@media (max-width: 600px) {
+  #viewProgression {
+    min-height: calc(100vh - 56px);
+    margin: -16px -14px -40px;
+    padding: 16px 14px 40px;
+  }
+}
+
+/* ---------- Ambiance visuelle de « Preuves » ------------------------------
+   Turquoise et émeraude évoquent la traçabilité, la validation et la
+   confiance. Le décor reste propre à #viewPreuves et ne modifie ni les
+   cartes, ni les filtres, ni les modales de prévisualisation. */
+#viewPreuves {
+  position: relative;
+  isolation: isolate;
+  min-height: calc(100vh - 72px);
+  margin: -24px -32px -48px;
+  padding: 24px 32px 48px;
+  overflow: hidden;
+  background: linear-gradient(145deg,#0f1b1a 0%,#10231f 48%,#101a27 100%);
+  transition: background 0.2s ease;
+}
+:root[data-theme='dark'] #viewPreuves {
+  background:
+    radial-gradient(ellipse 780px 520px at 90% 2%,rgba(16,185,129,.1),transparent 68%),
+    radial-gradient(ellipse 700px 560px at 0% 100%,rgba(6,182,212,.06),transparent 72%),
+    linear-gradient(145deg,#0f1b1a 0%,#10231f 48%,#101a27 100%);
+}
+:root[data-theme='light'] #viewPreuves {
+  background:
+    radial-gradient(ellipse 780px 520px at 90% 3%,rgba(16,185,129,.075),transparent 68%),
+    radial-gradient(ellipse 700px 540px at 2% 98%,rgba(6,182,212,.045),transparent 72%),
+    linear-gradient(145deg,#f8fdfb 0%,#f5fafb 48%,#f4fafc 100%);
+}
+#viewPreuves::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(13,148,136,.06) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(13,148,136,.06) 1px,transparent 1px);
+  background-size: 40px 40px;
+  -webkit-mask-image: linear-gradient(to bottom,rgba(0,0,0,.65),transparent 84%);
+  mask-image: linear-gradient(to bottom,rgba(0,0,0,.65),transparent 84%);
+}
+#viewPreuves .preuves-container {
+  position: relative;
+  z-index: 1;
+}
+@media (max-width: 720px) {
+  #viewPreuves {
+    min-height: calc(100vh - 60px);
+    margin: -20px -16px -40px;
+    padding: 20px 16px 40px;
+  }
+  #viewPreuves::after { background-size: 32px 32px; opacity: .65; }
+}
+@media (max-width: 600px) {
+  #viewPreuves {
+    min-height: calc(100vh - 56px);
+    margin: -16px -14px -40px;
+    padding: 16px 14px 40px;
+  }
+}
+
+/* ---------- Ambiance visuelle de « Retards » ------------------------------
+   Corail et orange brûlé reprennent le dégradé rouge → orange du motif du
+   titre et évoquent le dépassement d'une échéance, la vigilance et la reprise
+   en main. Le décor reste propre à #viewRetards. */
+#viewRetards {
+  position: relative;
+  isolation: isolate;
+  min-height: calc(100vh - 72px);
+  margin: -24px -32px -48px;
+  padding: 24px 32px 48px;
+  overflow: hidden;
+  background: linear-gradient(145deg,#1b1418 0%,#211719 48%,#17151a 100%);
+  transition: background 0.2s ease;
+}
+:root[data-theme='dark'] #viewRetards {
+  background:
+    radial-gradient(ellipse 780px 520px at 90% 2%,rgba(239,68,68,.11),transparent 68%),
+    radial-gradient(ellipse 700px 560px at 0% 100%,rgba(249,115,22,.065),transparent 72%),
+    linear-gradient(145deg,#1b1418 0%,#211719 48%,#17151a 100%);
+}
+:root[data-theme='light'] #viewRetards {
+  background:
+    radial-gradient(ellipse 780px 520px at 90% 3%,rgba(239,68,68,.075),transparent 68%),
+    radial-gradient(ellipse 700px 540px at 2% 98%,rgba(249,115,22,.045),transparent 72%),
+    linear-gradient(145deg,#fffaf8 0%,#fff8f5 48%,#fff9f2 100%);
+}
+#viewRetards::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(239,68,68,.065) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(249,115,22,.065) 1px,transparent 1px);
+  background-size: 44px 44px;
+  -webkit-mask-image: linear-gradient(to bottom,rgba(0,0,0,.68),transparent 84%);
+  mask-image: linear-gradient(to bottom,rgba(0,0,0,.68),transparent 84%);
+}
+#viewRetards .retards-container {
+  position: relative;
+  z-index: 1;
+}
+@media (max-width: 720px) {
+  #viewRetards {
+    min-height: calc(100vh - 60px);
+    margin: -20px -16px -40px;
+    padding: 20px 16px 40px;
+  }
+  #viewRetards::after { background-size: 32px 32px; opacity: .65; }
+}
+@media (max-width: 600px) {
+  #viewRetards {
+    min-height: calc(100vh - 56px);
+    margin: -16px -14px -40px;
+    padding: 16px 14px 40px;
+  }
+}
+
+/* ---------- Ambiance visuelle de « Rappels » ------------------------------
+   Indigo/cyan évoquent la vigilance, l'anticipation et l'organisation des
+   échéances. Le décor reste propre à #viewReminders et ne modifie ni le
+   tableau, ni les cartes KPI, ni la pagination, ni les menus flottants. */
+#viewReminders {
+  position: relative;
+  isolation: isolate;
+  min-height: calc(100vh - 72px);
+  margin: -24px -32px -48px;
+  padding: 24px 32px 48px;
+  overflow: hidden;
+  background: linear-gradient(145deg,#111827 0%,#15172a 48%,#101a27 100%);
+  transition: background 0.2s ease;
+}
+:root[data-theme='dark'] #viewReminders {
+  background:
+    radial-gradient(ellipse 780px 520px at 90% 2%,rgba(99,102,241,.12),transparent 68%),
+    radial-gradient(ellipse 700px 560px at 0% 100%,rgba(14,165,233,.07),transparent 72%),
+    linear-gradient(145deg,#111827 0%,#15172a 48%,#101a27 100%);
+}
+:root[data-theme='light'] #viewReminders {
+  background:
+    radial-gradient(ellipse 760px 500px at 88% 4%,rgba(99,102,241,.085),transparent 68%),
+    radial-gradient(ellipse 680px 520px at 4% 96%,rgba(14,165,233,.05),transparent 72%),
+    linear-gradient(145deg,#f8faff 0%,#f5f8fd 48%,#f3f7fc 100%);
+}
+#viewReminders::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(99,102,241,.06) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(99,102,241,.06) 1px,transparent 1px);
+  background-size: 40px 40px;
+  -webkit-mask-image: linear-gradient(to bottom,rgba(0,0,0,.65),transparent 82%);
+  mask-image: linear-gradient(to bottom,rgba(0,0,0,.65),transparent 82%);
+}
+:root[data-theme='light'] #viewReminders::after {
+  background-image:
+    linear-gradient(rgba(109,40,217,.06) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(109,40,217,.06) 1px,transparent 1px);
+}
+#viewReminders .rappels {
+  position: relative;
+  z-index: 1;
+}
+@media (max-width: 720px) {
+  #viewReminders {
+    min-height: calc(100vh - 60px);
+    margin: -20px -16px -40px;
+    padding: 20px 16px 40px;
+  }
+  #viewReminders::after { background-size: 32px 32px; opacity: .65; }
+}
+@media (max-width: 600px) {
+  #viewReminders {
+    min-height: calc(100vh - 56px);
+    margin: -16px -14px -40px;
+    padding: 16px 14px 40px;
+  }
+}
+
+
 .bell {
   position: relative;
 }
@@ -614,20 +1126,80 @@ input:focus-visible,
   display: none;
 }
 
+/* Centre de notifications de la cloche : porté dans <body> (is-portal) hors
+   du topbar masqué — thèmes clair/sombre via variables, comme les autres
+   menus (.row-menu__list, .retards-floatmenu). Défilement interne borné. */
 .bell__menu {
   position: absolute;
   right: 0;
   top: calc(100% + 8px);
-  min-width: 240px;
-  max-width: 320px;
-  background: var(--sidebar-bg);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  min-width: 260px;
+  max-width: 340px;
+  max-height: 60vh;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
   padding: 10px;
   z-index: 15;
   animation: popIn 0.15s ease;
 }
+.bell__menu.is-portal {
+  position: fixed;
+  inset: auto;
+  z-index: 1000;
+}
+[data-theme='dark'] .bell__menu {
+  background: #262c3b;
+  border-color: rgba(255, 255, 255, 0.16);
+}
+.bell__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 2px 8px 6px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text);
+}
+.bell__head em {
+  font-style: normal;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.bell__group {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 8px 4px;
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+.bell__group em {
+  font-style: normal;
+  margin-left: auto;
+  background: var(--bg-hover);
+  border-radius: 999px;
+  padding: 1px 7px;
+  font-size: 10px;
+}
+.bell__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.bell__dot--late { background: #ef4444; }
+.bell__dot--rem { background: #2563eb; }
+[data-theme='dark'] .bell__dot--late { background: #f87171; }
+[data-theme='dark'] .bell__dot--rem { background: #93c5fd; }
 .bell__list {
   list-style: none;
   margin: 0;
@@ -635,27 +1207,62 @@ input:focus-visible,
   display: flex;
   flex-direction: column;
   gap: 2px;
-  font-size: 13px;
 }
 .bell__item {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
   width: 100%;
   text-align: left;
   border: none;
   background: none;
   padding: 8px;
   border-radius: 6px;
-  color: #ffffff;
+  color: var(--text);
   font-size: 13px;
   transition: background-color 0.12s ease;
 }
 .bell__item:hover {
-  background: rgba(255, 255, 255, 0.15);
+  background: var(--bg-hover);
+  color: var(--accent);
 }
-.bell__empty {
+.bell__item-title {
+  min-width: 0;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.bell__item-meta {
+  flex: none;
+  font-size: 11px;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.bell__more {
+  list-style: none;
+  padding: 6px 8px;
+  font-size: 11.5px;
+  color: var(--text-muted);
+}
+.bell__allread {
   margin: 0;
+  padding: 10px 8px;
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.75);
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+[data-theme='dark'] .bell__item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #a8c0ff;
+}
+@media (max-width: 480px) {
+  .bell__menu.is-portal {
+    left: 8px;
+    right: 8px;
+    max-width: none;
+  }
 }
 
 /* ---------- Dashboard (maquette Doli) ---------- */
@@ -751,32 +1358,46 @@ input:focus-visible,
 @media (max-width: 700px) {
   .dash__kpis { grid-template-columns: 1fr; }
 }
+/* 2 colonnes depuis le nettoyage du Dashboard : « Mes tâches » gagne la
+   largeur de l'ancienne colonne gauche (≈ 72 % de la grille au lieu de 52 %). */
 .dash__midrow {
   display: grid;
-  grid-template-columns: minmax(200px, 1fr) minmax(0, 2.2fr) minmax(200px, 1fr);
+  grid-template-columns: minmax(0, 2.6fr) minmax(240px, 1fr);
   gap: 18px;
+  /* Colonnes TOTALEMENT indépendantes : chacune prend sa hauteur naturelle,
+     dictée par son propre contenu. « Mes tâches » suit donc le nombre de
+     tâches affichées, et la colonne de droite n'est plus influencée par elle
+     (et inversement). */
   align-items: start;
 }
 @media (max-width: 1100px) {
-  .dash__midrow { grid-template-columns: 1fr; }
-  .dash__midrow > .dash__kpis--secondary,
+  .dash__midrow {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
   .dash__midrow > .dash__col-side {
     position: static;
+    align-self: start;
     max-height: none;
     overflow: visible;
   }
+  .dash__col-side > .dash-kpi--perf {
+    flex: 0 0 auto;
+    min-height: 0;
+  }
 }
-/* Colonnes latérales figées pendant le défilement de « Mes tâches » :
-   elles restent visibles (sticky sous la topbar) sans que leur contenu
-   ne soit modifié. Désactivé sur mobile (voir media query ci-dessus). */
-.dash__midrow > .dash__kpis--secondary,
+/* Colonne latérale droite du Dashboard : sans défilement propre. Elle
+   épouse la hauteur de la ligne (donc celle de « Mes tâches ») ; c'est
+   « Activité récente » qui absorbe l'espace restant, si bien que la carte
+   Performance, dernière, garde sa taille naturelle ET finit au même niveau
+   que la liste. */
 .dash__midrow > .dash__col-side {
-  position: sticky;
-  top: 92px;
-  align-self: start;
-  max-height: calc(100vh - 110px);
-  overflow-y: auto;
-  scrollbar-width: thin;
+  position: static;
+  top: auto;
+  align-self: stretch;
+  max-height: none;
+  overflow: visible;
+  scrollbar-width: auto;
 }
 .dash__kpi-right {
   display: flex;
@@ -1099,8 +1720,8 @@ input:focus-visible,
   font-size: 11.5px;
   padding: 2px 0 0;
 }
-/* --- Colonne gauche : comme l'image — Répartition à gauche sous la
-   progression globale, Performance : résumé juste en dessous --- */
+/* --- Colonne gauche : la carte Performance vit désormais dans .dash__col-side
+   (Dashboard nettoyé) ; ce conteneur n'est plus référencé dans le HTML. --- */
 .dash__kpis--secondary {
   grid-template-columns: 1fr;
   display: grid;
@@ -1108,22 +1729,26 @@ input:focus-visible,
   width: 100%;
   align-content: start;
 }
-.dash__kpis--secondary .dash-card.dash-kpi {
+/* Carte « Performance : résumé » dans .dash__col-side : compacte (colonne
+   étroite), kicker aligné à gauche comme les titres des cartes voisines,
+   apparition douce une seule fois (carte statique — pas de scintillement
+   lors des re-rendus). */
+.dash__col-side .dash-card.dash-kpi {
   width: 100%;
   max-width: 100%;
-  padding: 12px 12px 10px;
+  padding: 14px 14px 12px;
   gap: 6px;
   justify-content: flex-start;
   align-items: stretch;
   text-align: left;
   border-radius: 12px;
   overflow: hidden;
+  animation: popIn 0.2s ease;
 }
-/* Répartition : donut à gauche + légende à droite + total en bas. */
-.dash__kpis--secondary .dash-card__kicker {
+.dash__col-side .dash-card__kicker {
   margin-bottom: 2px;
-  text-align: center;
-  font-size: 10px;
+  text-align: left;
+  font-size: 10.5px;
 }
 .dash__kpis--secondary .dash-kpi__dist {
   flex-direction: row;
@@ -1166,56 +1791,86 @@ input:focus-visible,
 .dash__kpis--secondary .dash-legend strong {
   font-size: 11px;
 }
-.dash__kpis--secondary .dash-kpi__delta {
-  text-align: center;
+.dash__col-side .dash-kpi__delta {
+  text-align: left;
   font-size: 10.5px;
 }
-/* Performance : résumé — texte intro, liste à pastilles, 3 jauges %. */
-.dash__kpis--secondary .dash-kpi__perf {
-  gap: 7px;
+/* Performance : résumé — texte intro, liste à pastilles, 3 jauges %.
+   Re-scopé .dash__col-side (la carte a quitté .dash__kpis--secondary) :
+   gap aéré (10px) pour la colonne étroite, intro sans troncature (la
+   phrase complète reste lisible, agréable à la vue). */
+.dash__col-side .dash-kpi__perf {
+  gap: 10px;
   width: 100%;
 }
-.dash__kpis--secondary .dash-perf-intro {
-  margin: 0;
-  font-size: 11px;
-  font-weight: 500;
-  line-height: 1.45;
-  color: var(--text-muted);
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-.dash__kpis--secondary .dash-perf-list {
+.dash__col-side .dash-perf-list {
   font-size: 11px;
   gap: 5px;
 }
-.dash__kpis--secondary .dash-perf-list li {
+.dash__col-side .dash-perf-list li {
   line-height: 1.4;
   gap: 7px;
 }
-.dash__kpis--secondary .dash-perf-dot {
+.dash__col-side .dash-perf-dot {
   width: 9px;
   height: 9px;
 }
-.dash__kpis--secondary .dash-perf-bars {
+.dash__col-side .dash-perf-bars {
   display: flex;
   flex-direction: column;
   gap: 6px;
   width: 100%;
 }
-.dash__kpis--secondary .dash-perf-bar {
+.dash__col-side .dash-perf-bar {
   gap: 3px;
 }
-.dash__kpis--secondary .dash-perf-bar__head {
+.dash__col-side .dash-perf-bar__head {
   font-size: 11px;
 }
-.dash__kpis--secondary .dash-perf-bar__track {
+.dash__col-side .dash-perf-bar__track {
   height: 6px;
 }
-/* « Comprendre mes statistiques » : sous « Performance : résumé »
-   (colonnes empilées : Répartition en haut, puis Performance, puis celle-ci),
-   avec une typo compacte harmonisée aux KPIs. */
+/* Lisibilité de « Performance : résumé » : surcharges limitées à cette carte
+   pour ne pas agrandir les cartes voisines de la colonne droite. */
+/* Densité : carte plus compacte (padding 18 -> 14, titre moins éloigné). */
+.dash__col-side .dash-kpi--perf {
+  padding: 14px;
+}
+.dash__col-side .dash-kpi--perf .dash-card__kicker {
+  margin-bottom: 8px;
+  font-size: 12px;
+  line-height: 1.35;
+}
+.dash__col-side .dash-kpi--perf .dash-perf-list {
+  font-size: 12px;
+  line-height: 1.45;
+  gap: 5px;
+}
+.dash__col-side .dash-kpi--perf .dash-perf-dot {
+  width: 10px;
+  height: 10px;
+}
+.dash__col-side .dash-kpi--perf .dash-perf-bars {
+  gap: 6px;
+}
+.dash__col-side .dash-kpi--perf .dash-perf-bar__head {
+  font-size: 12px;
+  line-height: 1.4;
+}
+.dash__col-side .dash-kpi--perf .dash-perf-bar__head strong {
+  font-size: 12.5px;
+  font-weight: 800;
+}
+.dash__col-side .dash-kpi--perf > .dash-kpi__delta {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+.dash__col-side .dash-kpi--perf .dash-kpi__perf {
+  gap: 8px;
+}
+/* « Comprendre mes statistiques » (section supprimée du Dashboard) :
+   règles conservées inertes — aucune carte ne porte plus .dash-kpi--learn. */
 .dash-kpi--learn .dash-learn-list {
   margin: 0 0 10px;
   gap: 7px;
@@ -1286,9 +1941,10 @@ input:focus-visible,
 .dash-task-list .dash-task-card {
   width: 100%;
   display: grid;
-  grid-template-columns: minmax(0, 2.4fr) minmax(160px, 1fr) minmax(0, auto);
+  grid-template-columns: minmax(0, 2fr) minmax(100px, 0.6fr) minmax(0, auto);
   grid-template-areas: 'title adv situation';
   align-items: center;
+  justify-items: start center start;
   gap: 18px;
   min-height: 50px;
   padding: 8px 16px;
@@ -1346,7 +2002,7 @@ input:focus-visible,
 .dash-minilist .dash-task-card {
   width: 100%;
   display: grid;
-  grid-template-columns: minmax(0, 2.4fr) minmax(160px, 1fr) minmax(0, auto);
+  grid-template-columns: minmax(0, 2fr) minmax(100px, 0.6fr) minmax(0, auto);
   grid-template-areas: 'title adv situation';
   align-items: center;
   gap: 18px;
@@ -1453,9 +2109,12 @@ input:focus-visible,
 }
 .dtask {
   display: grid;
-  grid-template-columns: minmax(0, 2.4fr) minmax(160px, 1fr) minmax(0, auto);
+  /* Deux couloirs extérieurs égaux encadrent un couloir central fixe :
+     Avancement estimé + Statut sont ainsi sur l'axe médian de la carte. */
+  grid-template-columns: minmax(0, 1fr) minmax(170px, 180px) minmax(0, 1fr);
   gap: 18px;
   align-items: center;
+  justify-items: start center end;
   padding: 14px 18px;
   background: var(--bg);
   border: 1px solid var(--border);
@@ -1501,9 +2160,17 @@ input:focus-visible,
 .dtask__mid {
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 7px;
+  width: 100%;
   min-width: 0;
+  justify-self: center;
+  text-align: center;
 }
+/* La jauge remplit exactement le couloir médian : son centre et celui des
+   libellés « Avancement estimé » puis « Statut » partagent le même axe. */
+.dtask__mid .mtask__progress{width:100%;min-width:0}
+.dtask__mid .mtask__progress-track{width:100%}
 .dtask__adv-label {
   font-size: 10.5px;
   font-weight: 700;
@@ -1594,6 +2261,15 @@ input:focus-visible,
   padding: 6px 10px;
   font-size: 11px;
 }
+/* Dashboard mobile : les trois zones ne peuvent plus tenir côte à côte.
+   Le bloc Avancement / Statut reste centré sur sa ligne ; la situation passe
+   sous les métadonnées, alignée à gauche comme le reste de la carte. */
+@media (max-width:720px) {
+  .dtask{grid-template-columns:1fr;justify-items:stretch;gap:12px}
+  .dtask__mid{justify-self:stretch}
+  .dtask__side{justify-self:stretch;align-items:flex-start;text-align:left}
+  .dtask__btns{justify-content:flex-start}
+}
 .dash-card__links {
   display: flex;
   flex-direction: row;
@@ -1622,6 +2298,49 @@ input:focus-visible,
   display: flex;
   flex-direction: column;
   gap: 14px;
+}
+/* Performance : résumé entièrement pilotée par son contenu : ni croissance,
+   ni plancher de hauteur, ni répartition verticale. Le même rendu sur mobile
+   (voir la réinitialisation ci-dessous). */
+.dash__col-side > .dash-kpi--perf {
+  flex: 0 0 auto;
+  min-height: 0;
+  justify-content: flex-start;
+}
+/* Même mécanique que la carte « Paramètres des rappels » dans sa rubrique :
+   SEULE Activité récente (2e carte) absorbe l'espace restant, et ses 0 à 6
+   entrées sont centrées dans cet espace — donc aucun vide en bas. Performance,
+   dernière carte, reste compacte. */
+.dash__col-side > .dash-card:nth-child(2) {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+}
+.dash__col-side > .dash-card:nth-child(2) .dash-activity {
+  flex: 1 1 auto;
+  min-height: 0;
+  gap: 6px;
+  margin-bottom: 0;
+}
+/* Remplissage integral : chaque ligne porte flex-grow:1 (pas de centrage, pas de plafond) donc les entrees occupent toute la section, du haut vers le bas, sans grand vide - meme avec 6 activites. */
+.dash__col-side > .dash-card:nth-child(2) .dash-activity__item {
+  flex: 1 1 auto;
+  min-height: 34px;
+  max-height: none;
+  align-items: center;
+}
+
+/* Carte sans activité : le message reste centré dans la carte devenue haute. */
+.dash__col-side > .dash-card:nth-child(2) .dash-minilist__empty {
+  margin: auto 0;
+}
+/* Réinitialisation placée APRÈS la règle desktop (même spécificité) :
+   sous 1100px, Performance reprend sa hauteur naturelle quand les colonnes
+   sont empilées, et ne cherche plus à égaliser le bas de « Mes tâches ». */
+@media (max-width:1100px) {
+  .dash__midrow { align-items: start; }
+  .dash__midrow > .dash__col-side { align-self: start; }
+  .dash__col-side > .dash-kpi--perf { flex: 0 0 auto; min-height: 0; }
 }
 .dash-minilist {
   display: flex;
@@ -1699,7 +2418,7 @@ input:focus-visible,
 .dash-perf-bar--mid .dash-perf-bar__track span { background: var(--badge-doing-text); }
 .dash-perf-bar--bad .dash-perf-bar__track span { background: var(--badge-todo-text); }
 .dash-activity { display: flex; flex-direction: column; gap: 9px; margin-bottom: 4px; }
-.dash-activity__item { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; padding: 10px 12px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); min-width: 0; line-height: 1.45; }
+.dash-activity__item { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; padding: 8px 10px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); min-width: 0; line-height: 1.45; }
 .dash-activity__icon { width: 18px; height: 18px; border-radius: 50%; background: var(--bg-hover); color: var(--text-muted); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 10px; }
 .dash-activity__item--create .dash-activity__icon { color: var(--accent); }
 .dash-activity__item--proof .dash-activity__icon { color: var(--badge-doing-text); }
@@ -1889,12 +2608,20 @@ input:focus-visible,
   min-width: 0;
 }
 .mtasks2__side {
+  /* Flux normal : ici le couloir NE doit PAS se figer — choix inverse à
+     celui de Rappels et Retards, eux figés sur toute la page. La colonne
+     défile donc avec la rubrique, et SANS barre de défilement propre : les
+     4 cartes s'affichent d'un seul bloc. */
   flex: 0 0 260px;
-  position: sticky;
-  top: 76px;
+  position: static;
+  padding-top: 8px;
+  /* Conserve l'alignement initial : 8px de padding - 15px de marge
+     reproduisent le décalage visuel net de -7px. */
+  margin-top: -15px;
   display: flex;
   flex-direction: column;
   gap: 14px;
+  min-width: 0;
 }
 .mtasks2__card {
   background: #fff;
@@ -1939,6 +2666,9 @@ input:focus-visible,
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
+  /* Le calage -7px (centrage sur le titre h2) est porté par le conteneur
+     .mtasks2__side (margin-top:-15px + padding-top:8px) : aucune marge
+     négative ici, pour ne pas être rognée par le défilement interne. */
 }
 .mtasks2__bell {
   position: relative;
@@ -2236,7 +2966,7 @@ input:focus-visible,
    CSS) : chaque valeur tombe pile sous le titre de sa colonne. */
 .mtasks2__colhead,
 .mtasks2-row {
-  --mtasks2-cols: minmax(0, 1.7fr) minmax(0, 0.78fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 0.95fr) minmax(0, 1.25fr);
+  --mtasks2-cols: minmax(0, 1.7fr) minmax(0, 0.78fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 0.95fr) minmax(118px, 1.3fr);
   display: grid;
   grid-template-columns: var(--mtasks2-cols);
   gap: 8px;
@@ -2244,6 +2974,10 @@ input:focus-visible,
      colonnes : l'alignement valeur ↔ titre reste garanti. */
   min-width: 660px;
 }
+/* Le titre Actions est centré dans la 6e colonne, exactement au-dessus du
+   couloir des boutons Commencer/Continuer, Voir détails et ⋯. */
+.mtasks2__colhead span:last-child { text-align: center; }
+.mtasks2__list .mtasks2-cell--actions { align-items: center; justify-content: center; }
 /* En-têtes + lignes défilent ensemble (écrans étroits). */
 .mtasks2__tablewrap {
   overflow-x: auto;
@@ -2612,6 +3346,10 @@ input:focus-visible,
   flex-wrap: wrap;
   margin-top: 12px;
 }
+/* Indispensable : display:flex ci-dessus l'emporte sur la règle navigateur
+   [hidden]{display:none} — sans cette ligne, la barre des retards masquée via
+   hidden resterait visible (même piège que .pg-menu__pop). */
+.mtasks2__pagination[hidden] { display: none; }
 .mtasks2__page-info {
   font-size: 11.5px;
   color: var(--text-muted);
@@ -2739,6 +3477,11 @@ input:focus-visible,
   background: #fff;
 }
 [data-theme='dark'] .mtasks2__ring::before { background: var(--bg-elevated); }
+/* Piste de l'anneau en mode sombre : var(--border) comme les autres anneaux
+   de l'application (.stats__circle du dashboard, .pf-preview__donut des
+   Preuves) — le #eef2f7 codé en dur restait clair sur fond sombre. Aucun
+   changement en thème clair. */
+[data-theme='dark'] .mtasks2__ring { --track: var(--border); }
 .mtasks2__ring > span {
   position: relative;
   text-align: center;
@@ -2848,6 +3591,53 @@ input:focus-visible,
   width: 100%;
 }
 [data-theme='dark'] .mtasks2__select { background: var(--bg); }
+/* --- Filtres rapides (Mes taches) : memes menus deroulants que la rubrique
+   Rappels. Le <select> natif reste dans le DOM (source de verite + repli
+   sans JS) ; seul le bouton du composant est affiche. */
+.mtasks2__field select.doli-select__native{display:none}
+.mtasks2__field .doli-select{display:block;width:100%}
+.mtasks2__field .doli-select__control{display:flex;align-items:center;justify-content:space-between;gap:7px;width:100%;padding:7px 9px;border:1px solid var(--border);border-radius:8px;background:#fff;color:var(--text);font-family:inherit;font-size:11.5px;font-weight:500;cursor:pointer;transition:border-color .15s ease,box-shadow .15s ease,background-color .15s ease}
+.mtasks2__field .doli-select__control:hover{border-color:#bfdbfe;background:#f8fafc}
+.mtasks2__field .doli-select[data-open='true'] .doli-select__control,.mtasks2__field .doli-select__control:focus-visible{outline:none;border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.14)}
+.mtasks2__field .doli-select__value{min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.mtasks2__field .doli-select__chev{display:inline-flex;color:#64748b;transition:transform .18s ease;flex:none}
+.mtasks2__field .doli-select__chev svg{width:12px;height:12px;display:block}
+.mtasks2__field .doli-select[data-open='true'] .doli-select__chev{transform:rotate(180deg)}
+[data-theme='dark'] .mtasks2__field .doli-select__control{background:var(--bg);border-color:var(--border);color:var(--text)}
+[data-theme='dark'] .mtasks2__field .doli-select__control:hover{background:rgba(148,163,184,.12);border-color:#3b82f6}
+[data-theme='dark'] .mtasks2__field .doli-select__chev{color:var(--text-muted)}
+
+/* Panneaux des 4 menus « Filtres rapides » : rendu identique pour tous,
+   decrit UNE seule fois via la classe --compact posee par doliSelect.js
+   (et non par une liste d ids, impossible a desynchroniser). */
+.doli-select__list.doli-select__list--compact{background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:0 12px 32px rgba(15,23,42,.14),0 2px 8px rgba(15,23,42,.08);color:#334155;padding:6px;min-width:190px;font-size:11.5px}
+.doli-select__list.doli-select__list--compact .doli-select__opt{display:flex;align-items:center;justify-content:flex-start;gap:8px;padding:7px 12px;border-radius:999px;color:#334155;cursor:pointer}
+.doli-select__list.doli-select__list--compact .doli-select__opt::before{content:'';width:7px;height:7px;border-radius:50%;background:#94a3b8;flex:none}
+.doli-select__list.doli-select__list--compact .doli-select__opt:hover{background:#f8fafc}
+.doli-select__list.doli-select__list--compact .doli-select__opt[data-active='true']{background:#eff6ff;color:#2563eb}
+.doli-select__list.doli-select__list--compact .doli-select__opt[data-selected='true']{background:#eff6ff;color:#2563eb;font-weight:700}
+.doli-select__list.doli-select__list--compact .doli-select__tick{color:#2563eb;margin-left:auto}
+.doli-select__list.doli-select__list--compact::-webkit-scrollbar-thumb{background:#cbd5e1}
+[data-theme='dark'] .doli-select__list--compact{background:var(--bg-elevated);border-color:var(--border);color:var(--text);box-shadow:0 16px 40px rgba(0,0,0,.5)}
+[data-theme='dark'] .doli-select__list--compact .doli-select__opt{color:var(--text)}
+[data-theme='dark'] .doli-select__list--compact .doli-select__opt:hover{background:rgba(59,130,246,.1)}
+[data-theme='dark'] .doli-select__list--compact .doli-select__opt[data-active='true']{background:rgba(59,130,246,.18);color:#93c5fd}
+[data-theme='dark'] .doli-select__list--compact .doli-select__opt[data-selected='true']{background:rgba(59,130,246,.18);color:#93c5fd}
+[data-theme='dark'] .doli-select__list--compact .doli-select__tick{color:#93c5fd}
+
+/* Couleur de la pastille : une regle par valeur (jamais de liste d ids). */
+#doli-list-taskQuickSort .doli-select__opt[data-value='urgency']::before{background:#ef4444}
+#doli-list-taskQuickSort .doli-select__opt[data-value='priority']::before{background:#7c3aed}
+#doli-list-taskQuickSort .doli-select__opt[data-value='title']::before{background:#2563eb}
+#doli-list-taskQuickPriority .doli-select__opt[data-value='high']::before{background:#ef4444}
+#doli-list-taskQuickPriority .doli-select__opt[data-value='medium']::before{background:#2563eb}
+#doli-list-taskQuickPriority .doli-select__opt[data-value='low']::before{background:#16a34a}
+#doli-list-taskQuickStatus .doli-select__opt[data-value='doing']::before{background:#f59e0b}
+#doli-list-taskQuickStatus .doli-select__opt[data-value='done']::before{background:#16a34a}
+#doli-list-taskQuickStatus .doli-select__opt[data-value='delayed']::before{background:#ef4444}
+#doli-list-taskPeriodFilter .doli-select__opt[data-value='week']::before{background:#10b981}
+#doli-list-taskPeriodFilter .doli-select__opt[data-value='today']::before{background:#2563eb}
+#doli-list-taskPeriodFilter .doli-select__opt[data-value='month']::before{background:#7c3aed}
 .mtasks2__reset {
   display: flex;
   align-items: center;
@@ -2906,6 +3696,13 @@ input:focus-visible,
   }
   .mtasks2__side {
     position: static;
+    /* Colonne empilée SOUS la liste : neutralise figement + marges/padding. */
+    margin-top: 0;
+    padding-top: 0;
+    max-height: none;
+    overflow-y: visible;
+    overscroll-behavior: auto;
+    align-self: stretch;
     width: 100%;
   }
   .mtasks2__counts {
@@ -3211,6 +4008,58 @@ input:focus-visible,
   font-size: 13px;
   color: var(--text-muted);
   line-height: 1.5;
+  /* Un titre de tâche peut être très long (pas de mot, lien collé, etc.).
+     Sans ces deux propriétés, il SORT de la fenêtre ; avec elles, il se coupe
+     proprement, comme dans la fenêtre d'ajout / de modification de tâche. */
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+/* Même raison pour les libellés de boutons, longs sur petit écran. */
+.modal__actions button {
+  overflow-wrap: anywhere;
+}
+
+/* ---------- Fenêtre « Ajouter une preuve » ------------------------------
+   Elle utilisait la classe .modal générique (rayon 10 px, noir plat, sans
+   défilement) alors que la fenêtre de tâche a une identité bien plus soignée.
+   .modal--wide la rapproche de cette dernière : mêmes proportions, même
+   liseré d'accent, et surtout un défilement interne si le texte est long. */
+.modal--wide {
+  position: relative;
+  overflow: hidden;
+  max-width: 380px;
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+  padding: 26px 24px 22px;
+  border-radius: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background:
+    linear-gradient(90deg, transparent, var(--accent) 30%, #9db1ff 62%, transparent) top / 100% 3px no-repeat,
+    linear-gradient(160deg, #1b2130 0%, #151a24 58%, #10141d 100%);
+}
+/* En thème clair, la fenêtre passe en fond blanc. IL FAUT aussi redéfinir
+   les variables de couleur : la classe .modal les fixe en blanc (puisqu'elle
+   dessine normalement un panneau SOMBRE) et ne les change jamais pour le thème
+   clair. Sans ce bloc, le texte restait blanc sur fond blanc — invisible. */
+:root[data-theme='light'] .modal--wide {
+  border-color: rgba(15, 23, 42, 0.1);
+  --text: #1c2536;
+  --text-muted: #6b7689;
+  --border: #dfe4ee;
+  --bg: #ffffff;
+  --bg-elevated: #ffffff;
+  --bg-hover: #eef1f7;
+  background:
+    linear-gradient(90deg, transparent, var(--accent) 30%, #9db1ff 62%, transparent) top / 100% 3px no-repeat,
+    linear-gradient(160deg, #ffffff 0%, #f7f9fd 100%);
+  /* Ombre adaptée : l'ombre noire du thème sombre est trop lourde sur un
+     fond clair et fait « tache grise ». */
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.18);
+}
+.modal--wide h3 {
+  font-size: 17px;
+  margin-bottom: 10px;
+  overflow-wrap: anywhere;
 }
 .modal__actions {
   display: flex;
@@ -3233,10 +4082,14 @@ input:focus-visible,
 }
 .modal__actions--stack {
   flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
 }
 .modal__actions--stack button {
   width: 100%;
-  text-align: center;
+  text-align: left;
+  padding: 12px 14px;
+  font-size: 13.5px;
   background: transparent;
   border: 1px solid var(--border);
   color: var(--text);
@@ -3947,6 +4800,19 @@ input:focus-visible,
 }
 .row-menu__option--danger {
   color: #dc2626;
+}
+/* Option « Terminer la tâche » (vert) : compléter sans preuve, avec
+   confirmation. Même convention que --danger (couleur + hover clair/sombre). */
+.row-menu__option--success {
+  color: #16a34a;
+}
+.row-menu__option--success:hover {
+  background: #f0fdf4;
+  color: #15803d;
+}
+[data-theme='dark'] .row-menu__option--success:hover {
+  background: rgba(34, 197, 94, 0.15);
+  color: #4ade80;
 }
 .row-menu__option--danger:hover {
   background: #fef2f2;
@@ -5611,8 +6477,8 @@ input:focus-visible,
 }
 
 [data-theme='light'] .retards-table-card {
-  background: #f9fafb;
-  border: 1px solid #e5e7eb;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
 }
 
 .retards-table-card h3 {
@@ -5736,12 +6602,19 @@ input:focus-visible,
 }
 
 .retards-aside {
-  position: sticky;
-  /* Figée sous la barre supérieure collante (~56px) : les 3 cartes
-     « À propos du retard », « Rappel important » et « Un petit effort… »
-     restent immobiles pendant le défilement de la liste des retards. */
-  top: 76px;
-  align-self: start;
+  /* Couloir figé sur toute la page (voir .mtasks2__side) : position:fixed.
+     top 24px = padding haut de .app-main (topbar masquée). La piste de
+     230px de la grille reste réservée, donc la liste ne se décale pas. */
+  position: fixed;
+  top: 24px;
+  right: 32px;
+  width: 230px;
+  height: calc(100vh - 72px);   /* 24px (haut) + 48px (bas) : le bas du
+                           couloir finit au niveau du bas de la liste. */
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -5749,6 +6622,13 @@ input:focus-visible,
 }
 
 .aside-card {
+
+/* Les trois cartes du couloir Retards gardent leur taille naturelle ; seule
+   « Rappel important » absorbe la hauteur restante (regle plus bas), afin que
+   le bas de « Un petit effort aujourd hui… » soit au niveau du bas de la liste. */
+.retards-aside > .aside-card {
+  flex: 0 0 auto;
+}
   position: relative;
   overflow: hidden;
   background: #fff;
@@ -5794,56 +6674,83 @@ input:focus-visible,
 .aside-checks li { position: relative; padding-left: 17px; }
 .aside-checks li::before { content: '✓'; position: absolute; left: 0; top: 0; color: #2563eb; font-weight: 800; font-size: 10.5px; }
 
-/* Carte « À propos du retard » : bleu doux, la plus développée des trois */
+/* Carte « À propos du retard » : bleu saphir, motif de radar/repère.
+   Halo et trajectoire restent derrière le contenu grâce à isolation:isolate. */
 .aside-card--info {
-  border-color: rgba(37, 99, 235, 0.18);
-  background: linear-gradient(165deg, rgba(37, 99, 235, 0.08), rgba(37, 99, 235, 0.02) 55%),
-    var(--bg-elevated, #fff);
-  padding: 24px 12px 25px;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: 14px;
+  border-color: var(--border);
+  background: var(--bg-elevated);
+  box-shadow: inset 4px 0 0 #3b82f6,0 12px 28px rgba(15,23,42,.06);
+  padding: 16px 12px 17px;
 }
 .aside-card--info h4 { color: #1d4ed8; margin-bottom: 10px; }
-.aside-card--info > p:first-of-type { padding-bottom: 4px; line-height: 1.85; }
+.aside-card--info > p:first-of-type { color: #1e3a5f; padding-bottom: 4px; line-height: 1.6; }
 /* Bloc « Pris en compte dans : » bien séparé du texte du haut */
 .aside-card--info .aside-strong {
-  margin: 20px 0 11px;
-  padding-top: 17px;
+  margin: 13px 0 9px;
+  padding-top: 12px;
   border-top: 1px dashed rgba(37, 99, 235, 0.28);
 }
-.aside-card--info .aside-checks { gap: 13px; }
-.aside-card--info .aside-checks li { line-height: 1.65; }
+.aside-card--info .aside-checks { gap: 9px; }
+.aside-card--info .aside-checks li { line-height: 1.5; color: #334155; }
+.aside-card--info .aside-checks li::before { color: #2563eb; font-weight: 800; }
 .aside-card--info h4::before {
-  background-color: rgba(37, 99, 235, 0.12);
+  width: 24px;height: 24px;border-radius: 8px;background-color: rgba(37,99,235,.14);
+  box-shadow:0 4px 10px rgba(37,99,235,.12);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232563eb' stroke-width='2.4' stroke-linecap='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M12 11v5M12 8h.01'/%3E%3C/svg%3E");
 }
 :root[data-theme='dark'] .aside-card--info {
-  border-color: rgba(108, 140, 255, 0.3);
-  background: linear-gradient(165deg, rgba(108, 140, 255, 0.12), rgba(108, 140, 255, 0.03)),
-    var(--bg-elevated, #1a1d26);
+  border-color: var(--border);
+  background: var(--bg-elevated);
+  box-shadow: inset 4px 0 0 #60a5fa,0 12px 30px rgba(0,0,0,.26);
 }
-:root[data-theme='dark'] .aside-card--info h4 { color: #8ea2ff; }
+:root[data-theme='dark'] .aside-card--info h4 { color: #93c5fd; }
+:root[data-theme='dark'] .aside-card--info > p:first-of-type { color: #dbeafe; }
+:root[data-theme='dark'] .aside-card--info .aside-strong { color: #bfdbfe; border-top-color: rgba(96,165,250,.32); }
+:root[data-theme='dark'] .aside-card--info .aside-checks li { color: var(--text-muted); }
+:root[data-theme='dark'] .aside-card--info .aside-checks li::before { color: #60a5fa; }
 
-/* Carte « Rappel important » : violet doux comme la maquette + bouton */
+/* Carte « Rappel important » : vigilance indigo, halo et alerte professionnelle. */
+/* Carte « Rappel important » (2e du couloir) : seule carte a s etirer.
+   Elle grandit depuis son contenu (jamais flex-basis:0) et repartit sa
+   hauteur entre le titre et le bouton, pour que le bas du couloir -
+   donc de « Un petit effort aujourd hui… » - arrive au niveau du bas de
+   la liste des taches. */
+.retards-aside > .aside-card--rappel {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
 .aside-card--rappel,
 .aside-card--warning {
-  border-color: rgba(99, 102, 241, 0.22);
-  background: linear-gradient(165deg, rgba(99, 102, 241, 0.09), rgba(99, 102, 241, 0.02) 60%),
-    var(--bg-elevated, #fff);
+  position: relative;isolation: isolate;overflow: hidden;border-radius: 14px;border-color: var(--border);
+  background: var(--bg-elevated);
+  box-shadow: inset 4px 0 0 #6366f1,0 12px 28px rgba(15,23,42,.06);
 }
 .aside-card--rappel h4,
-.aside-card--warning h4 { color: #4f46e5; }
+.aside-card--warning h4 { color: #4338ca; }
 .aside-card--rappel h4::before,
 .aside-card--warning h4::before {
-  background-color: rgba(99, 102, 241, 0.13);
+  width: 24px;height: 24px;border-radius: 8px;background-color: rgba(99,102,241,.14);
+  box-shadow:0 4px 10px rgba(79,70,229,.12);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234f46e5' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z'/%3E%3C/svg%3E");
 }
+.aside-card--rappel p,
+.aside-card--warning p { color: #3730a3; line-height: 1.6; }
 :root[data-theme='dark'] .aside-card--rappel,
 :root[data-theme='dark'] .aside-card--warning {
-  border-color: rgba(129, 140, 248, 0.32);
-  background: linear-gradient(165deg, rgba(129, 140, 248, 0.12), rgba(129, 140, 248, 0.03)),
-    var(--bg-elevated, #1a1d26);
+  border-color: var(--border);
+  background: var(--bg-elevated);
+  box-shadow: inset 4px 0 0 #818cf8,0 12px 30px rgba(0,0,0,.24);
 }
 :root[data-theme='dark'] .aside-card--rappel h4,
-:root[data-theme='dark'] .aside-card--warning h4 { color: #a5b4fc; }
+:root[data-theme='dark'] .aside-card--warning h4 { color: #c7d2fe; }
+:root[data-theme='dark'] .aside-card--rappel p,
+:root[data-theme='dark'] .aside-card--warning p { color: #e0e7ff; }
 
 .aside-btn {
   margin-top: 11px;
@@ -5865,37 +6772,51 @@ input:focus-visible,
 }
 .aside-btn:hover { filter: brightness(1.08); }
 .aside-btn:active { transform: scale(0.98); }
-.aside-btn--violet { background: #6366f1; border-color: #6366f1; color: #fff; width: 100%; justify-content: center; }
-.aside-btn--violet:hover { background: #4f46e5; }
+.aside-btn--violet {
+  background: linear-gradient(135deg,#6366f1,#4f46e5);border-color: #4f46e5;color: #fff;
+  width: 100%;justify-content: center;box-shadow:0 7px 16px rgba(79,70,229,.22)
+}
+.aside-btn--violet:hover {
+  background: linear-gradient(135deg,#4f46e5,#4338ca);box-shadow:0 9px 20px rgba(79,70,229,.3)
+}
 
-/* Carte « Un petit effort aujourd'hui… » : verte, mini-bandeau motivation */
+/* Carte « Un petit effort aujourd'hui… » : vert émeraude, mouvement vers l’avant. */
 .aside-card--motivation {
-  border-color: rgba(22, 163, 74, 0.2);
-  background: linear-gradient(165deg, rgba(34, 197, 94, 0.1), rgba(34, 197, 94, 0.02) 60%),
-    var(--bg-elevated, #fff);
-  text-align: left;
+  position: relative;isolation: isolate;overflow: hidden;border-radius: 14px;border-color: var(--border);
+  background: var(--bg-elevated);
+  box-shadow: inset 4px 0 0 #10b981,0 12px 28px rgba(15,23,42,.06);text-align: left;
 }
-.aside-card--motivation h4 { color: #15803d; }
+.aside-card--motivation h4 { color: #047857; }
 .aside-card--motivation h4::before {
-  background-color: rgba(34, 197, 94, 0.14);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2315803d' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8 21h8M12 17v4M7 4h10v6a5 5 0 0 1-10 0V4Z'/%3E%3Cpath d='M7 6H4a1 1 0 0 0-1 1c0 2.5 2 4 4 4M17 6h3a1 1 0 0 1 1 1c0 2.5-2 4-4 4'/%3E%3C/svg%3E");
+  width: 24px;height: 24px;border-radius: 8px;background-color: rgba(16,185,129,.15);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23047857' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8 21h8M12 17v4M7 4h10v6a5 5 0 0 1-10 0V4Z'/%3E%3Cpath d='M7 6H4a1 1 0 0 0-1 1c0 2.5 2 4 4 4M17 6h3a1 1 0 0 1 1 1c0 2.5-2 4-4 4'/%3E%3C/svg%3E");
 }
-.aside-card--motivation p { font-weight: 600; color: var(--text-muted, #5b6678); font-size: 10.5px; }
+.aside-card--motivation p { color: #166534;font-weight: 650;font-size: 11.5px;line-height: 1.6; }
 :root[data-theme='dark'] .aside-card--motivation {
-  border-color: rgba(99, 217, 154, 0.3);
-  background: linear-gradient(165deg, rgba(99, 217, 154, 0.11), rgba(99, 217, 154, 0.03)),
-    var(--bg-elevated, #1a1d26);
+  border-color: var(--border);
+  background: var(--bg-elevated);
+  box-shadow: inset 4px 0 0 #34d399,0 12px 30px rgba(0,0,0,.24);
 }
-:root[data-theme='dark'] .aside-card--motivation h4 { color: #63d99a; }
+:root[data-theme='dark'] .aside-card--motivation h4 { color: #6ee7b7; }
 
-/* Responsive : aside sous le contenu principal sur écran étroit */
+/* Responsive : couloir sous le contenu principal sur écran étroit */
 @media (max-width: 1100px) {
   .retards-container {
     grid-template-columns: 1fr;
   }
   .retards-aside {
     position: static;
+    /* En 1 colonne (aside SOUS le contenu) : plus de collage ni largeur fixe,
+       sinon les cartes remonteraient dans le tableau. */
+    right: auto;
+    width: auto;
+    margin-top: 0;
+    height: auto;          /* la regle de base fixe height (et non max-height) */
+    max-height: none;
+    overflow-y: visible;
+    overscroll-behavior: auto;
   }
+  .retards-aside > .aside-card { flex: 0 0 auto; }
   .retards-kpis {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -5933,8 +6854,22 @@ input:focus-visible,
 .pg-card__titles h3 { margin: 0; font-family: 'Plus Jakarta Sans', var(--font); font-size: 13.5px; font-weight: 800; color: var(--text); }
 .pg-card__titles p { margin: 2px 0 0; font-size: 11.5px; color: var(--text-muted); }
 .pg-dots { color: var(--text-muted); opacity: .6; letter-spacing: 2px; font-size: 12px; }
+.pg-menu { position: relative; flex: none; margin-left: auto; }
+.pg-dots-btn { border: 0; background: transparent; color: var(--text-muted); opacity: .6; letter-spacing: 2px; font-size: 12px; font-weight: 800; line-height: 1; padding: 4px 6px; border-radius: 8px; cursor: pointer; transition: background .15s ease, opacity .15s ease; }
+.pg-dots-btn:hover { opacity: 1; background: var(--bg-hover); }
+.pg-dots-btn.is-custom { opacity: 1; color: var(--accent); }
+.pg-dots-btn.is-custom::after { content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); margin-left: 3px; vertical-align: 3px; }
+.pg-menu__pop { position: absolute; top: calc(100% + 6px); right: 0; z-index: 30; min-width: 190px; display: flex; flex-direction: column; gap: 2px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); padding: 6px; animation: popIn 0.15s ease; }
+/* Indispensable : le display:flex ci-dessus l'emporte sur la règle navigateur
+   `[hidden] { display: none }`, donc `pop.hidden = true` (ui.js) restait sans
+   effet et le menu ne se refermait jamais. Même convention que
+   .row-menu__list / .status-picker__menu / .progression-period-menu. */
+.pg-menu__pop[hidden] { display: none; }
+.pg-menu__pop button { border: 0; background: transparent; text-align: left; font-size: 12px; font-weight: 600; color: var(--text); border-radius: 8px; padding: 8px 10px; cursor: pointer; }
+.pg-menu__pop button:hover { background: var(--bg-hover); }
+.pg-menu__pop button[aria-checked="true"] { background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--accent); }
 .pg__grid-top { display: grid; grid-template-columns: minmax(0,1.55fr) minmax(0,1fr) minmax(0,1.15fr); gap: 14px; align-items: stretch; }
-.pg__grid-mid { display: grid; grid-template-columns: minmax(0,1.55fr) minmax(0,1.35fr); gap: 14px; align-items: stretch; }
+.pg__grid-mid { display: grid; grid-template-columns: minmax(0,1.15fr) minmax(0,1.05fr) minmax(0,1fr); gap: 14px; align-items: stretch; }
 .pg-day__body { display: flex; gap: 22px; align-items: center; }
 .pg-day__left { display: flex; flex-direction: column; align-items: center; gap: 10px; flex: none; }
 .pg-day__right { flex: 1; min-width: 0; border-left: 1px solid var(--border); padding-left: 20px; }
@@ -5978,30 +6913,45 @@ input:focus-visible,
 /* La carte « Détail » s'étire sur la hauteur de la ligne (align-items: stretch
    de .pg__grid-mid) : ses tuiles remplissent donc verticalement l'espace libre. */
 .pg-card--detail { display: flex; flex-direction: column; }
-.pg-detail__body { display: flex; flex: 1; min-height: 0; }
-.pg-tiles { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); grid-auto-rows: minmax(112px, 1fr); gap: 12px; flex: 1; min-width: 0; }
-.pg-tile { border-radius: 12px; padding: 18px 14px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7px; transition: transform .15s ease, box-shadow .15s ease; }
+.pg-detail__body { display: flex; flex: 1; min-height: 0; height: 100%; align-items: stretch; }
+.pg-tiles { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); grid-auto-rows: 1fr; gap: 12px; flex: 1; min-width: 0; height: 100%; min-height: 100%; align-content: stretch; align-items: stretch; }
+.pg-tile { border-radius: 12px; padding: 24px 14px; min-height: 150px; height: 100%; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 9px; transition: transform .15s ease, box-shadow .15s ease; }
 .pg-tile:hover { transform: translateY(-2px); box-shadow: 0 6px 16px color-mix(in srgb, var(--text) 10%, transparent); }
+/* Mise en évidence d'une tuile via le menu « ... » du Détail (pur visuel). */
+.pg-tile.is-focus { transform: translateY(-3px); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 55%, transparent), 0 8px 18px color-mix(in srgb, var(--text) 12%, transparent); }
+.pg-tile.is-dim { opacity: .38; filter: saturate(.55); }
+.pg-tile.is-dim:hover { transform: none; box-shadow: none; opacity: .55; }
 .pg-tile b { font-size: 12px; font-weight: 700; color: var(--text); }
-.pg-tile strong { font-size: 22px; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--text); }
+.pg-tile strong { font-size: 26px; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--text); }
 .pg-tile em { font-style: normal; font-size: 11.5px; font-weight: 700; }
-.pg-tile__ico { width: 38px; height: 38px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: #fff; flex: none; }
+.pg-tile__ico { width: 44px; height: 44px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: #fff; flex: none; }
 .pg-tile--green { background: var(--badge-done-bg); } .pg-tile--green strong, .pg-tile--green em { color: var(--badge-done-text); } .pg-tile--green .pg-tile__ico { background: var(--badge-done-text); }
 .pg-tile--blue { background: color-mix(in srgb, var(--accent) 12%, var(--bg-elevated)); } .pg-tile--blue strong, .pg-tile--blue em { color: var(--accent); } .pg-tile--blue .pg-tile__ico { background: var(--accent); }
 .pg-tile--grey { background: var(--bg-hover); } .pg-tile--grey strong, .pg-tile--grey em { color: var(--text-muted); } .pg-tile--grey .pg-tile__ico { background: var(--text-muted); }
 .pg-tile--red { background: var(--badge-todo-bg); } .pg-tile--red strong, .pg-tile--red em { color: var(--badge-todo-text); } .pg-tile--red .pg-tile__ico { background: var(--badge-todo-text); }
-.pg-week__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.pg-mini { border-radius: 12px; padding: 12px 14px; min-width: 0; }
+.pg-card--week { display: flex; flex-direction: column; }
+.pg-week__grid { display: grid; grid-template-columns: 1fr 1fr; grid-auto-rows: 1fr; gap: 10px; flex: 1; min-height: 0; height: 100%; align-content: stretch; align-items: stretch; }
+.pg-mini { border-radius: 12px; padding: 16px; min-width: 0; height: 100%; min-height: 88px; display: flex; flex-direction: column; justify-content: center; gap: 2px; }
 .pg-mini__row { display: flex; align-items: center; gap: 8px; }
-.pg-mini__row strong { font-size: 19px; font-variant-numeric: tabular-nums; color: var(--text); }
+.pg-mini__row strong { font-size: 21px; font-variant-numeric: tabular-nums; color: var(--text); }
 .pg-mini p { margin: 4px 0 2px; font-size: 11px; color: var(--text-muted); }
 .pg-mini em { font-style: normal; font-size: 11px; font-weight: 700; }
-.pg-mini__ico { width: 26px; height: 26px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: #fff; flex: none; }
+.pg-mini__ico { width: 30px; height: 30px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: #fff; flex: none; }
 .pg-mini--green { background: var(--badge-done-bg); } .pg-mini--green .pg-mini__ico { background: var(--badge-done-text); }
 .pg-mini--blue { background: color-mix(in srgb, var(--accent) 12%, var(--bg-elevated)); } .pg-mini--blue .pg-mini__ico { background: var(--accent); }
 .pg-mini--rose { background: var(--badge-todo-bg); } .pg-mini--rose .pg-mini__ico { background: var(--badge-todo-text); }
 .pg-mini--violet { background: color-mix(in srgb, #7c3aed 12%, var(--bg-elevated)); } .pg-mini--violet strong { color: #7c3aed; } .pg-mini--violet .pg-mini__ico { background: #7c3aed; }
 .pg-delta--up { color: var(--badge-done-text); } .pg-delta--down { color: var(--badge-todo-text); }
+/* Carte Performance (entre Detail et Semaine) : anneau + stats 2x2 + top retards.
+   Meme facture que les autres cartes pg-card, variables de theme uniquement. */
+.pg-card--perf { display: flex; flex-direction: column; }
+.pg-perf__body { display: flex; flex-direction: column; gap: 10px; flex: 1; min-height: 0; }
+.pg-perf__donut { position: relative; display: flex; align-items: center; justify-content: center; padding: 2px 0 4px; }
+.pg-perf__donut canvas { width: 148px; height: 148px; display: block; }
+.pg-perf__stats { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.pg-perf__stats li { border: 1px solid var(--border); border-radius: 10px; padding: 8px 10px; display: flex; flex-direction: column; gap: 2px; background: var(--bg-elevated); }
+.pg-perf__stats span { font-size: 10.5px; color: var(--text-muted); }
+.pg-perf__stats strong { font-size: 14px; font-variant-numeric: tabular-nums; color: var(--text); }
 .pg-banner { display: flex; align-items: center; gap: 14px; background: color-mix(in srgb, var(--accent) 7%, var(--bg-elevated)); border: 1px solid color-mix(in srgb, var(--accent) 18%, var(--border)); border-radius: 16px; padding: 12px 16px; overflow: hidden; position: relative; }
 .pg-banner__ico { width: 34px; height: 34px; border-radius: 50%; background: color-mix(in srgb, var(--accent) 14%, var(--bg-elevated)); color: var(--accent); display: inline-flex; align-items: center; justify-content: center; flex: none; box-shadow: var(--shadow); }
 .pg-banner__text { flex: 1; min-width: 0; }
@@ -6167,19 +7117,50 @@ input:focus-visible,
 .retards-dot--red { background: #ef4444; }
 .retards-dot--grey { background: #d1d5db; margin-left: 8px; }
 .retards-evol canvas { width: 100%; height: 240px; display: block; }
-.retards-donut-row { display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: 12px; align-items: center; }
-.retards-donut-card canvas { width: 170px; height: 170px; }
-@media (max-width: 560px) {
-  .retards-donut-row { grid-template-columns: 1fr; justify-items: center; }
-  .retards-donut-legend { width: 100%; }
+/* Repartition des retards : l anneau est centre au-dessus, et les quatre
+   statuts se lisent en dessous sur deux colonnes (deux a gauche, deux a
+   droite). La carte n a plus de colonnes annulee anneau / legende. */
+.retards-donut-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
 }
-.retards-donut-legend { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+/* display:block supprime l espace residuel du canvas inline : l anneau est
+   ainsi reellement centre, sans decalage de quelques pixels. */
+.retards-donut-card canvas { width: 200px; height: 200px; display: block; }
+.retards-donut-legend {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  /* 18px entre les rangees : les deux lignes de statuts ne se lisent plus
+     comme un seul bloc. */
+  gap: 18px;
+  width: 100%;
+  min-width: 0;
+}
+/* Filet discret entre les deux rangees de statuts. Couleur via var(--border) :
+   les deux themes sont couverts sans regle supplementaire. */
+.retards-donut-legend::before {
+  content: '';
+  /* grid-row EXPLICITE, indispensable : sans lui la grille placerait le filet
+     dans la 1re ligne (avant les quatre statuts) au lieu de la 2e. En occupant
+     la ligne 2 sur toute la largeur, la 1re rangee se place au-dessus et la
+     2e en dessous, de part et d autre du filet. */
+  grid-row: 2;
+  grid-column: 1 / -1;
+  border-top: 1px dashed var(--border);
+}
+@media (max-width: 560px) {
+  /* Deux colonnes deviendraient trop etroites sur telephone : une seule. */
+  .retards-donut-legend { grid-template-columns: minmax(0, 1fr); }
+}
 .retards-leg {
   display: grid;
-  /* 3 colonnes sur une seule ligne : statut (écrit en texte) · espace souple ·
-     pourcentage. Le libellé est dimensionné en « auto » : il s'écrit toujours en
-     entier, jamais tronqué, et le pourcentage reste aligné d'une ligne à l'autre. */
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  /* Deux colonnes sur une seule ligne : le libelle du statut, puis le
+     pourcentage. Le libelle occupe la colonne souple (tronque avec « … » si
+     besoin, jamais de debordement) et le pourcentage reste aligne d'une
+     ligne a l'autre. */
+  grid-template-columns: minmax(0, 1fr) auto;
   column-gap: 10px;
   align-items: center;
   font-size: 11px;              /* aligné sur .retards-legend de la rubrique */
@@ -6190,6 +7171,8 @@ input:focus-visible,
    coloré est remplacé par le libellé lui-même — plus rien à décoder. */
 .retards-leg__label {
   grid-column: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
   justify-self: start;
   font-size: 11.5px;
   font-weight: 800;
@@ -6201,7 +7184,7 @@ input:focus-visible,
    (pourcentage), en colonne fixe alignée à droite pour s'empiler proprement.
    Le nombre de tâches reste disponible dans l'infobulle de la ligne. */
 .retards-leg__pct {
-  grid-column: 3;
+  grid-column: 2;
   justify-self: end;
   min-width: 38px;
   font-style: normal;
@@ -6293,6 +7276,41 @@ input:focus-visible,
    deux thèmes → aucun override sombre nécessaire. */
 :root[data-theme='dark'] .retards-t2__delay { color: #f87171; }
 :root[data-theme='dark'] .retards-floatmenu button.is-danger { color: #f87171; }
+
+/* Menu « ⋯ » des cartes de la rubrique Preuves. Rendu dans document.body et
+   non dans la carte : .pf-card a overflow:hidden (pour découper l'aperçu dans
+   les coins arrondis), un popup interne serait amputé. Même mécanique que
+   .retards-floatmenu ci-dessus. Supprimé du DOM à la fermeture (append/remove),
+   donc pas de règle [hidden] nécessaire. */
+.pf-floatmenu {
+  z-index: 95;
+  min-width: 210px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  animation: popIn 0.15s ease;
+}
+.pf-floatmenu button {
+  border: none;
+  background: transparent;
+  text-align: left;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text);
+  font-family: inherit;
+  cursor: pointer;
+}
+.pf-floatmenu button:hover { background: var(--bg-hover); }
+.pf-floatmenu button.is-danger { color: #dc2626; }
+.pf-floatmenu__sep { height: 1px; background: var(--border); margin: 4px 6px; }
+:root[data-theme='dark'] .pf-floatmenu button.is-danger { color: #f87171; }
 .pf-detail__main-btn:hover {
 }
 
@@ -6559,96 +7577,361 @@ input:focus-visible,
     flex: 1 1 100%;
   }
 }
-/* ===== Rubrique Rappels — fidele image de reference ===== */
-.rappels{display:grid;grid-template-columns:minmax(0,1fr) 228px;gap:12px;align-items:start;max-width:100%}
-.rappels__main{min-width:0;display:flex;flex-direction:column;gap:10px}
+/* ===== Rubrique Rappels — fidele image de reference =====
+   Grille contenu + aside sticky 260px ; KPI pastel + pastille 28px
+   comme Mes taches (.mtasks2-count), Retards et Progression. */
+.rappels{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:14px;align-items:stretch;max-width:100%;min-height:calc(100vh - 72px)}
+.rappels__main{min-width:0;display:flex;flex-direction:column;gap:12px}
 .rappels__head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
-.rappels__title-wrap{display:flex;gap:9px;align-items:flex-start}
-.rappels__icon{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;flex:none;color:#4f46e5;background:linear-gradient(150deg,#e0e7ff,#ede9fe);border:1px solid rgba(99,102,241,.25)}
-.rappels__title{margin:0;font-size:19px;font-weight:800;letter-spacing:-.02em;color:var(--text)}
-.rappels__sub{margin:3px 0 0;font-size:11px;line-height:1.5;color:var(--text-muted);max-width:460px}
-.rappels__new{border:none;border-radius:8px;padding:7px 12px;font-size:11.5px;font-weight:700;color:#fff;background:linear-gradient(135deg,#2563eb,#4f46e5);cursor:pointer;white-space:nowrap}
-.rappels__new:hover{filter:brightness(1.07)}
+.rappels__title-wrap{display:flex;gap:10px;align-items:flex-start}
+.rappels__title{margin:0;font-size:19px;font-weight:800;letter-spacing:-.02em;color:var(--text);font-family:'Plus Jakarta Sans',Inter,system-ui,sans-serif}
+.rappels__sub{margin:3px 0 0;font-size:11px;line-height:1.55;color:var(--text-muted);max-width:470px}
 .rappels__kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
-/* Même gabarit et même survol que les cartes de comptage de Mes tâches. */
-.rappel-kpi{display:flex;flex-direction:column;gap:2px;background:#fff;border:1px solid var(--border);border-radius:12px;padding:12px 14px;min-width:0;text-align:left;font-family:inherit;color:var(--text);transition:border-color .15s ease,transform .15s ease,box-shadow .15s ease}
+/* MEME-GABARIT-MTASKS */
+.rappel-kpi{display:flex;flex-direction:column;gap:3px;border:1px solid;border-radius:12px;padding:12px 14px;min-width:0;text-align:left;font-family:inherit;transition:border-color .15s ease,transform .15s ease,box-shadow .15s ease}
 .rappel-kpi:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
 .rappel-kpi__top{display:flex;align-items:center;justify-content:space-between;gap:6px;min-height:28px}
-.rappel-kpi__ico{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:800;flex:none}
-.rappel-kpi--blue .rappel-kpi__ico{background:#2563eb;color:#fff}
-.rappel-kpi--violet .rappel-kpi__ico{background:#7c3aed;color:#fff}
-.rappel-kpi--green .rappel-kpi__ico{background:#16a34a;color:#fff}
-.rappel-kpi--mint .rappel-kpi__ico{background:#10b981;color:#fff}
-.rappel-kpi__label{margin:0;font-size:11px;font-weight:600;color:#475569;min-width:0}
-.rappel-kpi__num{margin:0;font-size:24px;font-weight:800;line-height:1.1;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
-.rappel-kpi__sub{margin:0;font-size:11px;font-weight:500;color:var(--text-muted);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
-.rappels__card{background:#fff;border:1px solid var(--border);border-radius:10px;overflow:hidden}
-.rappels__tabs-row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px 0}
-.rappels__tabs{display:flex;gap:12px;flex-wrap:wrap}
-.rappels__tab{border:none;background:none;padding:6px 1px;font-size:11px;font-weight:600;color:#64748b;cursor:pointer;border-bottom:2px solid transparent}
-.rappels__tab.is-active{color:#2563eb;border-bottom-color:#2563eb}
-.rappels__count{background:#eef2ff;color:#4f46e5;border-radius:999px;font-size:9.5px;font-weight:700;padding:1px 6px;margin-left:4px}
-.rappels__filter select{font-size:10.5px;padding:5px 8px;border-radius:7px;border:1px solid var(--border);background:#fff;color:#334155;max-width:140px}
-.rappels__table-wrap{overflow-x:auto;padding:4px 6px 8px}
-.rappels__table{width:100%;border-collapse:separate;border-spacing:0;font-size:11px;min-width:620px}
-.rappels__table thead th{text-align:left;font-size:10px;font-weight:600;color:#64748b;padding:7px 8px;background:#f8fafc;white-space:nowrap}
-.rappels__table tbody td{padding:7px 8px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+.rappel-kpi__ico{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;flex:none;color:#fff}
+.rappel-kpi--blue{background:#eff6ff;border-color:#dbeafe}
+.rappel-kpi--blue .rappel-kpi__ico{background:#2563eb}
+.rappel-kpi--violet{background:#f5f3ff;border-color:#e3e0fd}
+.rappel-kpi--violet .rappel-kpi__ico{background:#7c3aed}
+.rappel-kpi--green{background:#f0fdf4;border-color:#d3f2dd}
+.rappel-kpi--green .rappel-kpi__ico{background:#16a34a}
+.rappel-kpi--mint{background:#ecfdf5;border-color:#c9f0dd}
+.rappel-kpi--mint .rappel-kpi__ico{background:#10b981}
+.rappel-kpi__label{margin:0;font-size:11px;font-weight:600;color:#334155;min-width:0}
+.rappel-kpi__num{margin:0;font-size:24px;font-weight:800;line-height:1.1;letter-spacing:-.02em;font-variant-numeric:tabular-nums;color:#0f172a}
+.rappel-kpi__sub{margin:0;font-size:10.5px;font-weight:500;color:#64748b;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.rappels__card{background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:0 1px 2px rgba(15,23,42,.05)}
+.rappels__toolbar{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px 0}
+.rappels__menus{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.rappels__result{margin:0;font-size:10.5px;color:var(--text-muted);white-space:nowrap}
+.rappels__result strong{color:#2563eb;font-weight:800;font-variant-numeric:tabular-nums}
+.rappels__filter{display:inline-flex;align-items:center;gap:6px;color:#64748b}
+.rappels__filter-ico{display:inline-flex;color:#64748b}
+.rappels__filter select{font-size:10.5px;padding:6px 8px;border-radius:8px;border:1px solid var(--border);background:#fff;color:#334155;max-width:150px;font-family:inherit}
+/* --- Choix A : filtres habillés en menus déroulants maison (doliSelect) ---
+   Le <select> natif reste dans le DOM (source de vérité + repli sans JS) mais
+   est masqué ; on n'affiche que le bouton du composant. */
+.rappels__filter select.doli-select__native,.rappels__freq select.doli-select__native{display:none}
+.rappels__filter .doli-select{display:inline-flex}
+/* Le champ « Fréquence par défaut » occupe la largeur du panneau de l'aside ;
+   seul le bouton du composant est visible (le <select> natif est masqué). */
+.rappels__freq .doli-select{display:flex;width:100%}
+.rappels__filter .doli-select__control,.rappels__freq .doli-select__control{display:inline-flex;align-items:center;gap:7px;font-family:inherit;font-size:10.5px;font-weight:600;color:#334155;background:#fff;border:1px solid var(--border);border-radius:9px;padding:6px 9px;cursor:pointer;transition:border-color .15s ease,box-shadow .15s ease,background-color .15s ease}
+.rappels__freq .doli-select__control{width:100%;justify-content:space-between;padding:7px 9px}
+.rappels__filter .doli-select__control:hover,.rappels__freq .doli-select__control:hover{border-color:#bfdbfe;background:#f8fafc}
+.rappels__filter .doli-select[data-open='true'] .doli-select__control,.rappels__freq .doli-select[data-open='true'] .doli-select__control,.rappels__filter .doli-select__control:focus-visible,.rappels__freq .doli-select__control:focus-visible{outline:none;border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.14)}
+.rappels__filter .doli-select__value{max-width:130px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.rappels__filter .doli-select__chev,.rappels__freq .doli-select__chev{display:inline-flex;color:#64748b;transition:transform .18s ease}
+.rappels__filter .doli-select__chev svg,.rappels__freq .doli-select__chev svg{width:12px;height:12px;display:block}
+.rappels__filter .doli-select[data-open='true'] .doli-select__chev,.rappels__freq .doli-select[data-open='true'] .doli-select__chev{transform:rotate(180deg)}
+[data-theme='dark'] .rappels__filter .doli-select__control,[data-theme='dark'] .rappels__freq .doli-select__control{background:var(--bg);color:var(--text);border-color:var(--border)}
+[data-theme='dark'] .rappels__filter .doli-select__control:hover,[data-theme='dark'] .rappels__freq .doli-select__control:hover{background:rgba(148,163,184,.12);border-color:#3b82f6}
+[data-theme='dark'] .rappels__filter .doli-select__chev,[data-theme='dark'] .rappels__freq .doli-select__chev{color:var(--text-muted)}
+/* Panneaux des deux filtres : carte claire 12px + ombre douce, options en
+   pastilles avec point coloré par valeur, survol bleu #eff6ff, coche bleue.
+   Le panneau vit en position fixe dans <body> -> ciblage par son id. */
+#doli-list-reminderPeriodFilter,#doli-list-reminderTaskFilter,#doli-list-remDefaultFreq{background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:0 12px 32px rgba(15,23,42,.14),0 2px 8px rgba(15,23,42,.08);color:#334155;padding:6px;min-width:190px;font-size:11px}
+#doli-list-reminderPeriodFilter .doli-select__opt,#doli-list-reminderTaskFilter .doli-select__opt,#doli-list-remDefaultFreq .doli-select__opt{display:flex;align-items:center;justify-content:flex-start;gap:8px;padding:7px 12px;border-radius:999px;color:#334155}
+#doli-list-reminderPeriodFilter .doli-select__opt::before,#doli-list-reminderTaskFilter .doli-select__opt::before,#doli-list-remDefaultFreq .doli-select__opt::before{content:'';width:7px;height:7px;border-radius:50%;background:#94a3b8;flex:none}
+#doli-list-reminderPeriodFilter .doli-select__opt[data-value='today']::before{background:#2563eb}
+#doli-list-reminderPeriodFilter .doli-select__opt[data-value='week']::before{background:#10b981}
+#doli-list-reminderPeriodFilter .doli-select__opt[data-value='upcoming']::before{background:#7c3aed}
+#doli-list-reminderTaskFilter .doli-select__opt[data-value='todo']::before{background:#ef4444}
+#doli-list-reminderTaskFilter .doli-select__opt[data-value='doing']::before{background:#2563eb}
+#doli-list-reminderTaskFilter .doli-select__opt[data-value='done']::before{background:#16a34a}
+/* Fréquence par défaut : un point par palier, du plus court au plus long. */
+#doli-list-remDefaultFreq .doli-select__opt[data-value='2h']::before{background:#0ea5e9}
+#doli-list-remDefaultFreq .doli-select__opt[data-value='1h']::before{background:#2563eb}
+#doli-list-remDefaultFreq .doli-select__opt[data-value='1d']::before{background:#6366f1}
+#doli-list-remDefaultFreq .doli-select__opt[data-value='1w']::before{background:#10b981}
+#doli-list-remDefaultFreq .doli-select__opt[data-value='once']::before{background:#f59e0b}
+#doli-list-reminderPeriodFilter .doli-select__opt[data-active='true'],#doli-list-reminderTaskFilter .doli-select__opt[data-active='true'],#doli-list-remDefaultFreq .doli-select__opt[data-active='true']{background:#eff6ff;color:#2563eb}
+#doli-list-reminderPeriodFilter .doli-select__opt[data-selected='true'],#doli-list-reminderTaskFilter .doli-select__opt[data-selected='true'],#doli-list-remDefaultFreq .doli-select__opt[data-selected='true']{background:#eff6ff;color:#2563eb;font-weight:700}
+#doli-list-reminderPeriodFilter .doli-select__tick,#doli-list-reminderTaskFilter .doli-select__tick,#doli-list-remDefaultFreq .doli-select__tick{color:#2563eb;margin-left:auto}
+#doli-list-reminderPeriodFilter::-webkit-scrollbar-thumb,#doli-list-reminderTaskFilter::-webkit-scrollbar-thumb,#doli-list-remDefaultFreq::-webkit-scrollbar-thumb{background:#cbd5e1}
+[data-theme='dark'] #doli-list-reminderPeriodFilter,[data-theme='dark'] #doli-list-reminderTaskFilter,[data-theme='dark'] #doli-list-remDefaultFreq{background:var(--bg-elevated);border-color:var(--border);color:var(--text);box-shadow:0 16px 40px rgba(0,0,0,.5)}
+[data-theme='dark'] #doli-list-reminderPeriodFilter .doli-select__opt,[data-theme='dark'] #doli-list-reminderTaskFilter .doli-select__opt,[data-theme='dark'] #doli-list-remDefaultFreq .doli-select__opt{color:var(--text)}
+[data-theme='dark'] #doli-list-reminderPeriodFilter .doli-select__opt[data-active='true'],[data-theme='dark'] #doli-list-reminderTaskFilter .doli-select__opt[data-active='true'],[data-theme='dark'] #doli-list-remDefaultFreq .doli-select__opt[data-active='true'],[data-theme='dark'] #doli-list-reminderPeriodFilter .doli-select__opt[data-selected='true'],[data-theme='dark'] #doli-list-reminderTaskFilter .doli-select__opt[data-selected='true'],[data-theme='dark'] #doli-list-remDefaultFreq .doli-select__opt[data-selected='true']{background:rgba(59,130,246,.18);color:#93c5fd}
+[data-theme='dark'] #doli-list-reminderPeriodFilter .doli-select__tick,[data-theme='dark'] #doli-list-reminderTaskFilter .doli-select__tick,[data-theme='dark'] #doli-list-remDefaultFreq .doli-select__tick{color:#93c5fd}
+[data-theme='dark'] #doli-list-reminderPeriodFilter::-webkit-scrollbar-thumb,[data-theme='dark'] #doli-list-reminderTaskFilter::-webkit-scrollbar-thumb,[data-theme='dark'] #doli-list-remDefaultFreq::-webkit-scrollbar-thumb{background:rgba(255,255,255,.2)}
+/* --- Menu flottant « … » des lignes Rappels (style doli) ------------------
+   Carte sombre dégradée avec liseré accent, exactement la famille visuelle de
+   .doli-select__list : radius 18px, ombre profonde, options en pilules, accent
+   #6c8cff — identique dans les deux thèmes. Créé dans <body> par main.js et
+   positionné en fixe depuis le bouton de la ligne. */
+.rem-floatmenu{position:fixed;z-index:95;min-width:232px;max-width:280px;padding:6px;display:flex;flex-direction:column;gap:2px;background:linear-gradient(165deg,#1a2030 0%,#12141d 55%,#0e1017 100%);border:1px solid rgba(255,255,255,.14);border-radius:18px;box-shadow:0 18px 42px rgba(3,6,18,.62),0 0 0 1px rgba(108,140,255,.14);color:#fff;font-size:12.5px;animation:doliSelectIn .14s ease}
+.rem-floatmenu[data-dir='up']{animation-name:doliSelectUp}
+.rem-floatmenu__title{margin:0;padding:7px 12px 8px;font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:rgba(255,255,255,.6);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rem-floatmenu button{display:flex;align-items:center;gap:8px;width:100%;text-align:left;border:none;background:none;padding:9px 12px;border-radius:11px;color:rgba(255,255,255,.86);font-family:inherit;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap;transition:background-color .12s ease,color .12s ease}
+.rem-floatmenu button:hover{background:rgba(255,255,255,.09);color:#fff}
+.rem-floatmenu button:focus-visible{outline:none;background:rgba(255,255,255,.09);color:#fff;box-shadow:0 0 0 2px rgba(108,140,255,.5) inset}
+.rem-floatmenu button.is-danger{color:#f87171}
+.rem-floatmenu button.is-danger:hover{background:rgba(220,38,38,.22);color:#fca5a5}
+.rem-floatmenu button.is-danger:focus-visible{outline:none;background:rgba(220,38,38,.22);color:#fca5a5;box-shadow:0 0 0 2px rgba(248,113,113,.5) inset}
+.rem-floatmenu__sep{height:1px;background:rgba(255,255,255,.12);margin:5px 6px}
+/* Thème clair : la carte reprend le blanc et les ombres douces des autres
+   menus de la page Rappels (#doli-list-reminderPeriodFilter, .row-menu__list).
+   Géométrie, radius 18px, pilules et animations inchangés : seules les
+   couleurs changent. Le thème sombre n'est pas touché (règles de base). */
+[data-theme='light'] .rem-floatmenu{
+  background:#fff;border-color:var(--border);
+  box-shadow:0 12px 32px rgba(15,23,42,.16),0 2px 8px rgba(15,23,42,.08);
+  color:var(--text);
+}
+[data-theme='light'] .rem-floatmenu__title{color:var(--text-muted)}
+[data-theme='light'] .rem-floatmenu button{color:#334155}
+[data-theme='light'] .rem-floatmenu button:hover,
+[data-theme='light'] .rem-floatmenu button:focus-visible{
+  background:#eff6ff;color:#2563eb;outline:none;
+  box-shadow:0 0 0 2px rgba(37,99,235,.25) inset;
+}
+[data-theme='light'] .rem-floatmenu button.is-danger{color:#dc2626}
+[data-theme='light'] .rem-floatmenu button.is-danger:hover,
+[data-theme='light'] .rem-floatmenu button.is-danger:focus-visible{
+  background:#fef2f2;color:#b91c1c;
+  box-shadow:0 0 0 2px rgba(220,38,38,.28) inset;
+}
+[data-theme='light'] .rem-floatmenu__sep{background:#e2e8f0}
+
+.rappels__table-wrap{overflow-x:auto;padding:6px 8px 10px}
+/* Barre de pagination de la carte Rappels : la carte n'a pas de padding (la
+   toolbar en apporte 12px, le tableau 8px) → on aligne la barre sur la gouttière
+   de la toolbar au lieu de coller aux bords, comme dans .retards-card. */
+.rappels__card .mtasks2__pagination{padding:0 12px 12px;margin-top:0}
+.rappels__table{width:100%;border-collapse:separate;border-spacing:0;font-size:11px;min-width:640px}
+.rappels__table thead th{text-align:left;font-size:10px;font-weight:600;color:#64748b;padding:8px;background:#f8fafc;white-space:nowrap}
+.rappels__table thead th:first-child{border-radius:8px 0 0 8px}
+.rappels__table thead th:last-child{border-radius:0 8px 8px 0}
+.rappels__table tbody td{padding:8px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
 .rappels__table tbody tr:last-child td{border-bottom:none}
 .rappels__table tbody tr:hover{background:#f8fafc}
 .rappels__empty{margin:10px;font-size:11.5px;color:var(--text-muted);text-align:center}
-.rem-date{display:flex;align-items:center;gap:6px;font-size:10.5px;font-weight:600;color:#0f172a;white-space:nowrap;line-height:1.3}
+/* Lignes : pastille motif (retards-t2__ico, couleur priorite) + textes 11/10px. */
+.rem-task{display:flex;align-items:center;gap:9px;min-width:0}
+.rem-task__txt{min-width:0}
+.rem-task strong{display:block;font-size:11px;font-weight:700;color:#0f172a;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px}
+.rem-task__txt span{display:block;font-size:10px;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px}
+.rem-date{display:flex;align-items:center;gap:7px;font-size:10.5px;font-weight:700;color:#0f172a;white-space:nowrap;line-height:1.35}
 .rem-date small{display:block;font-weight:500;color:#64748b;font-size:10px}
 .rem-freq{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;color:#475569;white-space:nowrap}
-.rem-status{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:999px;font-size:10px;font-weight:700;white-space:nowrap}
+.rem-status{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:999px;font-size:10px;font-weight:700;white-space:nowrap}
 .rem-status--todo{background:#fef2f2;color:#dc2626}
 .rem-status--doing{background:#eff6ff;color:#2563eb}
 .rem-status--soon{background:#fffbeb;color:#d97706}
 .rem-status--future{background:#eef2ff;color:#4f46e5}
 .rem-status--done{background:#f0fdf4;color:#16a34a}
 .rem-actions{display:flex;align-items:center;gap:2px;justify-content:flex-end}
-.rem-act{border:none;background:none;color:#64748b;font-size:13px;padding:3px 5px;border-radius:6px;cursor:pointer}
+.rem-act{border:none;background:none;color:#64748b;font-size:14px;font-weight:800;letter-spacing:1px;padding:3px 6px;border-radius:6px;cursor:pointer;font-family:inherit;line-height:1}
 .rem-act:hover{background:#eef2ff;color:#2563eb}
-.rappels__aside{display:flex;flex-direction:column;gap:12px;flex:0 0 260px;position:sticky;top:76px;min-width:0}
-.rappels__panel{background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px;font-size:11px}
-.rappels__today-head{display:flex;gap:7px;align-items:center;padding-bottom:8px;border-bottom:1px solid #f1f5f9;margin-bottom:8px}
+[data-theme='dark'] .rem-act{color:var(--text-muted)}
+[data-theme='dark'] .rem-act:hover,[data-theme='dark'] .rem-act:focus-visible{background:var(--bg-hover);color:#93c5fd;outline:none}
+.rem-act--go{letter-spacing:0;font-size:15px}
+/* Couloir figé sur toute la page (voir .mtasks2__side) : position:fixed.
+   La piste de 260px de la grille reste réservée, donc la liste ne se décale
+   pas ; la colonne défile en interne si son contenu dépasse la fenêtre. */
+/* 72px = 24px de haut + 48px de padding bas de .app-main : page tout en bas,
+   le bas du couloir (donc de la derniere carte) tombe exactement au niveau
+   du bas de la liste. */
+.rappels__aside{display:flex;flex-direction:column;gap:12px;min-width:0;position:fixed;top:24px;right:32px;width:260px;height:calc(100vh - 72px);min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
+.rappels__aside>.rappels__panel,.rappels__aside>.rappels__motivation{flex:0 0 auto}
+/* Carte "Parametres des rappels" (2e enfant) : elle absorbe la hauteur restante du couloir. flex-shrink:0 pour ne jamais etre ecrassee. */
+.rappels__aside>.rappels__panel:nth-child(2){flex:1 0 auto;display:flex;flex-direction:column}
+/* Aeration : les 3 lignes de reglage se repartissent sur la hauteur restante et
+   le bloc « Frequence par defaut » est pousse en bas, au lieu d'un grand vide
+   sous le dernier interrupteur. */
+.rappels__aside>.rappels__panel:nth-child(2) .rappels__switch-row{flex:1 1 auto;min-height:30px}
+.rappels__aside>.rappels__panel:nth-child(2) .rappels__field-label{margin-top:auto;padding-top:10px}
+.rappels__panel{background:#fff;border:1px solid var(--border);border-radius:12px;padding:12px;font-size:11px;box-shadow:0 1px 2px rgba(15,23,42,.05)}
+.rappels__today-head{display:flex;gap:8px;align-items:flex-start;padding-bottom:9px;border-bottom:1px solid #f1f5f9;margin-bottom:9px}
+.rappels__today-ico{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;flex:none;color:#1e3a8a;background:#eff6ff;border:1px solid #dbeafe}
 .rappels__today-head strong{display:block;font-size:12px;color:#0f172a}
 .rappels__today-head span{font-size:10px;color:#64748b}
-.rappels__today-list{list-style:none;margin:0 0 8px;padding:0;display:flex;flex-direction:column;gap:7px}
-.rappels__today-list li{display:flex;gap:7px;align-items:flex-start;font-size:10.5px;color:#0f172a;line-height:1.35}
+.rappels__today-list{list-style:none;margin:0 0 9px;padding:0;display:flex;flex-direction:column;gap:8px}
+.rappels__today-list li{display:flex;gap:7px;align-items:flex-start;font-size:10.5px;color:#0f172a;line-height:1.4}
 .rappels__today-list .dot{width:7px;height:7px;border-radius:50%;flex:none;margin-top:4px}
-.rappels__today-list time{color:#64748b;font-weight:700;margin-right:2px;white-space:nowrap}
-.rappels__encart{display:flex;align-items:center;gap:7px;background:#eff6ff;border:1px solid #dbeafe;border-radius:8px;padding:8px;font-size:10.5px;color:#1e3a8a}
+.rappels__today-list time{color:#0f172a;font-weight:700;margin-right:3px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.rappels__today-list .lbl{color:#334155}
+.rappels__encart{display:flex;align-items:center;gap:8px;background:#eff6ff;border:1px solid #dbeafe;border-radius:9px;padding:9px;font-size:10.5px;color:#1e3a8a}
+.rappels__encart-ico{width:24px;height:24px;border-radius:7px;display:grid;place-items:center;flex:none;color:#2563eb;background:#dbeafe}
 .rappels__encart strong{display:block;font-size:10.5px}
 .rappels__encart span{font-size:10px;color:#64748b}
-.rappels__panel-title{margin:0 0 8px;font-size:11.5px;font-weight:800;color:#0f172a}
+.rappels__encart-go{margin-left:auto;color:#2563eb;font-size:15px;font-weight:800}
+.rappels__panel-title{margin:0 0 8px;font-size:11.5px;font-weight:800;color:#0f172a;display:flex;align-items:center;gap:7px}
+.rappels__panel-ico{width:24px;height:24px;border-radius:7px;display:inline-grid;place-items:center;color:#334155;background:#f1f5f9;flex:none}
 .rappels__switch-row{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:10.5px;font-weight:600;color:#0f172a;padding:6px 0}
 .switch{position:relative;width:32px;height:18px;border-radius:999px;border:none;background:#cbd5e1;cursor:pointer;flex:none}
 .switch span{position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25)}
 .switch.is-on{background:#2563eb}.switch.is-on span{left:16px}
 .rappels__field-label{margin:8px 0 5px;font-size:10.5px;font-weight:700;color:#0f172a}
-.rappels__freq select{width:100%;font-size:10.5px;padding:6px 8px;border-radius:7px;border:1px solid var(--border);background:#fff;color:#334155}
-.rappels__motivation{background:linear-gradient(150deg,#eef2ff,#f5f3ff);border:1px solid #e0e7ff;border-radius:10px;padding:12px 10px}
-.rappels__motivation p{margin:0;font-size:11px;line-height:1.5;color:#1e1b4b}
-.rappels__bar{display:block;width:32px;height:3px;border-radius:999px;background:#818cf8;margin-top:8px}
+.rappels__freq select{width:100%;font-size:10.5px;padding:7px 8px;border-radius:8px;border:1px solid var(--border);background:#fff;color:#334155;font-family:inherit}
+/* Carte motivationnelle — horizon de progression : fond bleu glacier,
+   halos de cible et trajectoire discrète. Les pseudo-éléments restent derrière
+   le contenu (isolation:isolate) et ne capturent aucun clic. */
+.rappels__motivation{
+  position:relative;isolation:isolate;overflow:hidden;
+  padding:16px 14px;border:1px solid #c7d2fe;border-radius:14px;
+  background:radial-gradient(circle at 88% 12%,rgba(99,102,241,.22),transparent 38%),linear-gradient(135deg,#f8faff 0%,#eef2ff 48%,#e0e7ff 100%);
+  box-shadow:inset 3px 0 0 #6366f1,0 10px 24px rgba(79,70,229,.1)
+}
+.rappels__motivation::before{
+  content:'';position:absolute;z-index:-1;width:170px;height:170px;
+  right:-72px;top:-78px;border:1px solid rgba(99,102,241,.16);
+  border-radius:50%;box-shadow:0 0 0 22px rgba(99,102,241,.04),0 0 0 48px rgba(99,102,241,.025);pointer-events:none
+}
+.rappels__motivation::after{
+  content:'';position:absolute;z-index:-1;width:230px;height:90px;
+  left:54px;bottom:-62px;border:1px solid rgba(79,70,229,.12);
+  border-radius:50%;transform:rotate(-16deg);pointer-events:none
+}
+.rappels__target{
+  display:inline-grid;place-items:center;width:48px;height:48px;border-radius:50%;
+  color:#4f46e5;background:linear-gradient(145deg,rgba(255,255,255,.9),rgba(199,210,254,.72));
+  border:1px solid rgba(129,140,248,.34);
+  box-shadow:0 8px 18px rgba(79,70,229,.16),inset 0 1px 0 rgba(255,255,255,.8);
+  margin-bottom:10px
+}
+.rappels__motivation p{margin:0;max-width:205px;font-size:11px;line-height:1.55;color:#312e81}
+.rappels__motivation p strong{color:#1e1b4b;font-weight:800}
+.rappels__bar{
+  position:relative;display:block;width:76px;height:5px;border-radius:999px;
+  margin-top:12px;overflow:hidden;background:rgba(99,102,241,.16);
+  box-shadow:inset 0 1px 2px rgba(79,70,229,.08)
+}
+.rappels__bar::after{
+  content:'';position:absolute;inset:0 auto 0 0;width:68%;border-radius:inherit;
+  background:linear-gradient(90deg,#6366f1,#8b5cf6);box-shadow:0 0 10px rgba(99,102,241,.3)
+}
 [data-theme='dark'] .rappel-kpi{background:var(--bg-elevated)}
+[data-theme='dark'] .rappel-kpi--blue{border-color:rgba(59,130,246,.3)}
+[data-theme='dark'] .rappel-kpi--violet{border-color:rgba(124,58,237,.3)}
+[data-theme='dark'] .rappel-kpi--green{border-color:rgba(34,197,94,.3)}
+[data-theme='dark'] .rappel-kpi--mint{border-color:rgba(16,185,129,.3)}
 [data-theme='dark'] .rappel-kpi__label,[data-theme='dark'] .rappel-kpi__num{color:var(--text)}
 [data-theme='dark'] .rappel-kpi__sub{color:var(--text-muted)}
-[data-theme='dark'] .rappels__card,[data-theme='dark'] .rappels__panel,[data-theme='dark'] .rappels__motivation{background:var(--bg-elevated);border-color:var(--border)}
+[data-theme='dark'] .rappel-kpi--blue .rappel-kpi__ico{color:#93c5fd;background:rgba(59,130,246,.22)}
+[data-theme='dark'] .rappel-kpi--violet .rappel-kpi__ico{color:#c4b5fd;background:rgba(124,58,237,.25)}
+[data-theme='dark'] .rappel-kpi--green .rappel-kpi__ico{color:#86efac;background:rgba(34,197,94,.22)}
+[data-theme='dark'] .rappel-kpi--mint .rappel-kpi__ico{color:#6ee7b7;background:rgba(16,185,129,.22)}
+[data-theme='dark'] .rappels__card,[data-theme='dark'] .rappels__panel{background:var(--bg-elevated);border-color:var(--border)}
+[data-theme='dark'] .rappels__motivation{
+  border-color:rgba(129,140,248,.32);
+  background:radial-gradient(circle at 88% 12%,rgba(129,140,248,.22),transparent 40%),linear-gradient(135deg,#111827 0%,#1e1b4b 58%,#312e81 100%);
+  box-shadow:inset 3px 0 0 #818cf8,0 12px 30px rgba(0,0,0,.24)
+}
 [data-theme='dark'] .rappels__table thead th{background:var(--bg);color:var(--text-muted)}
 [data-theme='dark'] .rappels__table tbody td{border-color:var(--border)}
-[data-theme='dark'] .rem-date{color:var(--text)}
-.rem-date__ico{font-size:12px;flex:none}
-.rem-actions .rem-act{cursor:default;user-select:none}
+[data-theme='dark'] .rappels__table tbody tr:hover{background:rgba(148,163,184,.07)}
+[data-theme='dark'] .rem-task strong,[data-theme='dark'] .rem-date{color:var(--text)}
 [data-theme='dark'] .rem-status--todo{background:rgba(239,68,68,.14);color:#f87171}
 [data-theme='dark'] .rem-status--doing{background:rgba(59,130,246,.14);color:#60a5fa}
 [data-theme='dark'] .rem-status--soon{background:rgba(245,158,11,.14);color:#fbbf24}
 [data-theme='dark'] .rem-status--future{background:rgba(99,102,241,.16);color:#a5b4fc}
 [data-theme='dark'] .rem-status--done{background:rgba(34,197,94,.14);color:#4ade80}
 [data-theme='dark'] .rem-freq{color:var(--text-muted)}
-[data-theme='dark'] .rappels__today-head strong,[data-theme='dark'] .rappels__panel-title{color:var(--text)}
-[data-theme='dark'] .rappels__motivation p{color:var(--text)}
+[data-theme='dark'] .rem-task__txt span,[data-theme='dark'] .rem-date small{color:var(--text-muted)}
+[data-theme='dark'] .rappels__filter select,[data-theme='dark'] .rappels__freq select{background:var(--bg);color:var(--text);border-color:var(--border)}
+[data-theme='dark'] .rappels__today-head strong,[data-theme='dark'] .rappels__panel-title,[data-theme='dark'] .rappels__switch-row,[data-theme='dark'] .rappels__field-label{color:var(--text)}
+[data-theme='dark'] .rappels__today-ico{background:rgba(59,130,246,.14);border-color:rgba(59,130,246,.3);color:#93c5fd}
+[data-theme='dark'] .rappels__today-list li,[data-theme='dark'] .rappels__today-list time{color:var(--text)}
+[data-theme='dark'] .rappels__motivation p{color:#e0e7ff}
+[data-theme='dark'] .rappels__motivation p strong{color:#fff}
+[data-theme='dark'] .rappels__today-list .lbl{color:var(--text-muted)}
 [data-theme='dark'] .rappels__encart{background:rgba(37,99,235,.12);border-color:rgba(37,99,235,.3);color:var(--text)}
-@media (max-width:1100px){.rappels{grid-template-columns:1fr}.rappels__kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+[data-theme='dark'] .rappels__encart-ico{background:rgba(37,99,235,.2);color:#93c5fd}
+[data-theme='dark'] .rappels__panel-ico{background:rgba(148,163,184,.14);color:var(--text)}
+[data-theme='dark'] .rappels__target{
+  color:#c7d2fe;background:linear-gradient(145deg,rgba(99,102,241,.34),rgba(76,29,149,.38));
+  border-color:rgba(165,180,252,.4);box-shadow:0 8px 20px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.12)
+}
+[data-theme='dark'] .rappels__bar{background:rgba(129,140,248,.2)}
+[data-theme='dark'] .rappels__bar::after{background:linear-gradient(90deg,#818cf8,#a78bfa);box-shadow:0 0 12px rgba(129,140,248,.36)}
+/* ===== Lisibilité de la rubrique Rappels ================================
+   Agrandissement moyen des textes, limité à #viewReminders pour ne pas
+   modifier Mes tâches / Retards. Les dimensions des cartes, boutons,
+   interrupteurs et icônes restent inchangées. */
+#viewReminders .rappels__title{font-size:21px}
+#viewReminders .rappels__sub{font-size:12px}
+#viewReminders .rappel-kpi__label{font-size:12px}
+#viewReminders .rappel-kpi__num{font-size:26px}
+#viewReminders .rappel-kpi__sub{font-size:11px}
+#viewReminders .rappels__result{font-size:11.5px}
+#viewReminders .rappels__filter .doli-select__control,
+#viewReminders .rappels__freq .doli-select__control{font-size:11.5px}
+/* Ces 3 listes doli-select sont portées par <body> : leur ID dédié les limite
+   aux menus Rappels malgré leur portail hors de #viewReminders. */
+#doli-list-reminderPeriodFilter,
+#doli-list-reminderTaskFilter,
+#doli-list-remDefaultFreq{font-size:12px}
+#viewReminders .rappels__table{font-size:12px}
+#viewReminders .rappels__table thead th{font-size:11px}
+#viewReminders .rem-task strong{font-size:12px}
+#viewReminders .rem-task__txt span{font-size:11px}
+#viewReminders .rem-date{font-size:11.5px}
+#viewReminders .rem-date small{font-size:11px}
+#viewReminders .rem-freq{font-size:11.5px}
+#viewReminders .rem-status{font-size:11px}
+#viewReminders .rappels__empty{font-size:12.5px}
+#viewReminders .rappels__panel{font-size:12px}
+#viewReminders .rappels__today-head strong{font-size:13px}
+#viewReminders .rappels__today-head span{font-size:11px}
+#viewReminders .rappels__today-list li{font-size:11.5px}
+#viewReminders .rappels__encart{font-size:11.5px}
+#viewReminders .rappels__encart strong{font-size:11.5px}
+#viewReminders .rappels__encart span{font-size:11px}
+#viewReminders .rappels__panel-title{font-size:12.5px}
+#viewReminders .rappels__switch-row,
+#viewReminders .rappels__field-label{font-size:11.5px}
+#viewReminders .rappels__freq select{font-size:11.5px}
+#viewReminders .rappels__motivation p{font-size:12px}
+#viewReminders .mtasks2__page-info{font-size:12.5px}
+#viewReminders .mtasks2__page-btn,
+#viewReminders .mtasks2__page-num{font-size:13px}
+
+/* Second passage d'agrandissement : +0,5 px sur les textes courants, +1 px sur
+   les titres et les grands nombres. Volontairement modere pour rester dans
+   les largeurs du couloir (260px) et des colonnes du tableau : rien ne deborde,
+   les libelles longs passent simplement a la ligne. */
+#viewReminders .rappels__title{font-size:22px}
+#viewReminders .rappels__sub{font-size:12.5px}
+#viewReminders .rappel-kpi__label{font-size:12.5px}
+#viewReminders .rappel-kpi__num{font-size:28px}
+#viewReminders .rappel-kpi__sub{font-size:11.5px}
+#viewReminders .rappels__result{font-size:12px}
+#viewReminders .rappels__filter .doli-select__control,
+#viewReminders .rappels__freq .doli-select__control{font-size:12px}
+#viewReminders .rappels__table{font-size:12.5px}
+#viewReminders .rappels__table thead th{font-size:11.5px}
+#viewReminders .rem-task strong{font-size:12.5px}
+#viewReminders .rem-task__txt span{font-size:11.5px}
+#viewReminders .rem-date{font-size:12px}
+#viewReminders .rem-date small{font-size:11.5px}
+#viewReminders .rem-freq{font-size:12px}
+#viewReminders .rem-status{font-size:11.5px}
+#viewReminders .rappels__empty{font-size:13px}
+#viewReminders .rappels__panel{font-size:12.5px}
+#viewReminders .rappels__today-head strong{font-size:13.5px}
+#viewReminders .rappels__today-head span{font-size:11.5px}
+#viewReminders .rappels__today-list li{font-size:12px}
+#viewReminders .rappels__encart{font-size:12px}
+#viewReminders .rappels__encart strong{font-size:12px}
+#viewReminders .rappels__encart span{font-size:11.5px}
+#viewReminders .rappels__panel-title{font-size:13px}
+#viewReminders .rappels__switch-row,
+#viewReminders .rappels__field-label{font-size:12px}
+#viewReminders .rappels__freq select{font-size:12px}
+#viewReminders .rappels__motivation p{font-size:12.5px}
+#viewReminders .mtasks2__page-info{font-size:13px}
+#viewReminders .mtasks2__page-btn,
+#viewReminders .mtasks2__page-num{font-size:13.5px}
+/* Menus deroulants des filtres Rappels (portail hors de #viewReminders) :
+   meme agrandissement, pour rester coherent avec les boutons. */
+#doli-list-reminderPeriodFilter,#doli-list-reminderTaskFilter,#doli-list-remDefaultFreq{font-size:12px}
+/* Filet de securite : la valeur affichee ne peut pas deborder son bouton. */
+#viewReminders .rappels__freq .doli-select__value{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media (max-width:1100px){.rappels{grid-template-columns:1fr;min-height:0}.rappels__aside{position:static;width:auto;height:auto;max-height:none;overflow:visible}.rappels__kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:560px){.rappels__kpis{grid-template-columns:1fr}.rappels__head{flex-direction:column;align-items:stretch}}
 /* ===== Motifs d'en-tete reutilisables (identite « Progression ») =====
    Carré arrondi 40px + dégradé, comme .pg__head-ico ; la couleur varie
@@ -6681,4 +7964,415 @@ input:focus-visible,
 .pf-header__text{flex:1;min-width:0}
 [data-theme='dark'] .kick-ico{filter:brightness(1.1)}
 
+/* ===== Option A : hierarchie typographique « doli » =========================
+   Textes courants et interface : Inter (--font), tres lisible en petit.
+   Titres, en-tetes de cartes et chiffres cles : Plus Jakarta Sans
+   (--font-display), desormais sur TOUTES les rubriques (et non plus
+   seulement Progression et Retards). Graisses et tailles inchangees :
+   on ne touche qu'a la famille, a l'interlettrage des grands titres
+   et aux chiffres tabulaires. */
+.view h1,
+.view h2,
+.view h3,
+.view h4,
+.login-screen h1,
+.modal h3,
+#taskModalOverlay .modal h3,
+.app-topbar h2,
+.dash__greeting,
+.dash-card__kicker,
+.dash-card__title,
+.dash-mini__title,
+.dash-task-card__title,
+.mtasks2__header-text h2,
+.mtasks2__card-title,
+.rappels__title,
+.rappels__panel-title,
+.rappels__today-head strong,
+.pg__title,
+.retards-pagehead__title,
+.retards-card__head h3,
+.aside-card h4,
+.pf-card__title,
+.pf-detail__title,
+.preuve-item__title{font-family:var(--font-display)}
 
+/* Grands titres : resserrement leger (-0,02em), comme les titres deja types. */
+.view h2,
+.login-screen h1,
+.app-topbar h2,
+.dash__greeting,
+.rappels__title,
+.pg__title,
+.retards-pagehead__title{letter-spacing:-.02em}
+
+/* Chiffres cles en chiffres tabulaires (KPI, compteur, heures du tableau) :
+   plus de saut visuel quand une valeur est recalculee. */
+.rappel-kpi__num,
+.retards-kpi__value,
+.rappels__result strong,
+.rem-date,
+.rem-date small,
+.mtasks2__page-info,
+.retards-table2 td{font-variant-numeric:tabular-nums}
+
+/* ================================================================
+   Rubrique Paramètres
+   ----------------------------------------------------------------
+   Bloc piloté par les attributs data-* posés sur <html> par
+   src/modules/prefs.js. Les valeurs sont stockées dans la colonne
+   `prefs` de la table settings (un JSON) : ajouter un réglage ne
+   demande ni migration SQL ni nouvelle colonne.
+
+   Le fond reprend la recette des autres rubriques (deux halos, un
+   dégradé de base, une grille estompée au mask) avec une teinte
+   ardoise + ambre, libre parmi celles déjà utilisées ailleurs.
+   ================================================================ */
+
+#viewSettings {
+  position: relative;
+  isolation: isolate;
+  min-height: calc(100vh - 72px);
+  margin: -24px -32px -48px;
+  padding: 24px 32px 48px;
+  overflow: hidden;
+  background: linear-gradient(145deg,#14161d 0%,#171a24 48%,#1b1a1f 100%);
+  transition: background 0.2s ease;
+}
+:root[data-theme='dark'] #viewSettings {
+  background:
+    radial-gradient(ellipse 760px 500px at 90% 2%,rgba(245,158,11,.10),transparent 68%),
+    radial-gradient(ellipse 680px 540px at 2% 100%,rgba(148,163,184,.08),transparent 72%),
+    linear-gradient(145deg,#14161d 0%,#171a24 48%,#1b1a1f 100%);
+}
+:root[data-theme='light'] #viewSettings {
+  background:
+    radial-gradient(ellipse 760px 480px at 88% 4%,rgba(245,158,11,.07),transparent 68%),
+    radial-gradient(ellipse 680px 520px at 4% 96%,rgba(100,116,139,.05),transparent 72%),
+    linear-gradient(145deg,#f8f9fc 0%,#f6f7fb 48%,#faf8f5 100%);
+}
+#viewSettings::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(245,158,11,.055) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(245,158,11,.055) 1px,transparent 1px);
+  background-size: 40px 40px;
+  -webkit-mask-image: linear-gradient(to bottom,rgba(0,0,0,.68),transparent 84%);
+  mask-image: linear-gradient(to bottom,rgba(0,0,0,.68),transparent 84%);
+}
+:root[data-theme='light'] #viewSettings::after {
+  background-image:
+    linear-gradient(rgba(180,83,9,.05) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(180,83,9,.05) 1px,transparent 1px);
+}
+#viewSettings .settings {
+  position: relative;
+  z-index: 1;
+}
+
+.settings {
+  max-width: 820px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+.settings__head {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+}
+.settings__head h2 {
+  margin: 0;
+  font-size: 1.375rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+.settings__head p {
+  margin: 5px 0 0;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+/* Même carré arrondi que les autres rubriques ; l'ambre n'est repris par
+   aucune autre (Rappel violet, Retards rouge, Preuves vert). */
+.vhead-ico--settings {
+  background: linear-gradient(135deg,#f59e0b,#d97706);
+  box-shadow: 0 4px 12px rgba(245,158,11,.32);
+}
+
+/* --- Carte --- */
+.st-card {
+  position: relative;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: 0 2px 4px rgba(15,23,42,.05), 0 12px 28px -18px rgba(15,23,42,.28);
+  overflow: hidden;
+}
+/* Reflet d'un pixel en haut de carte : du relief sans texture lourde. */
+.st-card::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--text) 18%, transparent), transparent);
+}
+.st-card__head {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 18px 20px 14px;
+}
+.st-card__ico {
+  width: 34px;
+  height: 34px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  color: #b45309;
+  background: color-mix(in srgb, #f59e0b 16%, transparent);
+}
+:root[data-theme='dark'] .st-card__ico { color: #fbbf24; }
+.st-card__headtext { min-width: 0; }
+.st-card__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 650;
+  color: var(--text);
+}
+.st-card__desc {
+  margin: 4px 0 0;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+.st-card__rows {
+  display: flex;
+  flex-direction: column;
+}
+
+/* --- Ligne de réglage --- */
+.st__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 14px 20px;
+  border-top: 1px solid var(--border);
+  transition: background 0.15s ease;
+}
+.st__row:hover {
+  background: color-mix(in srgb, var(--text) 3%, transparent);
+}
+.st__txt {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.st__label {
+  font-size: 0.9375rem;
+  color: var(--text);
+}
+.st__hint {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+.st-note {
+  margin: 0;
+  padding: 14px 20px;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border);
+}
+
+/* --- Champs numériques (objectif, paliers) --- */
+.st__row--stack {
+  align-items: flex-start;
+  gap: 14px;
+}
+.st-numfields {
+  display: flex;
+  flex: none;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.st-numfield {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.st-numfield__label {
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.st-num {
+  width: 104px;
+  padding: 8px 11px;
+  font: inherit;
+  font-size: 0.875rem;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.st-num:hover { border-color: color-mix(in srgb, var(--accent) 40%, var(--border)); }
+.st-num:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+/* --- Sélecteur segmenté --- */
+.seg {
+  display: inline-flex;
+  flex: none;
+  padding: 3px;
+  gap: 2px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.seg__btn {
+  appearance: none;
+  border: none;
+  cursor: pointer;
+  padding: 7px 15px;
+  font: inherit;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  background: transparent;
+  border-radius: 8px;
+  white-space: nowrap;
+  transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+.seg__btn:hover { color: var(--text); }
+.seg__btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+.seg__btn.is-on {
+  color: var(--accent-contrast);
+  background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 78%, #7c3aed));
+  font-weight: 600;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--accent) 32%, transparent);
+}
+
+/* --- Bouton de réinitialisation ---
+   Ce projet n'a pas de classe « .btn » générique (tout est en BEM), d'où
+   ce composant dédié plutôt qu'un <button> nu laissé au style navigateur. */
+.st-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.st-reset {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  cursor: pointer;
+  padding: 10px 18px;
+  font: inherit;
+  font-size: 0.875rem;
+  color: var(--text);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 1px 2px rgba(15,23,42,.05);
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.12s ease, box-shadow 0.15s ease;
+}
+.st-reset__ico {
+  display: grid;
+  place-items: center;
+  color: var(--text-muted);
+  transition: color 0.15s ease, transform 0.4s ease;
+}
+.st-reset:hover {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+  background: color-mix(in srgb, var(--accent) 8%, var(--bg-elevated));
+  box-shadow: 0 6px 16px -8px color-mix(in srgb, var(--accent) 45%, transparent);
+}
+.st-reset:hover .st-reset__ico {
+  color: var(--accent);
+  transform: rotate(-160deg);
+}
+.st-reset:active { transform: translateY(1px); }
+.st-reset:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.st-reset[disabled] {
+  opacity: .6;
+  cursor: progress;
+}
+.st-reset[disabled] .st-reset__ico { transform: none; }
+.st-saved {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  transition: color 0.2s ease;
+}
+.st-saved.is-ok {
+  color: #16a34a;
+  font-weight: 600;
+}
+:root[data-theme='dark'] .st-saved.is-ok { color: #4ade80; }
+
+/* --- Filet dans la barre latérale --- */
+.sidebar-nav__divider {
+  height: 1px;
+  margin: 10px 12px;
+  background: rgba(255,255,255,.12);
+}
+
+/* ================================================================
+   Effets réels des préférences
+   ----------------------------------------------------------------
+   Chaque bloc correspond à UN réglage exposé dans l'interface. S'il
+   disparaît, le réglage correspondant cesse de fonctionner : c'est la
+   garantie qu'aucun interrupteur ne soit purement décoratif.
+   ================================================================ */
+
+:root[data-density='compact'] .mtasks2__list .mtasks2-row { padding: 6px 12px; }
+:root[data-density='compact'] .mtasks2-row { gap: 4px; }
+:root[data-density='compact'] .aside-card { padding: 10px 12px; }
+
+:root[data-contrast='high'] {
+  --border: #4a5163;
+  --text-muted: #b9c0cd;
+}
+:root[data-contrast='high'] .aside-card,
+:root[data-contrast='high'] .st-card { border-width: 2px; }
+
+@media (max-width: 720px) {
+  #viewSettings {
+    min-height: calc(100vh - 60px);
+    margin: -20px -16px -40px;
+    padding: 20px 16px 40px;
+  }
+  #viewSettings::after { background-size: 32px 32px; opacity: .65; }
+}
+@media (max-width: 600px) {
+  #viewSettings {
+    min-height: calc(100vh - 56px);
+    margin: -16px -14px -40px;
+    padding: 16px 14px 40px;
+  }
+  .st__row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  .seg { align-self: flex-start; }
+}

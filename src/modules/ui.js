@@ -4,8 +4,10 @@
 // Ce module est le seul  toucher au DOM pour la liste de tches.
 
 import { STATUS } from './tasks.js'
+import { escapeHtml } from './escape.js'
 import { computeTaskProgress, computeGlobalProgress } from './progression.js'
-import { taskMotif } from './retards.js'
+import { computeGlobalPerformance } from './performance.js'
+import { taskMotif, normalizePriority, isTaskOverdue } from './retards.js'
 
 const STATUS_LABEL = {
   [STATUS.TODO]: 'Non exécutée',
@@ -13,16 +15,8 @@ const STATUS_LABEL = {
   [STATUS.DONE]: 'Exécutée',
 }
 
-function isOverdue(task) {
-  if (!task.dueDate || task.status === STATUS.DONE) return false
-  return new Date(task.dueDate) < new Date()
-}
-
-function escapeHtml(str) {
-  const div = document.createElement('div')
-  div.textContent = str
-  return div.innerHTML
-}
+// La règle de retard est celle de retards.js (source unique). Cette copie
+// locale ne testait pas la tâche nulle ni la validité de la date.
 
 function formatDateTime(value) {
   const d = new Date(value)
@@ -223,7 +217,7 @@ function staticBadgeHtml(task) {
 }
 
 function taskCardHtml(task) {
-  const overdue = isOverdue(task)
+  const overdue = isTaskOverdue(task)
   return `
     <article class="task task--${task.status} ${overdue ? 'task--overdue' : ''}" data-id="${task.id}">
       <div class="task__main">
@@ -294,7 +288,61 @@ function reminderCardHtml({ task, kind, target }, now) {
   })
 }
 
+// --- Pagination 8/page de la liste des rappels ------------------------------
+// Même mécanique que Retards (retards.js : RETARDS_PAGE_SIZE = 8) : tranche de
+// 8 lignes, info « Affichage de X à Y sur Z », numéros cliquables, boutons
+// Précédent/Suivant désactivés aux extrémités. La barre (#remindersPageBar) est
+// un élément STATIQUE de index.html : son écouteur est donc posé UNE SEULE FOIS
+// ici, au niveau module — aucun risque de doublon quel que soit le nombre de
+// rendus (même pattern que retardsPageBarEl).
+// Comme dans Retards, la page courante est CONSERVÉE quand les filtres changent
+// (Période / Tâche), puis bornée au nombre de pages disponibles.
+const REMINDERS_PAGE_SIZE = 8
+let remindersPage = 1
+const remindersPageBarEl = document.getElementById('remindersPageBar')
+const remindersPageInfoEl = document.getElementById('remindersPageInfo')
+const remindersPageNumsEl = document.getElementById('remindersPageNums')
+const remindersPrevBtn = document.getElementById('remindersPrevBtn')
+const remindersNextBtn = document.getElementById('remindersNextBtn')
+// Dernières données rendues : permettent aux clics de pagination de redessiner
+// la page sans dépendre de main.js (qui passe toujours la liste complète).
+let remindersLastTb = null
+let remindersLastList = []
+let remindersLastRef = new Date()
+
+function remindersRenderPage() {
+  renderReminders(remindersLastTb, remindersLastList, remindersLastRef)
+}
+
+if (remindersPageBarEl) {
+  remindersPageBarEl.addEventListener('click', (event) => {
+    const btn = event.target.closest('button')
+    if (!btn || btn.disabled) return
+    const totalPages = Math.max(1, Math.ceil(remindersLastList.length / REMINDERS_PAGE_SIZE))
+    if (btn.id === 'remindersPrevBtn' && remindersPage > 1) {
+      remindersPage -= 1
+      remindersRenderPage()
+    } else if (btn.id === 'remindersNextBtn' && remindersPage < totalPages) {
+      remindersPage += 1
+      remindersRenderPage()
+    } else {
+      const num = event.target.closest('[data-rmpage]')
+      if (num) {
+        const p = Number(num.dataset.rmpage)
+        if (p >= 1 && p <= totalPages && p !== remindersPage) {
+          remindersPage = p
+          remindersRenderPage()
+        }
+      }
+    }
+  })
+}
+
+
 // --- Rappel : lignes reelles (taches avec vraie date), statut logique.
+// Rendu harmonise : meme pastille evocatrice que Mes taches / Retards via
+// taskMotif() partage (icone SVG au trait + couleur priorite), titre 11px/700.
+// IDs, data-id et data-remact conserves : main.js (filtres, menu "...") intact.
 export function renderReminders(container, reminders, now) {
   const tb = container || document.getElementById('reminderList')
   if (!tb) return
@@ -302,7 +350,44 @@ export function renderReminders(container, reminders, now) {
   // BUG CORRIGE : `now` pouvait arriver comme timestamp (nombre) ou etre
   // absent ; ref est toujours une vraie Date ici.
   const ref = now instanceof Date ? now : (typeof now === 'number' ? new Date(now) : new Date())
-  const rows = list.map((r) => {
+  // Pagination 8/page (mêmes règles que Retards) : la liste FILTRÉE complète est
+  // mémorisée pour que les clics de pagination puissent redessiner la vue sans
+  // repasser par main.js.
+  remindersLastTb = tb
+  remindersLastList = list
+  remindersLastRef = ref
+  const bar = remindersPageBarEl
+  if (list.length === 0) {
+    remindersPage = 1
+    if (bar) bar.hidden = true
+    tb.innerHTML = ''
+    const emptyEl = document.getElementById('reminderEmpty')
+    if (emptyEl) emptyEl.hidden = false
+    return
+  }
+  const remTotalPages = Math.max(1, Math.ceil(list.length / REMINDERS_PAGE_SIZE))
+  if (remindersPage > remTotalPages) remindersPage = remTotalPages
+  if (remindersPage < 1) remindersPage = 1
+  const remPageStart = (remindersPage - 1) * REMINDERS_PAGE_SIZE
+  const pageItems = list.slice(remPageStart, remPageStart + REMINDERS_PAGE_SIZE)
+  // Barre de pagination : mêmes classes que « Mes tâches » / « Retards » → rendu
+  // identique dans les deux thèmes, aucun CSS nouveau nécessaire.
+  if (bar) {
+    bar.hidden = false
+    const from = remPageStart + 1
+    const to = Math.min(remPageStart + REMINDERS_PAGE_SIZE, list.length)
+    if (remindersPageInfoEl) remindersPageInfoEl.textContent = `Affichage de ${from} à ${to} sur ${list.length} rappel${list.length > 1 ? 's' : ''}`
+    if (remindersPageNumsEl) {
+      let nums = ''
+      for (let p = 1; p <= remTotalPages; p++) {
+        nums += `<button type="button" class="mtasks2__page-num ${p === remindersPage ? 'is-current' : ''}" data-rmpage="${p}">${p}</button>`
+      }
+      remindersPageNumsEl.innerHTML = nums
+    }
+    if (remindersPrevBtn) remindersPrevBtn.disabled = remindersPage <= 1
+    if (remindersNextBtn) remindersNextBtn.disabled = remindersPage >= remTotalPages
+  }
+  const rows = pageItems.map((r) => {
     const t = r.task || r
     // r.target est deja une Date (construite dans main.js) ; sinon on
     // retombe sur les vraies dates de la tache.
@@ -315,37 +400,34 @@ export function renderReminders(container, reminders, now) {
     const minsLeft = Math.round((target.getTime() - ref.getTime()) / 60000)
     const soon = !isPast && minsLeft <= 180
     // Statut logique : depasse > en cours > bientot (moins de 3 h) >
-    // aujourd'hui > a venir.
+    // aujourd'hui > a venir. Badge texte : la seule icone de la ligne est la
+    // pastille taskMotif() partagee (colonne Tache).
     let stCls = 'rem-status--future'
-    let stTxt = 'A venir'
+    let stTxt = 'À venir'
     if (t.status === STATUS.DOING) { stCls = 'rem-status--doing'; stTxt = 'En cours' }
-    else if (isPast) { stCls = 'rem-status--todo'; stTxt = isToday ? "Aujourd'hui - depasse" : 'En retard' }
-    else if (soon) { stCls = 'rem-status--soon'; stTxt = 'Bientot' }
+    else if (isPast) { stCls = 'rem-status--todo'; stTxt = isToday ? "Aujourd'hui — dépassé" : 'En retard' }
+    else if (soon) { stCls = 'rem-status--soon'; stTxt = 'Bientôt' }
     else if (isToday) { stCls = 'rem-status--todo'; stTxt = "Aujourd'hui" }
     const dateTxt = fmtRemDate(target, ref)
     const timeTxt = fmtRemTime(target)
     const freq = freqOf(t)
+    // Pastille partagee taskMotif() : icone SVG au trait + couleur priorite,
+    // memes classes que Retards -> rendu et theme sombre herites.
     const motif = taskMotif(t)
-    const title = escapeHtml(t.title || 'Tache')
+    const prio = normalizePriority(t.priority)
+    const title = escapeHtml(t.title || 'Tâche')
     const desc = escapeHtml(t.description || '')
-    const countTxt = isPast ? 'depasse' : countdownTxt(minsLeft)
-    return `<tr data-id="${t.id}"><td class="c-check"></td>`
-      + `<td><div class="rem-task"><span class="rem-ico rem-ico--task" aria-hidden="true">${motif.icon}</span><div><strong>${title}</strong><span>${desc}</span></div></div></td>`
-      + `<td><div class="rem-date"><span aria-hidden="true">C</span><div>${dateTxt}<small>${timeTxt} - ${countTxt}</small></div></div></td>`
-      + `<td><span class="rem-freq">R ${freq}</span></td>`
-      + `<td><span class="rem-status ${stCls}">${stTxt}</span></td>`
-      + `<td><div class="rem-actions"><button type="button" class="rem-act" data-remact="menu" data-id="${t.id}" aria-label="Options">...</button><button type="button" class="rem-act" data-remact="go" data-id="${t.id}" aria-label="Ouvrir">›</button></div></td></tr>`
+    const safeId = escapeHtml(String(t.id ?? ''))
+    return `<tr data-id="${safeId}">`
+      + `<td><div class="rem-task"><span class="retards-t2__ico retards-t2__ico--${prio}" title="${escapeHtml(motif.hint)}" aria-hidden="true">${motif.icon}</span><div class="rem-task__txt"><strong>${title}</strong><span>${desc}</span></div></div></td>`
+      + `<td><div class="rem-date"><div>${escapeHtml(dateTxt)}<small>${escapeHtml(timeTxt)}</small></div></div></td>`
+      + `<td><span class="rem-freq">${escapeHtml(freq)}</span></td>`
+      + `<td><span class="rem-status ${stCls}">${escapeHtml(stTxt)}</span></td>`
+      + `<td><div class="rem-actions"><button type="button" class="rem-act" data-remact="menu" data-id="${safeId}" aria-label="Options" aria-haspopup="menu" aria-expanded="false">...</button><button type="button" class="rem-act rem-act--go" data-remact="go" data-id="${safeId}" aria-label="Ouvrir">›</button></div></td></tr>`
   }).join('')
   tb.innerHTML = rows
   const emptyEl = document.getElementById('reminderEmpty')
   if (emptyEl) emptyEl.hidden = list.length !== 0
-}
-function countdownTxt(mins) {
-  if (mins < 60) return `dans ${mins} min`
-  const h = Math.floor(mins / 60)
-  if (h < 24) return `dans ${h} h`
-  const d = Math.floor(h / 24)
-  return `dans ${d} j`
 }
 function sameDay(a, b) { return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate() }
 function fmtRemDate(d, ref) {
@@ -362,16 +444,6 @@ function freqOf(t) {
   if (t.status === STATUS.DOING) return 'Toutes les 2 h'
   return 'Une seule fois'
 }
-function icoOf(t) {
-  const s = (t.title || '').toLowerCase()
-  if (s.includes('rapport') || s.includes('redaction')) return { bg: '#ef4444', ch: 'R' }
-  if (s.includes('develop') || s.includes('fonction')) return { bg: '#2563eb', ch: '&lt;/&gt;' }
-  if (s.includes('bug') || s.includes('correct')) return { bg: '#16a34a', ch: '*' }
-  if (s.includes('reunion') || s.includes('equipe')) return { bg: '#7c3aed', ch: 'o' }
-  if (s.includes('design') || s.includes('interface')) return { bg: '#f59e0b', ch: '/' }
-  return { bg: '#7c3aed', ch: '+' }
-}
-
 function recentCardHtml(task, now) {
   const lastSaved = new Date(task.updatedAt || task.completedAt || task.createdAt).getTime()
   const elapsed = now - lastSaved
@@ -476,7 +548,7 @@ document.addEventListener('click', (event) => {
   const homeTask = list._home ? list._home.closest('.task') : null
   if (!homeTask) return
   const id = homeTask.dataset.id
-  const option = event.target.closest('[data-action="provide-proof"], [data-action="delete"]')
+  const option = event.target.closest('[data-action="provide-proof"], [data-action="delete"], [data-action="complete-direct"]')
   if (!option) return
   const handlers = list._actions
   if (option.dataset.action === 'provide-proof') {
@@ -490,9 +562,13 @@ document.addEventListener('click', (event) => {
     closeAllRowMenus()
     if (handlers.onDelete) handlers.onDelete(id)
   }
+  if (option.dataset.action === 'complete-direct') {
+    closeAllRowMenus()
+    if (handlers.onCompleteDirect) handlers.onCompleteDirect(id)
+  }
 })
 
-export function bindTaskEvents(container, { onSetStatus, onEdit, onDelete, onProvideProof }) {
+export function bindTaskEvents(container, { onSetStatus, onEdit, onDelete, onProvideProof, onCompleteDirect }) {
   container.addEventListener('click', (event) => {
     const taskEl = event.target.closest('.task')
     if (!taskEl) return
@@ -513,7 +589,7 @@ export function bindTaskEvents(container, { onSetStatus, onEdit, onDelete, onPro
         // Handlers de la liste d'origine : le menu est déplacé dans <body>
         // (portail), les clics sur ses options sont donc traités par le
         // listener global ci-dessous, qui utilise ces handlers mémorisés.
-        menu._actions = { onSetStatus, onEdit, onDelete, onProvideProof }
+        menu._actions = { onSetStatus, onEdit, onDelete, onProvideProof, onCompleteDirect }
         // « Portail » : le menu est rattaché à <body> le temps de
         // l'affichage, hors de toutes les piles (stacking contexts) des
         // cartes — garanti au-dessus de tous les autres éléments.
@@ -915,21 +991,42 @@ export function renderWeeklyActivity(el, buckets) {
   `
 }
 
-// --- Cloche : menu déroulant des tâches en retard ---
-export function renderBell(countEl, menuEl, tasks) {
-  const overdue = tasks.filter(isOverdue)
-
-  if (overdue.length === 0) {
-    countEl.hidden = true
-    menuEl.innerHTML = `<p class="bell__empty">Aucune tâche en retard.</p>`
+// --- Cloche : centre de notifications (retards + rappels du jour) ---------
+// lateList : tâches en retard ; remList : rappels du jour. Métadonnées
+// calculées ici ; le contenu n'est régénéré QUE si le menu est fermé (la
+// lecture en cours est préservée quand un rendu survient pendant l'ouverture).
+const BELL_GROUP_MAX = 6
+const bellLateLabel = (dueMs) => {
+  const diff = Date.now() - dueMs
+  if (diff < 60000) return "à l'instant"
+  if (diff < 60 * 60000) return `il y a ${Math.floor(diff / 60000)} min`
+  if (diff < 24 * 60 * 60000) return `il y a ${Math.floor(diff / (60 * 60000))} h`
+  return `il y a ${Math.floor(diff / (24 * 60 * 60000))} j`
+}
+const bellHourLabel = (t) => new Date(t.dueDate || t.startTime).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+const bellItemHtml = (t, meta) =>
+  `<li><button type="button" class="bell__item" data-id="${escapeHtml(String(t.id))}"><span class="bell__item-title">${escapeHtml(t.title)}</span><span class="bell__item-meta">${escapeHtml(meta)}</span></button></li>`
+const bellGroupHtml = (dotCls, label, items, metaOf) => {
+  const shown = items.slice(0, BELL_GROUP_MAX)
+  const rest = items.length - shown.length
+  return `<div class="bell__group"><i class="bell__dot ${dotCls}" aria-hidden="true"></i>${escapeHtml(label)}<em>${items.length}</em></div>
+    <ul class="bell__list">${shown.map((t) => bellItemHtml(t, metaOf(t))).join('')}${rest > 0 ? `<li class="bell__more">+ ${rest} de plus…</li>` : ''}</ul>`
+}
+export function renderBell(countEl, menuEl, lateList, remList) {
+  const total = lateList.length + remList.length
+  if (countEl) {
+    countEl.hidden = total === 0
+    countEl.textContent = total > 9 ? '9+' : String(total)
+  }
+  // Menu ouvert = lecture en cours : on ne régénère pas le contenu.
+  if (!menuEl.hidden) return
+  if (total === 0) {
+    menuEl.innerHTML = `<div class="bell__head"><span>Notifications</span></div><p class="bell__allread">✓ Tout est consulté.<br>Aucune nouvelle notification pour l'instant.</p>`
     return
   }
-
-  countEl.hidden = false
-  countEl.textContent = overdue.length
-  menuEl.innerHTML = `<ul class="bell__list">${overdue
-    .map((t) => `<li><button type="button" class="bell__item" data-id="${t.id}">${escapeHtml(t.title)}</button></li>`)
-    .join('')}</ul>`
+  menuEl.innerHTML = `<div class="bell__head"><span>Notifications</span><em>${total} nouvelle${total > 1 ? 's' : ''}</em></div>
+    ${lateList.length ? bellGroupHtml('bell__dot--late', 'En retard', lateList, (t) => bellLateLabel(new Date(t.dueDate).getTime())) : ''}
+    ${remList.length ? bellGroupHtml('bell__dot--rem', 'Rappels du jour', remList, bellHourLabel) : ''}`
 }
 
 export function bindBellMenu(menuEl, onSelect) {
@@ -990,11 +1087,8 @@ function pgHours(ms) {
   const rest = Math.round((h - whole) * 60)
   return rest === 0 ? whole + ' h' : whole + ' h ' + String(rest).padStart(2, '0')
 }
-function pgIsOverdue(t) {
-  if (!t || !t.dueDate || t.status === 'done') return false
-  const d = new Date(t.dueDate).getTime()
-  return Number.isFinite(d) && d < Date.now()
-}
+// La règle de retard est celle de retards.js (source unique). Cette copie
+// locale ne testait ni la tâche nulle ni la validité de la date.
 function pgRefMs(t) {
   if (t.dueDate) { const d = new Date(t.dueDate).getTime(); if (Number.isFinite(d)) return d }
   if (t.completedAt) { const d = new Date(t.completedAt).getTime(); if (Number.isFinite(d)) return d }
@@ -1009,9 +1103,9 @@ function pgInPeriod(tasks, days) {
 }
 function pgSplit(tasks) {
   const done = tasks.filter((t) => t.status === 'done').length
-  const delayed = tasks.filter(pgIsOverdue).length
-  const doing = tasks.filter((t) => t.status === 'doing' && !pgIsOverdue(t)).length
-  const todo = tasks.filter((t) => t.status === 'todo' && !pgIsOverdue(t)).length
+  const delayed = tasks.filter(isTaskOverdue).length
+  const doing = tasks.filter((t) => t.status === 'doing' && !isTaskOverdue(t)).length
+  const todo = tasks.filter((t) => t.status === 'todo' && !isTaskOverdue(t)).length
   return { done, doing, todo, delayed, total: tasks.length }
 }
 function pgPlannedMs(t) {
@@ -1070,7 +1164,10 @@ function pgCanvasPalette() {
 // Donut « Respect du temps » : reprend la facture du cercle de « Répartition des
 // retards » (rubrique Retards) — canvas HiDPI, anneau épais, segments détachés,
 // valeur centrée, typographie proportionnelle à l'espace disponible.
-function pgRenderTimeDonut(planned, actual) {
+// spanDays (optionnel) : période individuelle de la carte (« ... ») ; le
+// sous-libellé central l'affiche (« Jour »/« Semaine »/« Mois ») au lieu du
+// générique « du temps prévu ».
+function pgRenderTimeDonut(planned, actual, spanDays) {
   const canvas = document.getElementById('pgTimeDonut')
   if (!canvas) return
   const { ctx, width, height } = prepareCanvasForHiDpi(canvas)
@@ -1127,14 +1224,20 @@ function pgRenderTimeDonut(planned, actual) {
   ctx.fillText(hasData ? bigLabel : '0 %', centerX, centerY - numLift)
   ctx.font = `500 ${labFont}px Inter, sans-serif`
   ctx.fillStyle = pal.muted
-  ctx.fillText('du temps', centerX, centerY - numLift + numFont * 0.5 + labGap)
-  ctx.fillText('prévu', centerX, centerY - numLift + numFont * 0.5 + labGap + labFont + 2)
+  const spanLbl = Number(spanDays) <= 1 ? null : Number(spanDays) <= 7 ? 'cette semaine' : 'ce mois-ci'
+  if (spanLbl) {
+    ctx.fillText(spanLbl, centerX, centerY - numLift + numFont * 0.5 + labGap)
+  } else {
+    ctx.fillText('du temps', centerX, centerY - numLift + numFont * 0.5 + labGap)
+    ctx.fillText('prévu', centerX, centerY - numLift + numFont * 0.5 + labGap + labFont + 2)
+  }
 }
 
-// Donut « Ma progression du jour » : rendu strictement identique à celui du
-// « Respect du temps » — canvas HiDPI, anneau épais, segments détachés par de
-// fins interstices, valeur et libellé centrés DANS le canvas (donc toujours
-// parfaitement au centre, sans jamais déborder de l'anneau).
+// Donut « Ma progression » : affiche la progression globale RÉELLE du scope
+// (computeGlobalProgress : Σ(Pi×Wi)/Σ(Wi)) — un seul arc vert de 0 à pct %
+// sur fond neutre, plus aucune répartition par statut. Valeur et libellé
+// centrés DANS le canvas. Signature inchangée (counts/total conservés pour
+// compatibilité d'appel), seul pct pilote désormais le dessin.
 function pgRenderDayDonut(counts, total, pct, label) {
   const canvas = document.getElementById('pgDayDonut')
   if (!canvas) return
@@ -1142,15 +1245,8 @@ function pgRenderDayDonut(counts, total, pct, label) {
   ctx.clearRect(0, 0, width, height)
 
   const pal = pgCanvasPalette()
-  const c = counts || { done: 0, doing: 0, todo: 0, delayed: 0 }
-  const parts = [
-    { frac: total > 0 ? c.todo / total : 0, color: pal.muted },
-    { frac: total > 0 ? c.doing / total : 0, color: pal.doing },
-    { frac: total > 0 ? c.delayed / total : 0, color: pal.late },
-    { frac: total > 0 ? c.done / total : 0, color: pal.ok },
-  ].filter((p) => p.frac > 0)
-  // Un seul état représenté : pas d'interstice, l'anneau est complet.
-  const gaps = parts.length > 1 ? parts.length : 0
+  const value = Math.min(100, Math.max(0, Number(pct) || 0))
+  const frac = value / 100
 
   const size = Math.min(width, height)
   const centerX = width / 2
@@ -1160,29 +1256,22 @@ function pgRenderDayDonut(counts, total, pct, label) {
   const TAU = Math.PI * 2
   const start = -Math.PI / 2
   const arcRadius = radius - thick / 2
-  const gap = gaps ? 0.035 : 0
 
-  if (parts.length === 0) {
-    ctx.lineWidth = thick
-    ctx.lineCap = 'butt'
-    ctx.strokeStyle = pal.track
+  // Fond : anneau complet neutre (thème clair/sombre via --pg-ring-track).
+  ctx.lineWidth = thick
+  ctx.lineCap = 'butt'
+  ctx.strokeStyle = pal.track
+  ctx.beginPath()
+  ctx.arc(centerX, centerY, arcRadius, 0, TAU)
+  ctx.stroke()
+
+  // Arc de progression réelle : vert identique aux tâches terminées.
+  if (frac > 0) {
+    ctx.strokeStyle = pal.ok
     ctx.beginPath()
-    ctx.arc(centerX, centerY, arcRadius, 0, TAU)
+    if (frac >= 1) ctx.arc(centerX, centerY, arcRadius, 0, TAU)
+    else ctx.arc(centerX, centerY, arcRadius, start, start + frac * TAU)
     ctx.stroke()
-  } else {
-    ctx.lineWidth = thick
-    ctx.lineCap = 'butt'
-    let angle = start
-    for (let i = 0; i < parts.length; i++) {
-      const sweep = parts[i].frac * TAU
-      const a0 = angle + (gaps ? gap / 2 : 0)
-      const a1 = angle + sweep - (gaps ? gap / 2 : 0)
-      ctx.strokeStyle = parts[i].color
-      ctx.beginPath()
-      ctx.arc(centerX, centerY, arcRadius, a0, Math.max(a0, a1))
-      ctx.stroke()
-      angle += sweep
-    }
   }
 
   // Valeur + libellé centrés, dessinés dans le canvas comme « Respect du temps ».
@@ -1209,17 +1298,19 @@ function pgRenderDayDonut(counts, total, pct, label) {
   if (line2) ctx.fillText(line2, centerX, y0 + labFont + 2)
 }
 
-function pgRenderEvo(tasks) {
+function pgRenderEvo(tasks, spanDays) {
   const canvas = document.getElementById('pgEvoChart')
   if (!canvas) return
+  const span = [7, 14, 30].includes(Number(spanDays)) ? Number(spanDays) : 7
   const days = []
   const now = new Date(); now.setHours(0, 0, 0, 0)
-  for (let i = 6; i >= 0; i--) {
+  for (let i = span - 1; i >= 0; i--) {
     const d0 = now.getTime() - i * 86400000
     const d1 = d0 + 86400000
     const dayTasks = tasks.filter((t) => { const m = pgRefMs(t); return m !== null && m >= d0 && m < d1 })
-    const done = dayTasks.filter((t) => t.status === 'done').length
-    const pct = dayTasks.length ? Math.round((done / dayTasks.length) * 100) : 0
+    // Courbe alignée sur l'anneau : progression globale RÉELLE du jour
+    // (pondérée par priorité, incalculables exclus), pas % de done/total.
+    const pct = computeGlobalProgress(dayTasks)
     days.push({ date: new Date(d0), pct })
   }
   const dpr = window.devicePixelRatio || 1
@@ -1246,7 +1337,7 @@ function pgRenderEvo(tasks) {
     ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR + 14, y); ctx.stroke()
     ctx.fillText(v + ' %', padL - 5, y + 3)
   }
-  const pts = days.map((d, i) => ({ x: padL + (i / 6) * iw, y: padT + ih - (d.pct / 100) * ih, v: d.pct, date: d.date }))
+  const pts = days.map((d, i) => ({ x: padL + (span > 1 ? i / (span - 1) : 0.5) * iw, y: padT + ih - (d.pct / 100) * ih, v: d.pct, date: d.date }))
   const accent = dark ? '#6c8cff' : '#4c6ef5'
   const grad = ctx.createLinearGradient(0, padT, 0, padT + ih)
   grad.addColorStop(0, dark ? 'rgba(108,140,255,.28)' : 'rgba(59,91,219,.22)'); grad.addColorStop(1, dark ? 'rgba(108,140,255,.04)' : 'rgba(59,91,219,.03)')
@@ -1283,50 +1374,189 @@ function pgRenderEvo(tasks) {
   ctx.font = font
   ctx.textAlign = 'center'
   const wd = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam']
-  pts.forEach((p) => { ctx.fillText(wd[p.date.getDay()], p.x, H - 14); ctx.fillText(String(p.date.getDate()), p.x, H - 3) })
+  const tick = span > 14 ? 3 : span > 7 ? 2 : 1
+  pts.forEach((p, i) => { if (i % tick !== 0 && i !== pts.length - 1) return; ctx.fillText(wd[p.date.getDay()], p.x, H - 14); ctx.fillText(String(p.date.getDate()), p.x, H - 3) })
 }
+// Périodes d'analyse individuelles par carte (« ... ») : surcharge du filtre
+// global. Détail (mise en évidence visuelle, jour verrouillé) et Résumé
+// (base de comparaison des deltas, semaine verrouillée) ont leurs propres
+// options ; les 4 autres cartes pilotent leur scope/échelle.
+const pgCardPeriods = { day: 'global', evo: 'global', time: 'global', perf: 'global' }
+// Mise en évidence d'une tuile du Détail (pur visuel) + base de comparaison
+// du Résumé (1 = semaine précédente, 2 = il y a 2 semaines).
+let pgDetailFocus = 'all'
+let pgWeekCompareBack = 1
+export function getPgCardPeriod(key) { return pgCardPeriods[key] || 'global' }
+export function setPgCardPeriod(key, value) {
+  if (key === 'evo') pgCardPeriods.evo = ['7', '14', '30'].includes(String(value)) ? String(value) : 'global'
+  else if (['day', 'time', 'perf'].includes(key)) pgCardPeriods[key] = ['1', '7', '30'].includes(String(value)) ? String(value) : 'global'
+}
+export function getPgDetailFocus() { return pgDetailFocus }
+export function setPgDetailFocus(v) {
+  pgDetailFocus = ['all', 'done', 'doing', 'todo', 'late'].includes(String(v)) ? String(v) : 'all'
+  pgApplyDetailFocus()
+}
+export function getPgWeekCompareBack() { return pgWeekCompareBack }
+export function setPgWeekCompareBack(v) {
+  pgWeekCompareBack = Number(v) === 2 ? 2 : 1
+  const sub = document.getElementById('pgWeekSub')
+  if (sub) sub.textContent = pgWeekCompareBack === 2 ? 'Comparée à il y a 2 semaines' : 'Vos performances cette semaine'
+}
+function pgApplyDetailFocus() {
+  const tiles = document.querySelectorAll('.pg-tiles .pg-tile')
+  if (!tiles.length) return
+  const map = { done: 0, doing: 1, todo: 2, late: 3 }
+  tiles.forEach((tile, i) => {
+    const active = pgDetailFocus === 'all' || map[pgDetailFocus] === i
+    tile.classList.toggle('is-focus', pgDetailFocus !== 'all' && active)
+    tile.classList.toggle('is-dim', pgDetailFocus !== 'all' && !active)
+  })
+}
+function pgResolveCardDays(key, globalDays) {
+  const v = pgCardPeriods[key]
+  if (v === undefined || v === 'global') return Number(globalDays) || 1
+  return Number(v) || 1
+}
+function pgCloseAllCardMenus(except) {
+  document.querySelectorAll('.pg-menu__pop').forEach((pop) => {
+    if (pop !== except) pop.hidden = true
+  })
+  document.querySelectorAll('.pg-dots-btn').forEach((btn) => {
+    const pop = document.querySelector(`[data-pgpop="${btn.dataset.pgmenu}"]`)
+    if (pop && pop !== except) btn.setAttribute('aria-expanded', 'false')
+  })
+}
+function pgMarkCardCustom(key) {
+  const btn = document.querySelector(`[data-pgmenu="${key}"]`)
+  if (!btn) return
+  const custom = key === 'detail' ? pgDetailFocus !== 'all'
+    : key === 'week' ? pgWeekCompareBack !== 1
+    : (pgCardPeriods[key] !== undefined && pgCardPeriods[key] !== 'global')
+  btn.classList.toggle('is-custom', custom)
+}
+let pgCardMenusBound = false
+export function bindPgCardMenus(onChange) {
+  const btns = document.querySelectorAll('.pg-dots-btn[data-pgmenu]')
+  if (!btns.length) return
+  btns.forEach((btn) => {
+    if (btn.dataset.pgbound === '1') return
+    btn.dataset.pgbound = '1'
+    const key = btn.dataset.pgmenu
+    const pop = document.querySelector(`[data-pgpop="${key}"]`)
+    if (!pop) return
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation()
+      const willOpen = pop.hidden
+      pgCloseAllCardMenus(pop)
+      pop.hidden = !willOpen
+      btn.setAttribute('aria-expanded', String(willOpen))
+    })
+    pop.querySelectorAll('[data-pgperiod]').forEach((item) => {
+      item.addEventListener('click', (e) => {
+        e.stopPropagation()
+        setPgCardPeriod(key, item.dataset.pgperiod)
+        pop.querySelectorAll('[data-pgperiod]').forEach((it) => it.setAttribute('aria-checked', String(it === item)))
+        pop.hidden = true
+        btn.setAttribute('aria-expanded', 'false')
+        pgMarkCardCustom(key)
+        if (typeof onChange === 'function') onChange(key, pgCardPeriods[key])
+      })
+    })
+    pop.querySelectorAll('[data-pgfocus]').forEach((item) => {
+      item.addEventListener('click', (e) => {
+        e.stopPropagation()
+        setPgDetailFocus(item.dataset.pgfocus)
+        pop.querySelectorAll('[data-pgfocus]').forEach((it) => it.setAttribute('aria-checked', String(it === item)))
+        pop.hidden = true
+        btn.setAttribute('aria-expanded', 'false')
+        pgMarkCardCustom(key)
+        if (typeof onChange === 'function') onChange(key, pgDetailFocus)
+      })
+    })
+    pop.querySelectorAll('[data-pgcompare]').forEach((item) => {
+      item.addEventListener('click', (e) => {
+        e.stopPropagation()
+        setPgWeekCompareBack(item.dataset.pgcompare)
+        pop.querySelectorAll('[data-pgcompare]').forEach((it) => it.setAttribute('aria-checked', String(it === item)))
+        pop.hidden = true
+        btn.setAttribute('aria-expanded', 'false')
+        pgMarkCardCustom(key)
+        if (typeof onChange === 'function') onChange(key, String(pgWeekCompareBack))
+      })
+    })
+  })
+  // Marqueurs « réglage personnalisé » (point bleu) : état initial au cas où
+  // une préférence aurait été conservée entre deux rendus.
+  ;['day', 'time', 'evo', 'perf', 'detail', 'week'].forEach((k) => pgMarkCardCustom(k))
+  if (pgCardMenusBound) return
+  pgCardMenusBound = true
+  document.addEventListener('click', () => pgCloseAllCardMenus(null))
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') pgCloseAllCardMenus(null) })
+}
+export function pgCloseMenusForRender() { pgCloseAllCardMenus(null) }
 export function renderProgressionMaquette(tasks, period) {
+  pgCloseAllCardMenus(null)
   const list = Array.isArray(tasks) ? tasks : []
   const days = Number(period) || 1
-  const scope = pgInPeriod(list, days)
+  // Ma progression : période individuelle (« ... ») ou filtre global.
+  const dayDays = pgResolveCardDays('day', days)
+  const scope = dayDays === days ? pgInPeriod(list, days) : pgInPeriod(list, dayDays)
   const c = pgSplit(scope)
-  const donePct = c.total ? Math.round((c.done / c.total) * 100) : 0
+  // Progression globale RÉELLE du scope (pondérée par priorité,
+  // incalculables exclus) : c'est elle qui pilote l'anneau, le centre et
+  // le badge. Les tuiles ci-dessous restent des comptages par statut.
+  const globalPct = computeGlobalProgress(scope)
   const doingPct = c.total ? Math.round((c.doing / c.total) * 100) : 0
   const todoPct = c.total ? Math.round((c.todo / c.total) * 100) : 0
   const latePct = c.total ? Math.round((c.delayed / c.total) * 100) : 0
-  pgSet('pgDayPct', donePct + ' %')
+  const donePct = c.total ? Math.round((c.done / c.total) * 100) : 0
+  pgSet('pgDayPct', globalPct + ' %')
   pgSet('pgDayDoneN', c.done); pgSet('pgDayDoneP', donePct + ' %')
   pgSet('pgDayDoingN', c.doing); pgSet('pgDayDoingP', doingPct + ' %')
   pgSet('pgDayTodoN', c.todo); pgSet('pgDayTodoP', todoPct + ' %')
   pgSet('pgDayLateN', c.delayed); pgSet('pgDayLateP', latePct + ' %')
   pgSet('pgDayTotalN', c.total)
-  pgSet('pgTileDoneN', c.done); pgSet('pgTileDoneP', donePct + ' %')
-  pgSet('pgTileDoingN', c.doing); pgSet('pgTileDoingP', doingPct + ' %')
-  pgSet('pgTileTodoN', c.todo); pgSet('pgTileTodoP', todoPct + ' %')
-  pgSet('pgTileLateN', c.delayed); pgSet('pgTileLateP', latePct + ' %')
-  pgRenderDayDonut(c, c.total, donePct, days <= 1 ? "Progression aujourd'hui" : days <= 7 ? 'Progression cette semaine' : 'Progression ce mois-ci')
+  // Détail des tâches du jour : TOUJOURS le scope journalier (1 jour),
+  // même quand le filtre période vaut Semaine/Mois. Rien d'autre.
+  const dayScope = pgInPeriod(list, 1)
+  const dc = pgSplit(dayScope)
+  const dDonePct = dc.total ? Math.round((dc.done / dc.total) * 100) : 0
+  const dDoingPct = dc.total ? Math.round((dc.doing / dc.total) * 100) : 0
+  const dTodoPct = dc.total ? Math.round((dc.todo / dc.total) * 100) : 0
+  const dLatePct = dc.total ? Math.round((dc.delayed / dc.total) * 100) : 0
+  pgSet('pgTileDoneN', dc.done); pgSet('pgTileDoneP', dDonePct + ' %')
+  pgSet('pgTileDoingN', dc.doing); pgSet('pgTileDoingP', dDoingPct + ' %')
+  pgSet('pgTileTodoN', dc.todo); pgSet('pgTileTodoP', dTodoPct + ' %')
+  pgSet('pgTileLateN', dc.delayed); pgSet('pgTileLateP', dLatePct + ' %')
+  // Ré-applique la mise en évidence choisie dans le menu « ... » du Détail
+  // (les tuiles sont statiques, on resynchronise après chaque rendu).
+  pgApplyDetailFocus()
+  pgRenderDayDonut(c, c.total, globalPct, dayDays <= 1 ? "Progression aujourd'hui" : dayDays <= 7 ? 'Progression cette semaine' : 'Progression ce mois-ci')
   const dayBadge = document.getElementById('pgDayBadge')
   if (dayBadge) {
     let txt = 'Bon rythme !'
     let cls = 'pg-pill pg-pill--green'
     if (c.total === 0) { cls = 'pg-pill pg-pill--amber'; txt = 'Ajoutez vos premières tâches' }
-    else if (donePct >= 100) { txt = 'Objectif atteint !' }
-    else if (c.delayed > 0 && donePct < 50) { cls = 'pg-pill pg-pill--red'; txt = c.delayed + ' en retard' }
-    else if (donePct < 50) { cls = 'pg-pill pg-pill--amber'; txt = 'En progression' }
+    else if (globalPct >= 100) { txt = 'Objectif atteint !' }
+    else if (c.delayed > 0 && globalPct < 50) { cls = 'pg-pill pg-pill--red'; txt = c.delayed + ' en retard' }
+    else if (globalPct < 50) { cls = 'pg-pill pg-pill--amber'; txt = 'En progression' }
     dayBadge.className = cls
     const svg = dayBadge.querySelector('svg')
     dayBadge.textContent = txt
     if (svg) dayBadge.prepend(svg)
   }
   let planned = 0, actual = 0
-  for (const t of scope) { planned += pgPlannedMs(t); actual += pgActualMs(t) }
+  // Respect du temps : période individuelle (« ... ») ou filtre global.
+  const timeDays = pgResolveCardDays('time', days)
+  const timeScope = timeDays === days ? scope : pgInPeriod(list, timeDays)
+  for (const t of timeScope) { planned += pgPlannedMs(t); actual += pgActualMs(t) }
   // Pas d'écrêtage à 100 % : un dépassement doit rester visible, à la fois sur
   // l'anneau (segment rouge) et sur le statut « Temps dépassé ».
   const timePct = planned > 0 ? Math.round((actual / planned) * 100) : 0
   pgSet('pgTimePct', timePct + ' % du temps prévu')
   pgSet('pgPlanned', pgHours(planned))
   pgSet('pgActual', pgHours(actual))
-  pgRenderTimeDonut(planned, actual)
+  pgRenderTimeDonut(planned, actual, timeDays)
   const tb = document.getElementById('pgTimeBadge')
   if (tb) {
     let txt = 'Dans le rythme prévu'
@@ -1339,14 +1569,29 @@ export function renderProgressionMaquette(tasks, period) {
     tb.textContent = txt
     if (svg) tb.prepend(svg)
   }
-  pgRenderEvo(list)
+  pgRenderEvo(list, pgResolveCardDays('evo', days) <= 1 ? 7 : pgResolveCardDays('evo', days))
+  const evoSub = document.getElementById('pgEvoSub')
+  if (evoSub) {
+    const evoDays = pgResolveCardDays('evo', days)
+    evoSub.textContent = evoDays <= 1 || evoDays === 7 ? 'Sur les 7 derniers jours' : evoDays <= 14 ? 'Sur les 14 derniers jours' : 'Sur les 30 derniers jours'
+  }
   const wc = pgSplit(pgInPeriod(list, 7))
   const past0 = new Date(); past0.setHours(0, 0, 0, 0)
+  // Base de comparaison du Résumé (« ... ») : 1 = semaine précédente (défaut),
+  // 2 = il y a 2 semaines. La semaine de référence reste « cette semaine » ;
+  // seule la fenêtre de comparaison des deltas se décale.
+  const compareBack = pgWeekCompareBack * 7
   const prevTasks = list.filter((t) => {
     const m = pgRefMs(t)
-    return m !== null && m >= past0.getTime() - 14 * 86400000 && m < past0.getTime() - 7 * 86400000
+    return m !== null && m >= past0.getTime() - (compareBack + 7) * 86400000 && m < past0.getTime() - compareBack * 86400000
   })
   const pc = pgSplit(prevTasks)
+  // Le sous-titre de la carte et le libellé de la mini-case « Évolution »
+  // suivent la base de comparaison choisie (les deux portent l'information).
+  const weekSub = document.getElementById('pgWeekSub')
+  if (weekSub) weekSub.textContent = pgWeekCompareBack === 2 ? 'Comparée à il y a 2 semaines' : 'Vos performances cette semaine'
+  const evolLabel = document.getElementById('pgWeekEvolLabel')
+  if (evolLabel) evolLabel.textContent = pgWeekCompareBack === 2 ? 'Par rapport à il y a 2 semaines' : 'Par rapport à la semaine dernière'
   const onTimePct = wc.total ? Math.round(((wc.done + wc.doing + wc.todo) / wc.total) * 100) : 0
   const evol = pc.done > 0 ? Math.round(((wc.done - pc.done) / pc.done) * 100) : (wc.done > 0 ? 100 : 0)
   const doneDelta = pc.done > 0 ? Math.round(((wc.done - pc.done) / pc.done) * 100) : (wc.done > 0 ? 100 : 0)
@@ -1362,9 +1607,9 @@ export function renderProgressionMaquette(tasks, period) {
   const onTimeDeltaEl = document.getElementById('pgWeekOnTimeDelta')
   if (onTimeDeltaEl) { onTimeDeltaEl.textContent = (evol >= 0 ? '↑ +' : '↓ ') + Math.abs(evol) + ' %'; onTimeDeltaEl.className = 'pg-delta ' + (evol >= 0 ? 'pg-delta--up' : 'pg-delta--down') }
   const title = document.getElementById('pgDayTitle')
-  if (title) title.textContent = days <= 1 ? 'Ma progression du jour' : days <= 7 ? 'Ma progression de la semaine' : 'Ma progression du mois'
+  if (title) title.textContent = dayDays <= 1 ? 'Ma progression du jour' : dayDays <= 7 ? 'Ma progression de la semaine' : 'Ma progression du mois'
   const center = document.getElementById('pgDayCenterLabel')
-  if (center) center.textContent = days <= 1 ? "Progression aujourd'hui" : days <= 7 ? 'Progression cette semaine' : 'Progression ce mois-ci'
+  if (center) center.textContent = dayDays <= 1 ? "Progression aujourd'hui" : dayDays <= 7 ? 'Progression cette semaine' : 'Progression ce mois-ci'
   const bannerT = document.getElementById('pgBannerTitle')
   const bannerS = document.getElementById('pgBannerSub')
   if (bannerT && bannerS) {
@@ -1373,7 +1618,65 @@ export function renderProgressionMaquette(tasks, period) {
     else if (wc.delayed > 0) { bannerT.textContent = 'Réduis tes retards pas à pas !'; bannerS.textContent = 'Traite en priorité les tâches en retard pour remonter.' }
     else { bannerT.textContent = 'Belle constance, continue !'; bannerS.textContent = 'Chaque tâche accomplie te rapproche de tes objectifs.' }
   }
+  // Carte Performance : période propre (« ... ») ou filtre global.
+  renderPerformanceCard(list, pgResolveCardDays('perf', days))
 }
+// --- Performance : carte entre Detail et Semaine (formules utilisateur) ---
+// Anneau 1 arc (meme facture que pgRenderDayDonut) + stats + top retards.
+// scope = taches de la periode (pgInPeriod) : coherent avec l'anneau jour.
+export function renderPerformanceCard(tasks, period) {
+  const list = Array.isArray(tasks) ? tasks : []
+  const days = Number(period) || 1
+  const scope = pgInPeriod(list, days)
+  const perf = computeGlobalPerformance(scope, Date.now())
+  pgSet('pgPerfPct', perf.percent + ' %')
+  pgSet('pgPerfTR', perf.avgTR + ' %')
+  pgSet('pgPerfIG', String(perf.maxIG).replace('.', ','))
+  pgSet('pgPerfLate', String(perf.delayedCount))
+  pgSet('pgPerfN', String(perf.n))
+  const canvas = document.getElementById('pgPerfDonut')
+  if (canvas) {
+    const prep = prepareCanvasForHiDpi(canvas)
+    const ctx = prep.ctx
+    const width = prep.width
+    const height = prep.height
+    ctx.clearRect(0, 0, width, height)
+    const pal = pgCanvasPalette()
+    const frac = Math.min(1, Math.max(0, perf.percent / 100))
+    const size = Math.min(width, height)
+    const cx = width / 2
+    const cy = height / 2
+    const radius = Math.max(10, size / 2 - 12)
+    const thick = Math.max(20, radius * 0.34)
+    const arcR = radius - thick / 2
+    ctx.lineWidth = thick
+    ctx.lineCap = 'butt'
+    ctx.strokeStyle = pal.track
+    ctx.beginPath()
+    ctx.arc(cx, cy, arcR, 0, Math.PI * 2)
+    ctx.stroke()
+    if (frac > 0) {
+      ctx.strokeStyle = pal.ok
+      ctx.beginPath()
+      if (frac >= 1) ctx.arc(cx, cy, arcR, 0, Math.PI * 2)
+      else ctx.arc(cx, cy, arcR, -Math.PI / 2, -Math.PI / 2 + frac * Math.PI * 2)
+      ctx.stroke()
+    }
+    // Valeur centrée DANS le canvas : % de performance globale réelle
+    // (PerFG, retards pénalisés). Le span #pgPerfPct reste masqué
+    // visuellement (.pg-time__pct = screen-reader-only) : sans ce dessin,
+    // le centre de l'anneau restait vide.
+    const perfLabel = perf.percent + ' %'
+    const perfScale = perfLabel.length > 4 ? 0.78 : 1
+    const perfFont = Math.round(Math.max(13, Math.min(21, size * 0.15)) * perfScale)
+    ctx.fillStyle = pal.text
+    ctx.font = `800 ${perfFont}px 'Plus Jakarta Sans', Inter, sans-serif`
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    ctx.fillText(perfLabel, cx, cy)
+  }
+}
+
 
 // --- Progression : graphique de rpartition du jour ---
 export function renderProgressionDayDistribution(canvas, distribution) {
@@ -1953,8 +2256,7 @@ function dashCardHtml(task, now) {
   // En cours : Continuer + Ajouter une preuve (toutes deux fournissent une
   // preuve) ; les autres : consultation seule (clic carte / Voir les détails).
   const btns = isDoing
-    ? `<button type="button" class="mtask__btn mtask__btn--primary" data-action="provide-proof">Continuer</button>
-       <button type="button" class="mtask__btn" data-action="provide-proof">Ajouter une preuve</button>`
+    ? `<button type="button" class="mtask__btn mtask__btn--primary" data-action="provide-proof">Ajouter une preuve</button>`
     : `<button type="button" class="mtask__btn">Voir les détails</button>`
   const start = fmtHour(task.startTime)
   const end = fmtHour(task.dueDate)
@@ -1982,7 +2284,7 @@ function dashCardHtml(task, now) {
       </div>
       <div class="dtask__side">
         <span class="dtask__meta">Situation</span>
-        <span class="mtask__situation mtask__situation--${sit.cls}">${sit.text} · ${sit.sub}</span>
+        <span class="mtask__situation mtask__situation--${sit.cls}">${sit.text === 'En retard' || sit.text === 'En retard modéré' ? '' : sit.text} · ${sit.sub}</span>
         <div class="dtask__btns">${btns}</div>
       </div>
     </article>`
@@ -2064,7 +2366,8 @@ export function renderTasksTable(container, tasks, emptyMessage) {
             <div class="row-menu">
               <button type="button" class="row-menu__toggle" data-action="toggle-row-menu" aria-label="Options de la tâche">⋯</button>
               <div class="row-menu__list" hidden>
-                <button type="button" class="row-menu__option" data-action="provide-proof">Ajouter une preuve</button>
+                ${task.status === STATUS.DONE ? '' : '<button type="button" class="row-menu__option row-menu__option--success" data-action="complete-direct">Terminer la tâche</button>'}
+                ${task.status === STATUS.DONE ? '' : '<button type="button" class="row-menu__option" data-action="provide-proof">Ajouter une preuve</button>'}
                 <button type="button" class="row-menu__option row-menu__option--danger" data-action="delete">Supprimer</button>
               </div>
             </div>
@@ -2084,7 +2387,7 @@ export function renderTasksSummary(el, tasks) {
   const doing = tasks.filter((t) => t.status === STATUS.DOING)
   const done = tasks.filter((t) => t.status === STATUS.DONE)
   const todo = tasks.filter((t) => t.status === STATUS.TODO)
-  const late = tasks.filter((t) => isOverdue(t))
+  const late = tasks.filter((t) => isTaskOverdue(t))
 
   const doingPct = computeGlobalProgress(doing)
   const globalPct = computeGlobalProgress(tasks)
@@ -2107,7 +2410,7 @@ export function renderTasksSummary(el, tasks) {
 
   const message =
     tasks.length === 0
-      ? { title: 'Aucune tâche pour le moment', text: 'Ajoute ta première tâche pour démarrer ta journée.' }
+      ? { title: "Aucune tâche aujourd'hui", text: 'Rien de prévu pour la journée. Profitez-en, ou planifiez vos prochaines tâches.' }
       : globalPct === 100
         ? { title: 'Parfait !', text: 'Toutes vos tâches de la journée sont terminées. Excellente journée !' }
         : globalPct >= 50
@@ -2297,8 +2600,16 @@ export function renderDashActivity(el, tasks) {
     if (task.lastProofAt) events.push({ ts: task.lastProofAt, cls: 'proof', text: `Vous avez ajouté une preuve — « ${title} »` })
     if (task.completedAt) events.push({ ts: task.completedAt, cls: 'done', text: `Vous avez terminé la tâche « ${title} »` })
   })
-  events.sort((a, b) => new Date(b.ts) - new Date(a.ts))
-  const top = events.slice(0, 6)
+  // Fenêtre de 24 h : la carte ne montre que l'activité récente. Les horodatages
+  // invalides ou dans le futur (décalage d'horloge) sont aussi écartés.
+  const nowMs = Date.now()
+  const DAY_MS = 24 * 60 * 60 * 1000
+  const recent = events.filter((e) => {
+    const t = new Date(e.ts).getTime()
+    return Number.isFinite(t) && t <= nowMs && nowMs - t <= DAY_MS
+  })
+  recent.sort((a, b) => new Date(b.ts) - new Date(a.ts))
+  const top = recent.slice(0, 6)
   if (top.length === 0) {
     el.innerHTML = '<p class="dash-minilist__empty">Aucune activité pour le moment.</p>'
     return

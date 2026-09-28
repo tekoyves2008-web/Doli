@@ -80,6 +80,9 @@
                 </button>
                 </div>
             </label>
+            <label class="task-form__field" id="registerInviteField" hidden>Code d'invitation
+              <input type="password" id="registerInvite" autocomplete="off" />
+            </label>
             <button type="submit" class="login-card__submit">Créer mon compte</button>
           </form>
           <p id="registerError" class="login-card__error" hidden></p>
@@ -118,6 +121,13 @@
           <button type="button" class="sidebar-nav__item" data-view="preuves">
             <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 2.5h8v15l-4-2-4 2z"/><path d="M8.5 9l1.2 1.2L12 7.4"/></svg>
             <span class="sidebar-nav__label">Preuves</span>
+          </button>
+          <!-- Le réglage n'est pas une rubrique de travail : un filet le sépare
+               des six rubriques ci-dessus. -->
+          <div class="sidebar-nav__divider" role="separator"></div>
+          <button type="button" class="sidebar-nav__item" data-view="settings">
+            <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="2.6"/><path d="M10 2.6v2M10 15.4v2M17.4 10h-2M4.6 10h-2M15.2 4.8l-1.4 1.4M6.2 13.8l-1.4 1.4M15.2 15.2l-1.4-1.4M6.2 6.2L4.8 4.8"/></svg>
+            <span class="sidebar-nav__label">Paramètres</span>
           </button>
         </nav>
 
@@ -177,7 +187,7 @@
               <div class="dash__hello">
                 <span class="vhead-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L4.5 13.5H11L9.5 22 19 10h-6.5L13 2z"/></svg></span>
                 <div>
-                  <h2 class="dash__greeting" id="dashGreeting">Bonjour !</h2>
+                  <h2 class="dash__greeting" id="dashGreeting">Bienvenue !</h2>
                   <p class="dash__subtitle">Voici un aperçu clair de votre activité aujourd'hui.</p>
                 </div>
               </div>
@@ -220,33 +230,6 @@
             </div>
 
             <div class="dash__midrow">
-            <div class="dash__kpis dash__kpis--secondary">
-              <div class="dash-card dash-kpi dash-kpi--dist">
-                <h4 class="dash-card__kicker"><span class="kick-ico kick-ico--dist" aria-hidden="true"><svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M12 3a9 9 0 109 9h-9V3z"/><path d="M14.2 2.6a9 9 0 017.2 7.2h-7.2V2.6z" opacity=".55"/></svg></span>Répartition des tâches</h4>
-                <div class="dash-kpi__dist">
-                  <div class="dash-donut" id="dashDonut"><span class="dash-donut__hole"><strong id="dashDonutTotal">0</strong><em>tâches</em></span></div>
-                  <ul class="dash-legend" id="dashLegend"></ul>
-                </div>
-                <span class="dash-kpi__delta" id="dashDistTotal"></span>
-              </div>
-              <div class="dash-card dash-kpi dash-kpi--perf">
-                <h4 class="dash-card__kicker"><span class="kick-ico kick-ico--perf" aria-hidden="true"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17l5-5 3 3 7-7"/><path d="M15 8h4v4"/></svg></span>Performance : résumé</h4>
-                <p class="dash-perf-intro">Vue d'ensemble sur la qualité d'exécution de vos tâches : respect des délais et gravité des retards.</p>
-                <div class="dash-kpi__perf">
-                  <ul id="dashPerfList" class="dash-perf-list"></ul>
-                  <div id="dashPerfBars" class="dash-perf-bars"></div>
-                </div>
-                <span class="dash-kpi__delta">Score actuel</span>
-              </div>
-              <div class="dash-card dash-kpi dash-kpi--learn">
-                <h4 class="dash-card__title">Comprendre mes statistiques</h4>
-                <ul class="dash-learn-list">
-                  <li>Retards et gravité</li>
-                  <li>Priorités et influence</li>
-                </ul>
-                <button type="button" id="dashLearnStats" class="dash-link">Expliquer mes statistiques →</button>
-              </div>
-            </div>
               <div class="dash-card dash-tasks">
                 <div class="dash-card__head">
                   <h4 class="dash-card__title">Mes tâches</h4>
@@ -275,6 +258,17 @@
                   </div>
                 </div>
 
+                <!-- Pagination du Dashboard : calculée uniquement à partir des tâches
+                     filtrées du widget, indépendamment de la colonne Performance. -->
+                <div class="mtasks2__pagination">
+                  <span id="dashPageInfo" class="mtasks2__page-info"></span>
+                  <div class="mtasks2__page-btns">
+                    <button type="button" id="dashPrevBtn" class="mtasks2__page-btn">Précédent</button>
+                    <span id="dashPageNums" class="mtasks2__page-nums"></span>
+                    <button type="button" id="dashNextBtn" class="mtasks2__page-btn">Suivant</button>
+                  </div>
+                </div>
+
                 <div class="dash-card__links">
                   <button type="button" id="dashViewAll" class="dash-link">Voir toutes les tâches →</button>
                   <button type="button" id="dashViewDetails" class="dash-link">Voir tous les détails →</button>
@@ -290,7 +284,14 @@
                 <div class="dash-card">
                   <h4 class="dash-card__title">Activité récente</h4>
                   <div id="dashActivity" class="dash-activity"></div>
-                  <button type="button" id="dashViewActivity" class="dash-link">Voir toute l'activité →</button>
+                </div>
+                <div class="dash-card dash-kpi dash-kpi--perf">
+                  <h4 class="dash-card__kicker"><span class="kick-ico kick-ico--perf" aria-hidden="true"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17l5-5 3 3 7-7"/><path d="M15 8h4v4"/></svg></span>Performance : résumé</h4>
+                  <div class="dash-kpi__perf">
+                    <ul id="dashPerfList" class="dash-perf-list"></ul>
+                    <div id="dashPerfBars" class="dash-perf-bars"></div>
+                  </div>
+                  <span class="dash-kpi__delta">Score actuel</span>
                 </div>
               </div>
             </div>
@@ -367,9 +368,9 @@
               <div class="mtasks2__pagination">
                 <span id="tasksPageInfo" class="mtasks2__page-info"></span>
                 <div class="mtasks2__page-btns">
-                  <button type="button" id="tasksPrevBtn" class="mtasks2__page-btn">‹ Précédent</button>
+                  <button type="button" id="tasksPrevBtn" class="mtasks2__page-btn">Précédent</button>
                   <span id="tasksPageNums" class="mtasks2__page-nums"></span>
-                  <button type="button" id="tasksNextBtn" class="mtasks2__page-btn">Suivant ›</button>
+                  <button type="button" id="tasksNextBtn" class="mtasks2__page-btn">Suivant</button>
                 </div>
               </div>
               <!-- Bouton d'ajout de la vue « Mes tâches » (version stable 01/09) :
@@ -452,16 +453,15 @@
                   <span class="vhead-ico vhead-ico--rappels" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 9a6 6 0 10-12 0c0 5-2 6.5-2 6.5h16S18 14 18 9z"/><path d="M10 19a2.2 2.2 0 004 0"/></svg></span>
                   <div>
                     <h2 class="rappels__title">Rappels</h2>
-                    <p class="rappels__sub">Ne manquez plus vos taches importantes. Recevez des rappels au bon moment pour rester organise et atteindre vos objectifs.</p>
+                    <p class="rappels__sub">Ne manquez plus vos tâches importantes. Recevez des rappels au bon moment pour rester organisé et atteindre vos objectifs.</p>
                   </div>
                 </div>
-                <button type="button" id="reminderNewBtn" class="rappels__new"><span aria-hidden="true">+</span> Nouveau rappel</button>
               </div>
               <div class="rappels__kpis">
                 <div class="rappel-kpi rappel-kpi--blue">
                   <div class="rappel-kpi__top">
                     <p class="rappel-kpi__label">Rappels d'aujourd'hui</p>
-                    <span class="rappel-kpi__ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 9a6 6 0 10-12 0c0 5-2 6.5-2 6.5h16S18 14 18 9z"/><path d="M10 19a2.2 2.2 0 004 0"/></svg></span>
+                    <span class="rappel-kpi__ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 9a6 6 0 10-12 0c0 5-2 6.5-2 6.5h16S18 14 18 9z"/><path d="M10 19a2.2 2.2 0 004 0"/></svg></span>
                   </div>
                   <p class="rappel-kpi__num" id="rappelKpiToday">0</p>
                   <p class="rappel-kpi__sub" id="rappelKpiTodaySub">--</p>
@@ -469,23 +469,23 @@
                 <div class="rappel-kpi rappel-kpi--violet">
                   <div class="rappel-kpi__top">
                     <p class="rappel-kpi__label">Rappels en cours</p>
-                    <span class="rappel-kpi__ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="7"/><path d="M12 10v3.5l2.5 2"/><path d="M9.5 2.5h5"/></svg></span>
+                    <span class="rappel-kpi__ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="7"/><path d="M12 10v3.5l2.5 2"/><path d="M9.5 2.5h5"/></svg></span>
                   </div>
                   <p class="rappel-kpi__num" id="rappelKpiDoing">0</p>
-                  <p class="rappel-kpi__sub">Tache en cours</p>
+                  <p class="rappel-kpi__sub">Tâche en cours</p>
                 </div>
                 <div class="rappel-kpi rappel-kpi--green">
                   <div class="rappel-kpi__top">
                     <p class="rappel-kpi__label">Rappels cette semaine</p>
-                    <span class="rappel-kpi__ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="16" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg></span>
+                    <span class="rappel-kpi__ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="16" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg></span>
                   </div>
                   <p class="rappel-kpi__num" id="rappelKpiWeek">0</p>
-                  <p class="rappel-kpi__sub" id="rappelKpiWeekSub">sur 0 taches programmees</p>
+                  <p class="rappel-kpi__sub" id="rappelKpiWeekSub">sur 0 tâches programmées</p>
                 </div>
                 <div class="rappel-kpi rappel-kpi--mint">
                   <div class="rappel-kpi__top">
                     <p class="rappel-kpi__label">Taux de respect</p>
-                    <span class="rappel-kpi__ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M19 5L5 19"/><circle cx="7.5" cy="7.5" r="2.5"/><circle cx="16.5" cy="16.5" r="2.5"/></svg></span>
+                    <span class="rappel-kpi__ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 3v10.5"/><circle cx="12" cy="12" r="8.5"/><path d="M12 12l3.5 2"/></svg></span>
                   </div>
                   <p class="rappel-kpi__num" id="rappelKpiRate">0 %</p>
                   <p class="rappel-kpi__sub" id="rappelKpiRateSub">--</p>
@@ -493,14 +493,12 @@
               </div>
 <!--RAPPELS-REST-->
               <div class="rappels__card">
-                <div class="rappels__tabs-row">
-                  <div class="rappels__tabs">
-                    <button type="button" class="rappels__tab is-active" data-remtab="all">Tous les rappels <span class="rappels__count" id="remCountAll">0</span></button>
-                    <button type="button" class="rappels__tab" data-remtab="today">Aujourd'hui <span class="rappels__count" id="remCountToday">0</span></button>
-                    <button type="button" class="rappels__tab" data-remtab="week">Cette semaine <span class="rappels__count" id="remCountWeek">0</span></button>
-                    <button type="button" class="rappels__tab" data-remtab="upcoming">A venir <span class="rappels__count" id="remCountUpcoming">0</span></button>
+                <div class="rappels__toolbar">
+                  <div class="rappels__menus">
+                    <label class="rappels__filter"><span class="rappels__filter-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg></span><select id="reminderPeriodFilter" aria-label="Filtrer les rappels par période"><option value="all">Tous les rappels</option><option value="today">Aujourd'hui</option><option value="week">Cette semaine</option><option value="upcoming">À venir</option></select></label>
+                    <label class="rappels__filter"><span class="rappels__filter-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16l-6 7v5l-4 2v-7z"/></svg></span><select id="reminderTaskFilter" aria-label="Filtrer les rappels par tâche"><option value="all">Toutes les tâches</option><option value="todo">Non exécutées</option><option value="doing">En cours</option><option value="done">Exécutées</option></select></label>
                   </div>
-                  <label class="rappels__filter"><select id="reminderTaskFilter"><option value="all">Toutes les taches</option><option value="todo">Non executees</option><option value="doing">En cours</option><option value="done">Executees</option></select></label>
+                  <p class="rappels__result" role="status"><strong id="remShownCount">0</strong> <span id="remShownLabel">rappel affiché</span></p>
                 </div>
                 <div class="rappels__table-wrap">
                   <table class="rappels__table">
@@ -509,23 +507,39 @@
                   </table>
                   <p id="reminderEmpty" class="rappels__empty" hidden>Aucun rappel dans cette vue pour le moment.</p>
                 </div>
+                <!-- Pagination 8/page (même barre et mêmes classes que
+                     « Retards »). Masquée si la liste filtrée est vide ; la
+                     règle .mtasks2__pagination[hidden]{display:none} est
+                     indispensable car display:flex l'emporterait sinon sur
+                     l'attribut hidden. Page conservée quand les filtres
+                     changent, puis bornée : comportement identique à Retards. -->
+                <div id="remindersPageBar" class="mtasks2__pagination" hidden>
+                  <span id="remindersPageInfo" class="mtasks2__page-info"></span>
+                  <div class="mtasks2__page-btns">
+                    <button type="button" id="remindersPrevBtn" class="mtasks2__page-btn">Précédent</button>
+                    <span id="remindersPageNums" class="mtasks2__page-nums"></span>
+                    <button type="button" id="remindersNextBtn" class="mtasks2__page-btn">Suivant</button>
+                  </div>
+                </div>
+
               </div>
             </div>
             <aside class="rappels__aside">
               <div class="rappels__panel">
-                <div class="rappels__today-head"><div><strong>Aujourd'hui</strong><span id="rappelTodayDate">--</span></div></div>
+                <div class="rappels__today-head"><span class="rappels__today-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg></span><div><strong>Aujourd'hui</strong><span id="rappelTodayDate">--</span></div></div>
                 <ul id="rappelTodayList" class="rappels__today-list"></ul>
-                <div class="rappels__encart"><div><strong id="rappelEnCoursMsg">Vous avez 0 rappel en cours.</strong><span>Gardez le cap !</span></div><span aria-hidden="true">></span></div>
+                <div class="rappels__encart"><span class="rappels__encart-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.8.6 1.5 1.6 1.5 2.6h4c0-1 .7-2 1.5-2.6A6 6 0 0 0 12 3z"/></svg></span><div><strong id="rappelEnCoursMsg">Vous avez 0 rappel en cours.</strong><span>Gardez le cap !</span></div><span class="rappels__encart-go" aria-hidden="true">›</span></div>
               </div>
               <div class="rappels__panel">
-                <h3 class="rappels__panel-title">Parametres des rappels</h3>
+                <h3 class="rappels__panel-title"><span class="rappels__panel-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1-1.55 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.64 9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87 1.7 1.7 0 0 0 1.55 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1z"/></svg></span>Paramètres des rappels</h3>
                 <label class="rappels__switch-row">Notifications sur le navigateur <button type="button" id="remSetBrowser" class="switch is-on" role="switch" aria-checked="true"><span></span></button></label>
                 <label class="rappels__switch-row">Notifications par e-mail <button type="button" id="remSetMail" class="switch is-on" role="switch" aria-checked="true"><span></span></button></label>
                 <label class="rappels__switch-row">Rappel sonore <button type="button" id="remSetSound" class="switch is-on" role="switch" aria-checked="true"><span></span></button></label>
-                <p class="rappels__field-label">Frequence par defaut</p>
-                <label class="rappels__freq"><select id="remDefaultFreq"><option value="2h">Toutes les 2 heures</option><option value="1h">Toutes les heures</option><option value="1d">Tous les jours</option><option value="1w">Toutes les semaines</option><option value="once">Une seule fois</option></select></label>
+                <p class="rappels__field-label">Fréquence par défaut</p>
+                <label class="rappels__freq"><select id="remDefaultFreq" aria-label="Fréquence par défaut"><option value="2h">Toutes les 2 heures</option><option value="1h">Toutes les heures</option><option value="1d">Tous les jours</option><option value="1w">Toutes les semaines</option><option value="once">Une seule fois</option></select></label>
               </div>
               <div class="rappels__motivation">
+                <span class="rappels__target" aria-hidden="true"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5.5"/><circle cx="12" cy="12" r="2" fill="currentColor" stroke="none"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3" stroke-linecap="round"/></svg></span>
                 <p><strong>Chaque rappel vous rapproche de vos objectifs !</strong></p>
                 <span class="rappels__bar"></span>
               </div>
@@ -551,7 +565,7 @@
 <header class="pg-card__head">
 <span class="pg-card__ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.6"/><circle cx="12" cy="12" r="1.1" fill="currentColor" stroke="none"/></svg></span>
 <div class="pg-card__titles"><h3 id="pgDayTitle">Ma progression du jour</h3><p>Avancement global de vos tâches</p></div>
-<span class="pg-dots" aria-hidden="true">...</span>
+<div class="pg-menu"><button type="button" class="pg-dots-btn" data-pgmenu="day" aria-label="Période d'analyse : Ma progression" aria-haspopup="menu" aria-expanded="false">...</button><div class="pg-menu__pop" data-pgpop="day" role="menu" hidden><button type="button" role="menuitemradio" aria-checked="true" data-pgperiod="global">Suivre le filtre global</button><button type="button" role="menuitemradio" aria-checked="false" data-pgperiod="1">Jour</button><button type="button" role="menuitemradio" aria-checked="false" data-pgperiod="7">Semaine</button><button type="button" role="menuitemradio" aria-checked="false" data-pgperiod="30">Mois</button></div></div>
 </header>
 <div class="pg-day__body">
 <div class="pg-day__left">
@@ -578,7 +592,7 @@
 <header class="pg-card__head">
 <span class="pg-card__ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg></span>
 <div class="pg-card__titles"><h3>Respect du temps</h3><p>Comparaison temps prévu / temps réel</p></div>
-<span class="pg-dots" aria-hidden="true">...</span>
+<div class="pg-menu"><button type="button" class="pg-dots-btn" data-pgmenu="time" aria-label="Période d'analyse : Respect du temps" aria-haspopup="menu" aria-expanded="false">...</button><div class="pg-menu__pop" data-pgpop="time" role="menu" hidden><button type="button" role="menuitemradio" aria-checked="true" data-pgperiod="global">Suivre le filtre global</button><button type="button" role="menuitemradio" aria-checked="false" data-pgperiod="1">Jour</button><button type="button" role="menuitemradio" aria-checked="false" data-pgperiod="7">Semaine</button><button type="button" role="menuitemradio" aria-checked="false" data-pgperiod="30">Mois</button></div></div>
 </header>
 <div class="pg-time__donut">
 <canvas id="pgTimeDonut" width="300" height="300" aria-hidden="true"></canvas>
@@ -593,8 +607,8 @@
 <article class="pg-card pg-card--evo">
 <header class="pg-card__head">
 <span class="pg-card__ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5.5-5.5 3.5 3.5L20.5 6.5"/><path d="M15 6.5h5.5V12"/></svg></span>
-<div class="pg-card__titles"><h3>Évolution de la progression</h3><p>Sur les 7 derniers jours</p></div>
-<span class="pg-dots" aria-hidden="true">...</span>
+<div class="pg-card__titles"><h3>Évolution de la progression</h3><p id="pgEvoSub">Sur les 7 derniers jours</p></div>
+<div class="pg-menu"><button type="button" class="pg-dots-btn" data-pgmenu="evo" aria-label="Période d'analyse : Évolution de la progression" aria-haspopup="menu" aria-expanded="false">...</button><div class="pg-menu__pop" data-pgpop="evo" role="menu" hidden><button type="button" role="menuitemradio" aria-checked="true" data-pgperiod="global">Suivre le filtre global</button><button type="button" role="menuitemradio" aria-checked="false" data-pgperiod="7">7 jours</button><button type="button" role="menuitemradio" aria-checked="false" data-pgperiod="14">14 jours</button><button type="button" role="menuitemradio" aria-checked="false" data-pgperiod="30">30 jours</button></div></div>
 </header>
 <div class="pg-evo__wrap"><canvas id="pgEvoChart" height="190"></canvas></div>
 </article>
@@ -604,7 +618,7 @@
 <header class="pg-card__head">
 <span class="pg-card__ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><rect x="4" y="3.5" width="16" height="17" rx="2.5"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></span>
 <div class="pg-card__titles"><h3>Détail des tâches du jour</h3><p>Répartition visuelle de vos tâches</p></div>
-<span class="pg-dots" aria-hidden="true">...</span>
+<div class="pg-menu"><button type="button" class="pg-dots-btn" data-pgmenu="detail" aria-label="Options : Détail des tâches du jour" aria-haspopup="menu" aria-expanded="false">...</button><div class="pg-menu__pop" data-pgpop="detail" role="menu" hidden><button type="button" role="menuitemradio" aria-checked="true" data-pgfocus="all">Tout afficher</button><button type="button" role="menuitemradio" aria-checked="false" data-pgfocus="done">Exécutées</button><button type="button" role="menuitemradio" aria-checked="false" data-pgfocus="doing">En cours</button><button type="button" role="menuitemradio" aria-checked="false" data-pgfocus="todo">Non exécutées</button><button type="button" role="menuitemradio" aria-checked="false" data-pgfocus="late">En retard</button></div></div>
 </header>
 <div class="pg-detail__body">
 <div class="pg-tiles">
@@ -615,17 +629,36 @@
 </div>
 </div>
 </article>
+<article class="pg-card pg-card--perf">
+<header class="pg-card__head">
+<span class="pg-card__ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17l5-5 3 3 7-7"/><path d="M15 8h4v4"/></svg></span>
+<div class="pg-card__titles"><h3>Performance</h3><p>Qualité d'exécution (retards pénalisés)</p></div>
+<div class="pg-menu"><button type="button" class="pg-dots-btn" data-pgmenu="perf" aria-label="Période d'analyse : Performance" aria-haspopup="menu" aria-expanded="false">...</button><div class="pg-menu__pop" data-pgpop="perf" role="menu" hidden><button type="button" role="menuitemradio" aria-checked="true" data-pgperiod="global">Suivre le filtre global</button><button type="button" role="menuitemradio" aria-checked="false" data-pgperiod="1">Jour</button><button type="button" role="menuitemradio" aria-checked="false" data-pgperiod="7">Semaine</button><button type="button" role="menuitemradio" aria-checked="false" data-pgperiod="30">Mois</button></div></div>
+</header>
+<div class="pg-perf__body">
+<div class="pg-perf__donut">
+<canvas id="pgPerfDonut" width="300" height="300" aria-hidden="true"></canvas>
+<span id="pgPerfPct" class="pg-time__pct">0 %</span>
+</div>
+<ul class="pg-perf__stats">
+<li><span>Retard moyen</span><strong id="pgPerfTR">0 %</strong></li>
+<li><span>Gravité max</span><strong id="pgPerfIG">0</strong></li>
+<li><span>En retard</span><strong id="pgPerfLate">0</strong></li>
+<li><span>Évaluées</span><strong id="pgPerfN">0</strong></li>
+</ul>
+</div>
+</article>
 <article class="pg-card pg-card--week">
 <header class="pg-card__head">
 <span class="pg-card__ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="16" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg></span>
-<div class="pg-card__titles"><h3>Résumé de la semaine</h3><p>Vos performances cette semaine</p></div>
-<span class="pg-dots" aria-hidden="true">...</span>
+<div class="pg-card__titles"><h3>Résumé de la semaine</h3><p id="pgWeekSub">Vos performances cette semaine</p></div>
+<div class="pg-menu"><button type="button" class="pg-dots-btn" data-pgmenu="week" aria-label="Comparaison : Résumé de la semaine" aria-haspopup="menu" aria-expanded="false">...</button><div class="pg-menu__pop" data-pgpop="week" role="menu" hidden><button type="button" role="menuitemradio" aria-checked="true" data-pgcompare="1">Semaine précédente</button><button type="button" role="menuitemradio" aria-checked="false" data-pgcompare="2">Il y a 2 semaines</button></div></div>
 </header>
 <div class="pg-week__grid">
 <div class="pg-mini pg-mini--green"><div class="pg-mini__row"><span class="pg-mini__ico"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><strong id="pgWeekDone">0</strong></div><p>Tâches exécutées</p><em id="pgWeekDoneDelta" class="pg-delta pg-delta--up">+12 %</em></div>
 <div class="pg-mini pg-mini--blue"><div class="pg-mini__row"><span class="pg-mini__ico"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg></span><strong id="pgWeekOnTime">0 %</strong></div><p>Dans les délais</p><em id="pgWeekOnTimeDelta" class="pg-delta pg-delta--up">+8 %</em></div>
 <div class="pg-mini pg-mini--rose"><div class="pg-mini__row"><span class="pg-mini__ico"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v9"/><circle cx="12" cy="18" r="1.2" fill="currentColor" stroke="none"/></svg></span><strong id="pgWeekLate">0</strong></div><p>Tâches en retard</p><em id="pgWeekLateDelta" class="pg-delta pg-delta--down">-3 %</em></div>
-<div class="pg-mini pg-mini--violet"><div class="pg-mini__row"><span class="pg-mini__ico"><svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5L2.5 9.4l6.6-.9z"/></svg></span><strong id="pgWeekEvol">+0 %</strong></div><p>Par rapport à la semaine dernière</p></div>
+<div class="pg-mini pg-mini--violet"><div class="pg-mini__row"><span class="pg-mini__ico"><svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5L2.5 9.4l6.6-.9z"/></svg></span><strong id="pgWeekEvol">+0 %</strong></div><p id="pgWeekEvolLabel">Par rapport à la semaine dernière</p></div>
 </div>
 </article>
 </div>
@@ -709,6 +742,19 @@
                   <tbody id="retardsTableBody"></tbody>
                 </table>
               </div>
+
+              <!-- Pagination 8/page (harmonisée avec « Mes tâches » : mêmes
+                   classes .mtasks2__*). Masquée si la liste est vide ; la règle
+                   .mtasks2__pagination[hidden]{display:none} est indispensable
+                   car display:flex l'emporterait sinon sur l'attribut hidden. -->
+              <div id="retardsPageBar" class="mtasks2__pagination" hidden>
+                <span id="retardsPageInfo" class="mtasks2__page-info"></span>
+                <div class="mtasks2__page-btns">
+                  <button type="button" id="retardsPrevBtn" class="mtasks2__page-btn">Précédent</button>
+                  <span id="retardsPageNums" class="mtasks2__page-nums"></span>
+                  <button type="button" id="retardsNextBtn" class="mtasks2__page-btn">Suivant</button>
+                </div>
+              </div>
             </div>
             </div>
 
@@ -744,6 +790,20 @@
           <div id="preuvesList" class="preuves-container"></div>
         </section>
 
+        <!-- ========== Paramètres ========== -->
+        <section id="viewSettings" class="view" hidden>
+          <div class="settings">
+            <header class="settings__head">
+              <span class="vhead-ico vhead-ico--settings" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h9M17.5 7H20"/><circle cx="15" cy="7" r="2.5"/><path d="M4 17h3M11.5 17H20"/><circle cx="9" cy="17" r="2.5"/></svg></span>
+              <div>
+                <h2>Paramètres</h2>
+                <p>Adaptez Doli à votre façon de travailler. Rien n'est imposé.</p>
+              </div>
+            </header>
+            <div id="settingsBody" class="settings__body"></div>
+          </div>
+        </section>
+
       </div>
     </div>
 
@@ -759,10 +819,10 @@
             <input type="text" id="taskDesc" maxlength="240" />
           </label>
           <label class="task-form__field">Début
-            <input type="datetime-local" id="taskStart" />
+            <input type="datetime-local" id="taskStart" required />
           </label>
           <label class="task-form__field">Échéance
-            <input type="datetime-local" id="taskDue" />
+            <input type="datetime-local" id="taskDue" required />
           </label>
           <label class="task-form__field">Priorité
             <select id="taskPriority">
@@ -781,20 +841,8 @@
       </div>
     </div>
 
-    <div id="reminderDeleteOverlay" class="modal-overlay" hidden>
-      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="reminderDeleteTitle">
-        <h3 id="reminderDeleteTitle">Que faire de ce rappel ?</h3>
-        <p id="reminderDeleteText" class="modal__text"></p>
-        <div class="modal__actions modal__actions--stack">
-          <button type="button" id="reminderDeleteFullBtn" class="modal__action--danger">Supprimer définitivement la tâche</button>
-          <button type="button" id="reminderDeleteDismissBtn" class="modal__action--neutral">Retirer seulement du Rappel</button>
-          <button type="button" id="reminderDeleteCancelBtn">Annuler</button>
-        </div>
-      </div>
-    </div>
-
     <div id="proofAddOverlay" class="modal-overlay" hidden>
-      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="proofAddTitle">
+      <div class="modal modal--wide" role="dialog" aria-modal="true" aria-labelledby="proofAddTitle">
         <h3 id="proofAddTitle">Ajouter une preuve</h3>
         <p id="proofAddText" class="modal__text"></p>
         <div class="modal__actions modal__actions--stack">

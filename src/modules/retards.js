@@ -8,6 +8,7 @@
 // Les graphiques sont dessinés à la main sur canvas, comme dans ui.js.
 
 import { STATUS } from './tasks.js'
+import { escapeHtml } from './escape.js'
 
 // Priorités : accepte les libellés FR éventuels ('Urgente', 'Haute'...)
 // et les alias ('normal', 'critical'...) pour que la répartition du donut
@@ -20,18 +21,27 @@ export function normalizePriority(p) {
   return 'medium'
 }
 
-function isOverdue(task) {
+// Règle de retard — SOURCE UNIQUE de vérité.
+//
+// Elle existait en quatre copies légèrement différentes (ui.js, progression.js,
+// retards.js, main.js) qui divergeaient sur les cas limites : l'une levait une
+// exception sur une tâche nulle, une autre renvoyait `null` au lieu de `false`,
+// une seule testait la validité de la date. Résultat : selon la rubrique
+// consultée, une même tâche pouvait être ou non comptée comme en retard.
+//
+// Les 4 appelants utilisent désormais celle-ci.
+export function isTaskOverdue(task) {
   if (!task) return false
   if (task.status === STATUS.DONE) return false
   if (!task.dueDate) return false
   const due = new Date(task.dueDate).getTime()
-  if (!Number.isFinite(due)) return false
+  if (!Number.isFinite(due)) return false   // date illisible : jamais « en retard »
   return due < Date.now()
 }
 
 // Retard en millisecondes d'une tâche en retard (conservé pour compatibilité).
 function delayMs(task) {
-  if (!isOverdue(task)) return 0
+  if (!isTaskOverdue(task)) return 0
   return Date.now() - new Date(task.dueDate).getTime()
 }
 
@@ -59,7 +69,7 @@ export function formatDelay(ms) {
 export function computeDelayedTasks(tasks) {
   const now = Date.now()
   return tasks
-    .filter(isOverdue)
+    .filter(isTaskOverdue)
     .map((task) => {
       const dueMs = new Date(task.dueDate).getTime()
       const delayMsValue = now - dueMs
@@ -384,14 +394,93 @@ function renderDonutLegend(groups, total) {
     .join('')
 }
 
+// --- Pagination 8/page de la liste des retards ------------------------------
+// Même mécanique que « Mes tâches » (main.js : TASKS_PAGE_SIZE = 6, mais 8 ici
+// à la demande) : tranche de 8 lignes, info « Affichage de X à Y sur Z »,
+// numéros de page cliquables, boutons Précédent/Suivant désactivés aux
+// extrémités. La barre (#retardsPageBar) est un élément STATIQUE de index.html :
+// son écouteur est donc posé UNE SEULE FOIS ici, au niveau module — aucun
+// risque de doublon quel que soit le nombre de rendus (même pattern que
+// retardsTableBodyEl dans main.js).
+const RETARDS_PAGE_SIZE = 8
+let retardsPage = 1
+const retardsPageBarEl = document.getElementById('retardsPageBar')
+const retardsPageInfoEl = document.getElementById('retardsPageInfo')
+const retardsPageNumsEl = document.getElementById('retardsPageNums')
+const retardsPrevBtn = document.getElementById('retardsPrevBtn')
+const retardsNextBtn = document.getElementById('retardsNextBtn')
+// Dernières données rendues : permet aux clics de pagination de redessiner
+// sans dépendre de main.js (les 2 appelants passent toujours la liste complète).
+let retardsLastTbody = null
+let retardsLastList = []
+
+function retardsRenderPage() {
+  renderRetardsTable(retardsLastTbody, retardsLastList)
+}
+
+if (retardsPageBarEl) {
+  retardsPageBarEl.addEventListener('click', (event) => {
+    const btn = event.target.closest('button')
+    if (!btn || btn.disabled) return
+    const totalPages = Math.max(1, Math.ceil(retardsLastList.length / RETARDS_PAGE_SIZE))
+    if (btn.id === 'retardsPrevBtn' && retardsPage > 1) {
+      retardsPage -= 1
+      retardsRenderPage()
+    } else if (btn.id === 'retardsNextBtn' && retardsPage < totalPages) {
+      retardsPage += 1
+      retardsRenderPage()
+    } else {
+      const num = event.target.closest('[data-rpage]')
+      if (num) {
+        const p = Number(num.dataset.rpage)
+        if (p >= 1 && p <= totalPages && p !== retardsPage) {
+          retardsPage = p
+          retardsRenderPage()
+        }
+      }
+    }
+  })
+}
+
 // Tableau des retards (maquette : 8 colonnes numérotées, menu « … »).
+// Pagination interne : 8 tâches par page, comme « Mes tâches » (6) et les
+// Preuves (6) ont leur limite. Les 2 appelants (main.js:645 et 696) restent
+// inchangés : ils passent toujours la liste complète.
 export function renderRetardsTable(tbody, delayed) {
   if (!tbody) return
-  if (delayed.length === 0) {
+  retardsLastTbody = tbody
+  retardsLastList = Array.isArray(delayed) ? delayed : []
+  const bar = retardsPageBarEl
+  if (retardsLastList.length === 0) {
+    retardsPage = 1
+    if (bar) bar.hidden = true
     tbody.innerHTML = `<tr><td colspan="8" class="retards-table2__empty">Aucune tâche en retard. Profitez-en pour prendre de l'avance !</td></tr>`
     return
   }
-  tbody.innerHTML = delayed
+  const totalPages = Math.max(1, Math.ceil(retardsLastList.length / RETARDS_PAGE_SIZE))
+  if (retardsPage > totalPages) retardsPage = totalPages
+  if (retardsPage < 1) retardsPage = 1
+  const pageStart = (retardsPage - 1) * RETARDS_PAGE_SIZE
+  const pageItems = retardsLastList.slice(pageStart, pageStart + RETARDS_PAGE_SIZE)
+  // Barre de pagination : mêmes classes que « Mes tâches » → rendu identique.
+  if (bar) {
+    bar.hidden = false
+    const from = pageStart + 1
+    const to = Math.min(pageStart + RETARDS_PAGE_SIZE, retardsLastList.length)
+    if (retardsPageInfoEl) {
+      retardsPageInfoEl.textContent = `Affichage de ${from} à ${to} sur ${retardsLastList.length} tâche${retardsLastList.length > 1 ? 's' : ''} en retard`
+    }
+    if (retardsPageNumsEl) {
+      let nums = ''
+      for (let p = 1; p <= totalPages; p++) {
+        nums += `<button type="button" class="mtasks2__page-num ${p === retardsPage ? 'is-current' : ''}" data-rpage="${p}">${p}</button>`
+      }
+      retardsPageNumsEl.innerHTML = nums
+    }
+    if (retardsPrevBtn) retardsPrevBtn.disabled = retardsPage <= 1
+    if (retardsNextBtn) retardsNextBtn.disabled = retardsPage >= totalPages
+  }
+  tbody.innerHTML = pageItems
     .map((task, i) => {
       const priority = normalizePriority(task.priority)
       const planned = task.plannedStart && task.plannedEnd
@@ -404,7 +493,7 @@ export function renderRetardsTable(tbody, delayed) {
       // du titre/description, colorée par la priorité (currentColor).
       const motif = taskMotif(task)
       return `<tr data-id="${escapeHtml(task.id || '')}">
-        <td class="c-num">${i + 1}</td>
+        <td class="c-num">${pageStart + i + 1}</td>
         <td class="retards-t2__title"><span class="retards-t2__ico retards-t2__ico--${priority}" title="${escapeHtml(motif.hint)}" aria-hidden="true">${motif.icon}</span><span>${escapeHtml(task.title || 'Sans titre')}</span></td>
         <td><span class="retards-pill retards-pill--${priority}">${PRIORITY_LABELS[priority]}</span></td>
         <td class="retards-t2__date">${planned}</td>
@@ -558,10 +647,6 @@ function priorityIcon(priority) {
   if (priority === 'high') return '&lt;/&gt;'
   if (priority === 'low') return '✿'
   return '▤'
-}
-
-function escapeHtml(text) {
-  return String(text).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]))
 }
 
 // Message conseil affiché dans la carte résumé.

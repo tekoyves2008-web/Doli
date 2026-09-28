@@ -3,11 +3,7 @@
 // grille/liste, cartes de preuves (badge statut, privé, aperçu, titre,
 // tâche, date, actions), pagination et panneau « Détail de la preuve ».
 
-function escapeHtml(str) {
-  const div = document.createElement('div')
-  div.textContent = str
-  return div.innerHTML
-}
+import { escapeHtml } from './escape.js'
 
 export const pfState = {
   search: '', task: 'all', status: 'all', period: 'all', view: 'grid',
@@ -61,6 +57,9 @@ export async function syncUserProofs() {
       mimeType: r.mime_type,
       fileName: r.file_name,
       hasFile: !!r.has_file,
+      // Taille d'origine conservée pour la fiche « Informations du fichier »
+      // du menu « ⋯ » (le texte `desc` ne sert qu'à l'affichage de la carte).
+      sizeBytes: r.size_bytes,
       fromServer: true,
     }))
   } catch {
@@ -226,6 +225,213 @@ function pfDetailHtml(selected) {
       <button type="button" class="pf-btn--block pf-btn--danger" data-action="delete-proof"><svg viewBox="0 0 20 20" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h12"/><path d="M6 6l.7 10h6.6L14 6"/><path d="M8.5 9v4.5M11.5 9v4.5"/></svg> Supprimer</button>
     </div>
     <p class="pf-detail__note"><svg viewBox="0 0 20 20" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4.5" y="8.5" width="11" height="8" rx="1.5"/><path d="M7 8.5V6a3 3 0 016 0v2.5"/></svg> <strong>Rappel</strong> : Cette preuve est confidentielle et accessible uniquement par vous.</p>`
+}
+
+// Supprime une preuve serveur. Fonction PARTAGÉE par le panneau détail et par
+// le menu « ⋯ » des cartes : une seule implémentation, donc un seul
+// comportement. Le `confirm` est obligatoire : la suppression est définitive
+// (aucune corbeille côté serveur).
+async function pfDeleteProof(container, tasks, item) {
+  if (!item || !item.fromServer || !item.serverId) return
+  if (!window.confirm(`Supprimer définitivement la preuve « ${item.title} » ?`)) return
+  pfState.selected = null
+  try {
+    const { deleteProof } = await import('./tasks.js')
+    await deleteProof(item.serverId)
+    await syncUserProofs()
+  } catch {
+    window.alert('Impossible de supprimer cette preuve pour le moment.')
+  }
+  renderPreuves(container, tasks)
+}
+
+// Ouvre la modale « plein écran » d'une preuve. Corps repris À L'IDENTIQUE de
+// l'ancien gestionnaire du panneau détail (seule la source de la preuve
+// change : `pfState.selected` → paramètre `item`). Désormais partagé par le
+// panneau détail et par le menu « ⋯ » des cartes.
+async function pfOpenFullscreen(container, item) {
+  const sel = item
+  if (!sel) return
+
+  // Preuve fichier image : le plein écran affiche la VRAIE photo.
+  let photoUrl = sel.photoUrl || null
+  if (!photoUrl && sel.fromServer && sel.hasFile && sel.serverId && String(sel.mimeType || '').startsWith('image/')) {
+    try {
+      const { getProofFile } = await import('./tasks.js')
+      const file = await getProofFile(sel.serverId)
+      photoUrl = `data:${file.mimeType || 'image/*'};base64,${file.dataBase64}`
+      sel.photoUrl = photoUrl
+      const wrap = container.querySelector('.pf-detail__preview-wrap .pf-preview--photo')
+      if (wrap && !wrap.querySelector('img')) {
+        wrap.insertAdjacentHTML('afterbegin', `<img src="${photoUrl}" alt="Aperçu de la preuve" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;" />`)
+      }
+    } catch { /* aperçu stylisé de secours */ }
+  }
+
+  const modalHtml = `
+        <div class="pf-modal-overlay" id="pfModalOverlay">
+          <div class="pf-modal-card">
+            <div class="pf-modal-header">
+              <h3 class="pf-modal-title">${escapeHtml(sel.title)}</h3>
+              <button type="button" class="pf-detail__close" id="pfModalClose" aria-label="Fermer"><svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5l10 10M15 5L5 15"/></svg></button>
+            </div>
+            <div class="pf-modal-body">
+              <div class="pf-modal-preview">
+                ${pfPreviewHtml(sel.variant, photoUrl)}
+              </div>
+              <div class="pf-modal-meta">
+                <span class="pf-badge pf-badge--${sel.status.badge}">${sel.status.label}</span>
+                <span>Tâche : <strong>${escapeHtml(sel.taskName)}</strong></span>
+                <span>Date : ${pfDateFull(sel.lastProofAt)}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      `
+  container.insertAdjacentHTML('beforeend', modalHtml)
+  const overlay = container.querySelector('#pfModalOverlay')
+  const closeBtn = container.querySelector('#pfModalClose')
+
+  const closeModal = () => overlay.remove()
+  closeBtn.addEventListener('click', closeModal)
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) closeModal()
+  })
+  document.addEventListener('keydown', function escHandler(e) {
+    if (e.key === 'Escape') {
+      closeModal()
+      document.removeEventListener('keydown', escHandler)
+    }
+  })
+}
+
+// Fiche technique d'une preuve (menu « ⋯ » → Informations du fichier).
+// Réutilise la coquille modale déjà en place (.pf-modal-overlay /
+// .pf-modal-card / .pf-modal-meta) : aucun nouveau style nécessaire.
+// L'habillage de fermeture est volontairement redupliqué depuis
+// pfOpenFullscreen : cela évite de toucher au code déjà validé du plein écran.
+function pfOpenInfoModal(container, item) {
+  if (!item) return
+  const rows = [
+    ['Titre', item.title],
+    ['Tâche associée', item.taskName],
+    ['Nom du fichier', item.fileName || 'Preuve sans fichier (horodatage)'],
+    ['Type', item.mimeType || '—'],
+    ['Taille', item.sizeBytes ? formatFileSize(item.sizeBytes) : '—'],
+    ['Ajouté le', pfDateFull(item.lastProofAt)],
+    ['Statut', item.status ? item.status.label : '—'],
+    ['Identifiant', item.serverId ? String(item.serverId) : '—'],
+  ]
+  const modalHtml = `
+        <div class="pf-modal-overlay" id="pfModalOverlay">
+          <div class="pf-modal-card">
+            <div class="pf-modal-header">
+              <h3 class="pf-modal-title">Informations du fichier</h3>
+              <button type="button" class="pf-detail__close" id="pfModalClose" aria-label="Fermer"><svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5l10 10M15 5L5 15"/></svg></button>
+            </div>
+            <div class="pf-modal-body">
+              <div class="pf-modal-meta">
+                ${rows.map(([k, v]) => `<span>${escapeHtml(k)} : <strong>${escapeHtml(String(v))}</strong></span>`).join('')}
+              </div>
+            </div>
+          </div>
+        </div>
+      `
+  container.insertAdjacentHTML('beforeend', modalHtml)
+  const overlay = container.querySelector('#pfModalOverlay')
+  const closeBtn = container.querySelector('#pfModalClose')
+  // L'écouteur clavier doit être retiré à CHAQUE fermeture, pas seulement quand
+  // on appuie sur Échap : fermé au clic, il restait attaché au document pour
+  // toujours, et chaque ouverture en ajoutait un nouveau.
+  const onKeydown = (e) => {
+    if (e.key === 'Escape') closeModal()
+  }
+  const closeModal = () => {
+    document.removeEventListener('keydown', onKeydown)
+    overlay.remove()
+  }
+  document.addEventListener('keydown', onKeydown)
+  closeBtn.addEventListener('click', closeModal)
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) closeModal()
+  })
+}
+
+// --- Menu « ⋯ » des cartes de preuve ---------------------------------------
+// Rendu dans document.body et NON dans la carte : .pf-card a overflow:hidden
+// (nécessaire pour découper l'aperçu dans les coins arrondis), un popup interne
+// serait amputé. Même mécanique que le menu de la liste Retards (main.js).
+// Le menu est créé puis SUPPRIMÉ du DOM (append/remove) : aucune règle
+// `[hidden]` n'est donc nécessaire (le piège display:flex vs [hidden] ne peut
+// pas se reproduire ici).
+// Ces écouteurs sont posés une seule fois : ce module n'est importé qu'une
+// seule fois par main.js, il n'y a donc aucun risque de doublon (contrairement
+// aux gestionnaires enfants de renderPreuves, recréés à chaque rendu).
+let pfMenuEl = null
+function pfCloseMenu() {
+  if (pfMenuEl) { pfMenuEl.remove(); pfMenuEl = null }
+}
+document.addEventListener('click', (e) => {
+  if (!pfMenuEl) return
+  if (e.target.closest('.pf-floatmenu')) return
+  if (e.target.closest('[data-action="more"]')) return
+  pfCloseMenu()
+})
+document.addEventListener('scroll', () => pfCloseMenu(), true)
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') pfCloseMenu() })
+
+// Construit et affiche le menu ancré sous le bouton « ⋯ » cliqué.
+// Les entrées s'adaptent à la preuve : « Ouvrir la tâche liée » n'apparaît que
+// si la tâche d'origine existe encore, « Supprimer » que pour une preuve serveur.
+function pfOpenMenu(container, tasks, btn, item) {
+  if (!item) return
+  // Re-clic sur le même bouton = fermeture (bascule).
+  if (pfMenuEl && pfMenuEl.dataset.forId === String(item.id)) { pfCloseMenu(); return }
+  pfCloseMenu()
+
+  const hasTask = (tasks || []).some((t) => String(t.id) === String(item.taskId))
+  const entries = []
+  if (hasTask) entries.push(['task', 'Ouvrir la tâche liée', ''])
+  entries.push(['fullscreen', 'Voir en plein écran', ''])
+  entries.push(['info', 'Informations du fichier', ''])
+  if (item.fromServer && item.serverId) {
+    entries.push(['sep', '', ''])
+    entries.push(['delete', 'Supprimer la preuve', 'is-danger'])
+  }
+
+  const menu = document.createElement('div')
+  menu.className = 'pf-floatmenu'
+  menu.dataset.forId = String(item.id)
+  menu.setAttribute('role', 'menu')
+  menu.innerHTML = entries.map(([action, label, cls]) => (action === 'sep'
+    ? '<div class="pf-floatmenu__sep"></div>'
+    : `<button type="button" role="menuitem" data-pm="${action}"${cls ? ` class="${cls}"` : ''}>${label}</button>`
+  )).join('')
+  document.body.appendChild(menu)
+
+  const r = btn.getBoundingClientRect()
+  menu.style.position = 'absolute'
+  menu.style.top = `${Math.round(r.bottom + 6 + window.scrollY)}px`
+  menu.style.right = `${Math.max(8, Math.round(window.innerWidth - r.right))}px`
+  pfMenuEl = menu
+
+  menu.addEventListener('click', (ev) => {
+    const opt = ev.target.closest('[data-pm]')
+    if (!opt) return
+    const action = opt.dataset.pm
+    pfCloseMenu()
+    if (action === 'task') {
+      // Exposé par main.js (même principe que __doliProofDialogHandler) :
+      // setView/render/openModal ne sont pas accessibles depuis ce module.
+      if (typeof window.__doliOpenTaskFromProof === 'function') window.__doliOpenTaskFromProof(item.taskId)
+    } else if (action === 'fullscreen') {
+      pfOpenFullscreen(container, item)
+    } else if (action === 'info') {
+      pfOpenInfoModal(container, item)
+    } else if (action === 'delete') {
+      pfDeleteProof(container, tasks, item)
+    }
+  })
 }
 
 export function renderPreuves(container, tasks) {
@@ -461,6 +667,9 @@ function bindPreuvesEvents(container, items, tasks) {
         renderPreuves(container, tasks)
       } else if (btn.dataset.action === 'download') {
         pfDownloadProof(item)
+      } else if (btn.dataset.action === 'more') {
+        // Menu « ⋯ » : options secondaires de la preuve (voir pfOpenMenu).
+        pfOpenMenu(container, tasks, btn, item)
       }
     })
   })
@@ -497,81 +706,20 @@ function bindPreuvesEvents(container, items, tasks) {
     }
   }
 
+  // Suppression : logique partagée avec le menu « ⋯ » des cartes (pfDeleteProof).
   const deleteBtn = container.querySelector('[data-action="delete-proof"]')
   if (deleteBtn) {
-    deleteBtn.addEventListener('click', async () => {
-      const sel = items.find((it) => it.id === pfState.selected)
-      pfState.selected = null
-      if (sel && sel.fromServer && sel.serverId) {
-        try {
-          const { deleteProof } = await import('./tasks.js')
-          await deleteProof(sel.serverId)
-          await syncUserProofs()
-        } catch {
-          window.alert('Impossible de supprimer cette preuve pour le moment.')
-        }
-      }
-      renderPreuves(container, tasks)
+    deleteBtn.addEventListener('click', () => {
+      pfDeleteProof(container, tasks, items.find((it) => it.id === pfState.selected))
     })
   }
 
-  // Fullscreen Modal for "Voir en plein écran"
+  // Fullscreen Modal for "Voir en plein écran" : logique partagée avec le
+  // menu « ⋯ » des cartes (pfOpenFullscreen).
   const fullscreenBtn = container.querySelector('[data-action="fullscreen"]')
   if (fullscreenBtn) {
-    fullscreenBtn.addEventListener('click', async () => {
-      const sel = items.find((it) => it.id === pfState.selected)
-      if (!sel) return
-
-      // Preuve fichier image : le plein écran affiche la VRAIE photo.
-      let photoUrl = sel.photoUrl || null
-      if (!photoUrl && sel.fromServer && sel.hasFile && sel.serverId && String(sel.mimeType || '').startsWith('image/')) {
-        try {
-          const { getProofFile } = await import('./tasks.js')
-          const file = await getProofFile(sel.serverId)
-          photoUrl = `data:${file.mimeType || 'image/*'};base64,${file.dataBase64}`
-          sel.photoUrl = photoUrl
-          const wrap = container.querySelector('.pf-detail__preview-wrap .pf-preview--photo')
-          if (wrap && !wrap.querySelector('img')) {
-            wrap.insertAdjacentHTML('afterbegin', `<img src="${photoUrl}" alt="Aperçu de la preuve" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;" />`)
-          }
-        } catch { /* aperçu stylisé de secours */ }
-      }
-
-      const modalHtml = `
-        <div class="pf-modal-overlay" id="pfModalOverlay">
-          <div class="pf-modal-card">
-            <div class="pf-modal-header">
-              <h3 class="pf-modal-title">${escapeHtml(sel.title)}</h3>
-              <button type="button" class="pf-detail__close" id="pfModalClose" aria-label="Fermer"><svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5l10 10M15 5L5 15"/></svg></button>
-            </div>
-            <div class="pf-modal-body">
-              <div class="pf-modal-preview">
-                ${pfPreviewHtml(sel.variant, photoUrl)}
-              </div>
-              <div class="pf-modal-meta">
-                <span class="pf-badge pf-badge--${sel.status.badge}">${sel.status.label}</span>
-                <span>Tâche : <strong>${escapeHtml(sel.taskName)}</strong></span>
-                <span>Date : ${pfDateFull(sel.lastProofAt)}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      `
-      container.insertAdjacentHTML('beforeend', modalHtml)
-      const overlay = container.querySelector('#pfModalOverlay')
-      const closeBtn = container.querySelector('#pfModalClose')
-      
-      const closeModal = () => overlay.remove()
-      closeBtn.addEventListener('click', closeModal)
-      overlay.addEventListener('click', (e) => {
-        if (e.target === overlay) closeModal()
-      })
-      document.addEventListener('keydown', function escHandler(e) {
-        if (e.key === 'Escape') {
-          closeModal()
-          document.removeEventListener('keydown', escHandler)
-        }
-      })
+    fullscreenBtn.addEventListener('click', () => {
+      pfOpenFullscreen(container, items.find((it) => it.id === pfState.selected))
     })
   }
 }

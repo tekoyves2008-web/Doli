@@ -12,13 +12,34 @@ dist
 dist-ssr
 *.local
 
-# Base de données locale
-server/*.sqlite
-server/*.sqlite-journal
-server/*.sqlite-wal
-server/*.sqlite-shm
-server/*.db
+# --- Données personnelles : NE JAMAIS envoyer sur un dépôt distant ---------
+# Ces lignes ont été ajoutées avant la première publication. Elles évitent
+# qu'un `git push` n'envoie par mégarde la base de données locale : elle
+# contient les comptes des utilisateurs (emails + mots de passe hachés), leurs
+# tâches, et leurs fichiers de preuve.
+#
+# Les motifs sont volontairement SANS chemin (« *.sqlite » et non
+# « server/*.sqlite ») : la base était aussi apparue dans __saves__/, où le
+# chemin limité ne la protégeait pas.
+*.sqlite
+*.sqlite-journal
+*.sqlite-wal
+*.sqlite-shm
+*.db
 *.db-journal
+
+# Sauvegardes de travail : anciennes versions des fichiers et copies de la
+# base. Aucun intérêt à les publier, et la base y figurait.
+__saves__/
+archives/
+backups_before_restore/
+
+# Fichiers de secrets. `.env` contient REGISTRATION_SECRET (la clé
+# d'invitation) : le publier reviendrait à ouvrir les inscriptions à tout le
+# monde. `.env.example` reste suivi, lui, pour servir de modèle.
+.env
+.env.*
+!.env.example
 
 # Fichiers temporaires
 ocr_out.txt

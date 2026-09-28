@@ -11,6 +11,7 @@
 // pas fourni sa première preuve.
 
 import { STATUS } from './tasks.js'
+import { isTaskOverdue } from './retards.js'
 
 const DAY_MS = 24 * 60 * 60 * 1000
 const DAY_LABELS = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam']
@@ -22,11 +23,8 @@ function startOfDay(date) {
   return d
 }
 
-function isOverdue(task) {
-  if (task.status === STATUS.DONE) return false
-  if (!task.dueDate) return false
-  return new Date(task.dueDate) < new Date()
-}
+// La règle de retard est celle de retards.js (source unique) : cette copie
+// locale ne testait pas la validité de la date et pouvait diverger.
 
 // --- Progression individuelle d'une tâche -------------------------------
 // 0 % non exécutée, 100 % terminée, sinon taux d'avancement temporel.
@@ -47,8 +45,21 @@ export function computeTaskProgress(task) {
   return Math.round(ratio * 100)
 }
 
-// Date de référence d'une tâche : son échéance si elle existe, sinon sa création.
+// Date à laquelle une tâche « compte » dans une période.
+//
+// AVANT : son échéance (dueDate). Problème : une tâche prévue le mois dernier
+// mais terminée aujourd'hui était comptée dans le mois dernier — la courbe de
+// progression montrait le PLAN, pas le travail réellement accompli.
+//
+// APRÈS : une tâche terminée compte le jour où elle a été terminée. Les tâches
+// encore ouvertes gardent leur échéance : sans date de réalisation, il faut bien
+// un jour de référence, et c'est celui où elles étaient dues (c'est ce qui garde
+// les retards et les tâches à faire visibles).
 function taskDate(task) {
+  if (task.status === STATUS.DONE && task.completedAt) {
+    const done = new Date(task.completedAt).getTime()
+    if (Number.isFinite(done)) return done
+  }
   if (task.dueDate) return new Date(task.dueDate).getTime()
   if (task.createdAt) return new Date(task.createdAt).getTime()
   return null
@@ -69,9 +80,9 @@ function filterInPeriod(tasks, days) {
 // non exécutées (encore dans les temps).
 function countByCategory(tasks) {
   const done = tasks.filter((t) => t.status === STATUS.DONE).length
-  const delayed = tasks.filter(isOverdue).length
-  const doing = tasks.filter((t) => t.status === STATUS.DOING && !isOverdue(t)).length
-  const todo = tasks.filter((t) => t.status === STATUS.TODO && !isOverdue(t)).length
+  const delayed = tasks.filter(isTaskOverdue).length
+  const doing = tasks.filter((t) => t.status === STATUS.DOING && !isTaskOverdue(t)).length
+  const todo = tasks.filter((t) => t.status === STATUS.TODO && !isTaskOverdue(t)).length
   return { done, doing, todo, delayed }
 }
 

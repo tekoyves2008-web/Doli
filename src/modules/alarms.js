@@ -80,13 +80,25 @@ function checkAlarms(tasks, updateTask) {
   }
 }
 
+/**
+ * Démarre la vérification périodique des rappels.
+ *
+ * Renvoie une fonction d'arrêt. Elle est indispensable : sans elle, chaque
+ * appel à startApp() (donc chaque connexion) créait un NOUVEL intervalle, sans
+ * jamais arrêter le précédent — `clearInterval` n'existait nulle part dans le
+ * projet. Après trois connexions, les rappels étaient vérifiés trois fois et
+ * les notifications pouvaient apparaître en triple.
+ */
 export function initAlarms({ getTasks, updateTask }) {
   requestPermission()
   // getTasks() passe maintenant par le réseau (fetch) : il faut l'attendre
   // avant de vérifier les rappels, sinon checkAlarms recevrait une Promise
   // au lieu d'un tableau de tâches.
-  setInterval(async () => {
+  const id = setInterval(async () => {
     const tasks = await getTasks()
     checkAlarms(tasks, updateTask)
   }, 30000)
+  return function stopAlarms() {
+    clearInterval(id)
+  }
 }

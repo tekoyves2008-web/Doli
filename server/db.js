@@ -9,7 +9,10 @@ import { fileURLToPath } from 'node:url'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
-const db = new Database(path.join(__dirname, 'doli.sqlite'))
+// DB_PATH permet de viser un autre fichier que celui du dépôt (tests,
+// sauvegardes, déploiement). Sans cette variable, le comportement est
+// exactement celui d'avant : server/doli.sqlite.
+const db = new Database(process.env.DB_PATH || path.join(__dirname, 'doli.sqlite'))
 db.pragma('journal_mode = WAL')
 
 db.exec(`
@@ -88,6 +91,15 @@ if (!taskColumns.includes('started_at')) {
 const proofColumns = db.prepare('PRAGMA table_info(proofs)').all().map((c) => c.name)
 for (const [col, def] of [['file_name', 'TEXT'], ['mime_type', 'TEXT'], ['size_bytes', 'INTEGER'], ['data_base64', 'TEXT']]) {
   if (!proofColumns.includes(col)) db.exec(`ALTER TABLE proofs ADD COLUMN ${col} ${def}`)
+}
+
+// Migration pour les bases existantes : les préférences libres de
+// l'utilisateur sont stockées en JSON dans UNE seule colonne. On préfère un
+// blob à une colonne par réglage : une seule migration, puis on peut ajouter
+// autant d'options que nécessaire sans jamais retoucher le schéma.
+const settingsCols = db.prepare('PRAGMA table_info(settings)').all().map((c) => c.name)
+if (!settingsCols.includes('prefs')) {
+  db.exec("ALTER TABLE settings ADD COLUMN prefs TEXT NOT NULL DEFAULT '{}'")
 }
 
 export default db
