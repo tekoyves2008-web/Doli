@@ -198,15 +198,28 @@ async function startServer(name, vars = {}) {
   let exited = false
   child.on('exit', () => { exited = true })
 
+  // Attente du serveur de test.
+  //
+  // 40 s au lieu de 10 s : les 7 tests d'intégration démarrent chacun LEUR
+  // serveur, et node --test les exécute en parallèle. Sur une machine à
+  // 4 cœurs où le serveur de développement ET Vite tournent déjà, le
+  // démarrage d'un serveur peut dépasser 10 s — le test échouait alors
+  // « le serveur n'a pas répondu », alors que le serveur démarrait
+  // parfaitement (vérifié : le même test passe seul en 1 s).
+  //
+  // Le délai n'allonge PAS les tests en cas de succès : la boucle s'arrête à
+  // la première réponse. Il ne sert que la marge en cas de machine chargée.
+  const STARTUP_ATTEMPTS = 400 // × 100 ms = 40 s
   const base = `http://127.0.0.1:${port}`
-  for (let i = 0; i < 100; i++) {
+  let ready = false
+  for (let i = 0; i < STARTUP_ATTEMPTS; i++) {
     if (exited) throw new Error(`le serveur s'est arrêté au démarrage :\n${log}`)
     try {
-      if ((await fetch(`${base}/api/health`)).ok) break
+      if ((await fetch(`${base}/api/health`)).ok) { ready = true; break }
     } catch { /* pas encore prêt */ }
-    if (i === 99) throw new Error(`le serveur n'a pas répondu sur ${base} :\n${log}`)
     await sleep(100)
   }
+  if (!ready) throw new Error(`le serveur n'a pas répondu sur ${base} après ${STARTUP_ATTEMPTS * 100} ms :\n${log}`)
 
   // SIGKILL et non SIGTERM : le handler d'arrêt propre (server/index.js)
   // attend la fermeture des connexions, et le client de test en garde une
