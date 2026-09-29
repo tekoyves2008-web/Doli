@@ -1364,9 +1364,81 @@ input:focus-visible,
   box-shadow: 0 6px 20px color-mix(in srgb, var(--accent) 40%, transparent);
 }
 
+/* ===========================================================================
+   Enfants de grille : autoriser le rétrécissement.
+   ---------------------------------------------------------------------------
+   POURQUOI cette règle existe — la cause n°1 des débordements sur mobile.
+
+   En CSS Grid, un enfant refuse par DÉFAUT de descendre sous la taille de
+   son contenu : une colonne `1fr` se comporte en réalité comme
+   `minmax(auto, 1fr)`, où `auto` vaut la largeur minimale du texte et des
+   éléments non rétrécissables (icônes, pastilles).
+
+   Conséquence observée sur téléphone : les cartes KPI du Dashboard restaient
+   sur UNE LIGNE, écrasées, avec les titres tronqués (« PERFORMAN… »), alors
+   que la règle `@media (max-width: 700px) { grid-template-columns: 1fr }`
+   était pourtant bien appliquée. La grille savait qu'elle devait passer sur
+   une colonne ; ses enfants, eux, refusaient de s'y loger.
+
+   `min-width: 0` annule ce refus : la colonne peut alors descendre aussi bas
+   que nécessaire et le texte se replie proprement à l'intérieur.
+
+   Cette règle est corrective, pas cosmétique : elle ne change rien sur grand
+   écran, elle débloque les replis qui ne pouvaient pas avoir lieu.
+   =========================================================================== */
+.dash__kpis > *,
+.retards-kpis > *,
+.pf-stats > *,
+.mtasks2__counts > *,
+.rappels__kpis > *,
+.pf-grid > *,
+.dash__midrow > *,
+.progression-bottom > *,
+/* Grilles de la rubrique Progression : elles restent à 2 colonnes sur mobile
+   (pour des blocs compacts), mais leurs enfants doivent pouvoir s'y loger. */
+.pg-time__cols > *,
+.pg-week__grid > *,
+.pg-perf__stats > *,
+.pg__grid-top > *,
+.pg__grid-mid > *,
+.pg-tiles > * {
+  min-width: 0;
+}
+
+/* Les titres de carte sont en capitales espacées : sans cette ligne, un mot
+   long refuse de se couper et élargit sa colonne, annulant le min-width:0. */
+.dash-card__kicker,
+.mtasks2-count__label,
+.retards-kpi__label {
+  overflow-wrap: anywhere;
+}
+
+/* Contenu des cartes KPI : la carte est centrée (align-items:center) ; ses
+   enfants en colonne ne doivent pas fixer leur propre largeur. Sans cela, le
+   sous-titre long (« Voir les tâches… ») impose sa largeur et la carte
+   déborde même après le min-width:0 de la colonne. */
+.dash-kpi > * {
+  max-width: 100%;
+}
+
+/* La hauteur maximale de 140px est un choix de maquette pour GRAND écran. Sur
+   téléphone, un téléphone à 4 lignes de sous-titre se faisait rogner par
+   `overflow: hidden` — texte coupé net en bas de carte. On libère la hauteur
+   sur petit écran et on laisse la carte respirer. */
+@media (max-width: 700px) {
+  .dash__kpis:not(.dash__kpis--secondary) .dash-kpi {
+    min-height: 0;
+    max-height: none;
+    padding: 14px 12px 12px;
+  }
+  .dash__kpis:not(.dash__kpis--secondary) .dash-card__kicker {
+    font-size: 10.5px;
+  }
+}
+
 .dash__kpis {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 18px;
 }
 .dash__kpis--secondary {
@@ -5751,7 +5823,10 @@ input:focus-visible,
 /* Grille des statistiques */
 .pf-stats {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  /* minmax(0, …) au lieu de 1fr : autorise la colonne à descendre sous la
+     largeur de son contenu. Sans cela, 4 cartes de statistiques débordent
+     sur téléphone malgré le repli en 1 colonne prévu plus bas. */
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
 }
 
