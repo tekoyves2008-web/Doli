@@ -2978,9 +2978,14 @@ input:focus-visible,
   align-items: center;
   gap: 8px;
 }
+/* Barre de recherche : elle était figée à 220px (min 180px). Sur téléphone,
+   cette largeur minimale empechait le retour à la ligne et poussait la barre
+   d'outils hors de l'écran. flex-basis + min-width fluides la laissent se
+   réduire proprement. */
 .mtasks2__search {
-  flex: 0 1 220px;
-  min-width: 180px;
+  flex: 1 1 220px;
+  min-width: 0;
+  max-width: 320px;
 }
 .mtasks2__search input {
   padding: 8px 12px 8px 32px;
@@ -7280,9 +7285,12 @@ input:focus-visible,
   align-items: center;
   gap: 18px;
 }
-/* display:block supprime l espace residuel du canvas inline : l anneau est
-   ainsi reellement centre, sans decalage de quelques pixels. */
-.retards-donut-card canvas { width: 200px; height: 200px; display: block; }
+/* display:block supprime l'espace résiduel du canvas inline : l'anneau est
+   ainsi réellement centré, sans décalage de quelques pixels.
+   L'anneau est fluide (max-width plutôt que width fixe) : sur un téléphone
+   étroit, 200px de large ne laissaient plus de place à la légende en dessous,
+   et l'anneau sortait de la carte. */
+.retards-donut-card canvas { width: 100%; max-width: 200px; height: auto; aspect-ratio: 1; display: block; margin: 0 auto; }
 .retards-donut-legend {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -7630,9 +7638,13 @@ input:focus-visible,
   gap: 8px;
 }
 
+/* Mode liste : vignette à gauche, contenu au centre, actions à droite.
+   Sur téléphone, ces trois colonnes étaient maintenues telles quelles et la
+   carte débordait. La vignette passe au-dessus et les actions en dessous, ce
+   qui laisse au titre toute la largeur — la seule façon qu'il reste lisible. */
 .pf-grid--list .pf-card {
   display: grid;
-  grid-template-columns: 90px 1fr auto;
+  grid-template-columns: 90px minmax(0, 1fr) auto;
   align-items: center;
   gap: 14px;
   padding: 8px 12px;
@@ -7642,6 +7654,21 @@ input:focus-visible,
   width: 90px;
   height: 60px;
   margin: 0;
+}
+
+@media (max-width: 560px) {
+  .pf-grid--list .pf-card {
+    grid-template-columns: 72px minmax(0, 1fr);
+    grid-template-areas: 'preview body' 'actions actions';
+    row-gap: 8px;
+  }
+  .pf-grid--list .pf-card__preview {
+    grid-area: preview;
+    width: 72px;
+    height: 48px;
+  }
+  .pf-grid--list .pf-card__body { grid-area: body; }
+  .pf-grid--list .pf-card__actions { grid-area: actions; justify-content: flex-end; }
 }
 
 .pf-grid--list .pf-card__body {
@@ -8150,6 +8177,137 @@ input:focus-visible,
 .pf-card__title,
 .pf-detail__title,
 .preuve-item__title{font-family:var(--font-display)}
+
+/* ===========================================================================
+   RESPONSIVE MOBILE — couche finale
+   ---------------------------------------------------------------------------
+   Placée EN FIN de fichier volontairement : ces règles priment sur toutes les
+   autres (même spécificité, ordre de cascade), sans avoir à réécrire les
+   centaines de règles existantes. Effet : sur téléphone, tout s'aligne sur les
+   mêmes seuils, même si plus haut des media query différents coexistent encore.
+
+   Si un jour la fragmentation des 13 breakpoints veut être traitée à la
+   source, ce bloc pourra être supprimé sans rien perdre d'autre.
+   =========================================================================== */
+
+/* --- Titres : se réduisent avec l'écran, sans jamais devenir illisibles --- */
+@media (max-width: 700px) {
+  .dash__greeting { font-size: 22px; }
+  .mtasks2__header-text h2 { font-size: 18px; }
+  .retards-pagehead__title { font-size: 18px; }
+  .rappels__title { font-size: 17px; }
+  .pg__title { font-size: 19px; }
+  .pg__sub { font-size: 12px; }
+
+  /* Sous-titres : 11px est la limite basse de la lisibilité sur téléphone.
+     12px reste discret dans la maquette tout en étant réellement lisible. */
+  .rappels__sub { font-size: 12px; }
+  .pg-card__head .pg-card__sub { font-size: 12px; }
+}
+
+/* --- Textes secondaires trop petits -------------------------------------
+   Passez sous 12px, un texte devient pénible à lire sur un écran de téléphone
+   tenu à bout de bras. On relève les libellés les plus petits, sans toucher
+   aux gros chiffres ni aux valeurs chiffrées (déjà à 22-28px).            */
+@media (max-width: 700px) {
+  .dash-kpi__sub,
+  .dash-kpi__delta,
+  .mtasks2-count__label,
+  .mtasks2-count__pct,
+  .retards-kpi__label,
+  .retards-legend,
+  .rappel-kpi__label,
+  .aside-card--motivation p { font-size: 12px; }
+
+  .dash-card__kicker { font-size: 10.5px; }
+}
+
+/* --- Alignement des grilles sur des seuils communs ------------------------
+   Avant : Dashboard repassait à 1 colonne à 700px, Preuves à 580px, Rappels
+   à 560px, Retards à 720px. Sur un écran de 610px, certaines sections étaient
+   déjà en mode téléphone et d'autres pas — d'un affichage à l'autre, la
+   bascule paraissait aléatoire. On fixe 700px comme seuil commun.          */
+@media (max-width: 700px) {
+  .pf-stats,
+  .mtasks2__counts,
+  .rappels__kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* Sous 480px (petits téléphones : iPhone SE et assimilés), deux colonnes de
+   cartes KPI deviennent trop étroites : on repasse sur une seule. */
+@media (max-width: 480px) {
+  .pf-stats,
+  .mtasks2__counts,
+  .rappels__kpis { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* --- Barres d'outils : retour à la ligne plutôt qu'une rangée unique ----- */
+@media (max-width: 700px) {
+  .mtasks2__toolbar,
+  .pf-toolbar {
+    flex-wrap: wrap;
+    row-gap: 10px;
+  }
+  .mtasks2__search { max-width: 100%; }
+}
+
+/* --- Éléments qui ne doivent JAMAIS sortir de l'écran -------------------
+   Garde-fou final. `min-width: 0` est déjà posé sur les enfants de grille
+   (voir bloc 1) : ces règles couvrent les cas restants, notamment les
+   flexbox, qui ont un comportement de rétrécissement différent des grilles.  */
+@media (max-width: 700px) {
+  .dash,
+  .view > *,
+  .app-main { min-width: 0; }
+
+  /* Un mot isolé ne doit pas déborder (adresses, emails, références). */
+  .dash__date,
+  .mtasks2-count__num,
+  .retards-kpi__value,
+  .rappel-kpi__num { overflow-wrap: anywhere; }
+
+  /* Les titres de rubrique se replient proprement au lieu d'être coupés. */
+  .view h2,
+  .view h3,
+  .view h4 { overflow-wrap: break-word; }
+}
+
+/* --- Tactile : cibles d'au moins 44px -------------------------------------
+   44px est la taille minimale recommandée pour un bouton tactile. Sans cela,
+   les boutons d'action sont difficiles à toucher, et visuellement rapetissés
+   par rapport à ce que l'on voit sur un ordinateur.                      */
+@media (max-width: 700px) {
+  .mtasks2-tab,
+  .mtasks2__filter-btn,
+  .pf-card__actions button,
+  .retards-table2 button {
+    min-height: 44px;
+  }
+}
+
+/* --- Écrans tactiles : pas d'effet « hover » collé au doigt ---------------
+   Sans écran de survol, un `:hover` reste active après le doigt levé : les
+   cartes restent colorées/ombres jusqu'au prochain appui ailleurs. Ces règles
+   neutralisent les effets purement décoratifs et les remplacent par `:active`,
+   qui ne s'active que pendant l'appui réel.                                */
+@media (hover: none) {
+  .mtasks2-count:hover,
+  .mtasks2-tab:hover,
+  .rappel-kpi:hover,
+  .pf-card:hover,
+  .dash-card:hover { transform: none; }
+
+  .mtasks2-count:active,
+  .mtasks2-tab:active { transform: scale(0.98); }
+}
+
+/* --- Notches et bords arrondis ------------------------------------------- */
+@supports (padding: max(0px)) {
+  @media (max-width: 700px) {
+    .app-main { padding-left: max(14px, env(safe-area-inset-left)); }
+    .app-main { padding-right: max(14px, env(safe-area-inset-right)); }
+  }
+}
 
 /* Grands titres : resserrement leger (-0,02em), comme les titres deja types. */
 .view h2,
