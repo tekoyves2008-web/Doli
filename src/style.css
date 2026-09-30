@@ -8360,10 +8360,12 @@ input:focus-visible,
   /* Moins de marge autour de la fenêtre : on gagne de la hauteur utile. */
   .modal-overlay {
     padding: 12px;
-    /* La fenêtre est alignée en bas (feuille qui remonte) au lieu d'être
-       centrée : sur téléphone, c'est plus naturel à atteindre d'une seule
-       main, et le titre ne colle plus au bord haut de l'écran. */
-    align-items: flex-end;
+    /* La fenêtre reste CENTRÉE verticalement, comme sur ordinateur. Un
+       alignement en bas avait été essayé puis écarté : la fenêtre tient
+       largement (≈ 400px de haut), et la décaler supprimait le centrage sans
+       aucun gain — la borne de hauteur et le défilement interne règle déjà
+       le vrai problème, à savoir qu'elle ne peut plus être rognée. */
+    align-items: center;
   }
 
   .modal {
