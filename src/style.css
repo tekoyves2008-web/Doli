@@ -8261,6 +8261,80 @@ input:focus-visible,
   .rappels__kpis { grid-template-columns: minmax(0, 1fr); }
 }
 
+/* --- « Mes tâches » : le tableau devient des cartes empilées -------------
+   Sur téléphone, les six colonnes ne peuvent pas tenir : la ligne était
+   forcée à `min-width: 660px`, ce qui provoquait un débordement horizontal
+   de toute la vue. On reprend le modèle qui fonctionne déjà dans les
+   rubriques Preuves et Rappels : une carte par tâche, les informations
+   empilées verticalement.
+
+   L'en-tête de colonnes n'a plus de sens (plus de colonnes) : il est masqué
+   et chaque valeur récupère son intitulé via une étiquette ::before, afin que
+   « Urgent » ne soit plus orphelin. Aucune modification de JavaScript n'est
+   nécessaire : les cellules sont ciblées par leur position (nth-child), leur
+   ordre étant produit par un unique gabarit dans ui.js.                      */
+@media (max-width: 700px) {
+  /* Plus de largeur minimale imposée : c'est elle qui forçait le débordement. */
+  .mtasks2__colhead,
+  .mtasks2-row {
+    min-width: 0;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 9px;
+  }
+
+  /* L'en-tête de colonnes est remplacé par les étiquettes ci-dessous. */
+  .mtasks2__colhead { display: none; }
+
+  /* Rien à faire défiler : tout tient dans la largeur de l'écran. */
+  .mtasks2__tablewrap { overflow-x: visible; }
+
+  .mtasks2__list .mtasks2-row {
+    padding: 12px 14px;
+    align-items: stretch;
+  }
+
+  /* Étiquette au-dessus de chaque valeur, colonne de gauche alignée. */
+  .mtasks2__list .mtasks2-cell {
+    display: grid;
+    grid-template-columns: 92px minmax(0, 1fr);
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+  }
+
+  .mtasks2__list .mtasks2-cell::before {
+    content: attr(data-mtasks2-label);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    min-width: 0;
+  }
+
+  /* Le titre occupe toute la largeur : c'est l'information principale. */
+  .mtasks2__list .mtasks2-cell--task {
+    display: flex;
+    grid-template-columns: none;
+    margin-bottom: 2px;
+  }
+  .mtasks2__list .mtasks2-cell--task::before { content: none; }
+
+  /* Les actions passent en pleine largeur, cibles tactiles. */
+  .mtasks2__list .mtasks2-cell--actions {
+    grid-template-columns: none;
+    align-items: stretch;
+    margin-top: 2px;
+  }
+  .mtasks2__list .mtasks2-cell--actions::before { content: none; }
+  .mtasks2__list .mtask__actions {
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .mtasks2__list .mtask__actions-row { flex: 1; }
+  .mtasks2__list .mtask__actions-row .mtask__btn { flex: 1; }
+}
+
 /* --- Barres d'outils : retour à la ligne plutôt qu'une rangée unique ----- */
 @media (max-width: 700px) {
   .mtasks2__toolbar,

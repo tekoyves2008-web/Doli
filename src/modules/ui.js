@@ -2346,19 +2346,19 @@ export function renderTasksTable(container, tasks, emptyMessage) {
             <span class="mtask__kind">${taskKindLabel(task)}</span>
           </span>
         </div>
-        <div class="mtasks2-cell"><span class="mtask__priority mtask__priority--${priority}">${MTASK_PRIORITY_LABEL[priority]}</span></div>
-        <div class="mtasks2-cell mtask__period">
+        <div class="mtasks2-cell" data-mtasks2-label="Priorité"><span class="mtask__priority mtask__priority--${priority}">${MTASK_PRIORITY_LABEL[priority]}</span></div>
+        <div class="mtasks2-cell mtask__period" data-mtasks2-label="Période prévue">
           <span class="mtask__period-cols"><span class="mtask__period-col"><em>Début</em><strong>${startHM}</strong></span><span class="mtask__period-col"><em>Fin</em><strong>${endHM}</strong></span></span>
           <span class="mtask__period-day">${dayLabel}</span>
         </div>
-        <div class="mtasks2-cell mtask__adv">
+        <div class="mtasks2-cell mtask__adv" data-mtasks2-label="Avancement">
           <div class="mtask__progress">
             <span class="mtask__progress-pct">${progressPct}</span>
             <div class="mtask__progress-track"><span class="task__progress-fill task__progress-fill${fillMod}" style="width:${progress ?? 0}%"></span></div>
           </div>
           <span class="mtask__progress-status mtask__progress-status--${task.status}">${progressLabel}</span>
         </div>
-        <div class="mtasks2-cell"><span class="mtask__situation mtask__situation--${sit.cls}"><span class="mtask__situation-line mtask__situation-top"><svg viewBox="0 0 20 20" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7.5"/><polyline points="10,6 10,10 13,12"/></svg>${sit.text}</span><span class="mtask__situation-line mtask__situation-sub"><svg viewBox="0 0 20 20" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7.5"/><polyline points="10,6 10,10 13,12"/></svg>${sit.sub}</span></span></div>
+        <div class="mtasks2-cell" data-mtasks2-label="Situation"><span class="mtask__situation mtask__situation--${sit.cls}"><span class="mtask__situation-line mtask__situation-top"><svg viewBox="0 0 20 20" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7.5"/><polyline points="10,6 10,10 13,12"/></svg>${sit.text}</span><span class="mtask__situation-line mtask__situation-sub"><svg viewBox="0 0 20 20" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7.5"/><polyline points="10,6 10,10 13,12"/></svg>${sit.sub}</span></span></div>
         <div class="mtasks2-cell mtasks2-cell--actions mtask__actions">
           ${actionBtn}
           <span class="mtask__actions-row">
