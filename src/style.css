@@ -4074,6 +4074,20 @@ input:focus-visible,
   box-shadow: var(--shadow);
   padding: 24px;
   animation: popIn 0.18s ease;
+  /* Hauteur bornée + défilement interne : la fenêtre de tâche contient cinq
+     champs, un titre et trois boutons. Sans cette borne, elle pouvait
+     dépasser la hauteur de l'écran et se retrouver rognée en haut ET en bas
+     (l'overlay la centre verticalement). Même recette que .modal--wide.
+     `100dvh` plutôt que `100vh` : sur téléphone, la barre d'adresse peut
+     réduire la hauteur réelle, et `100vh` ignore cet espace. */
+  max-height: calc(100vh - 48px);
+  max-height: calc(100dvh - 48px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  /* Les enfants peuvent ainsi rétrécissor : sans cela, un champ à largeur
+     fixe empêcherait le défilement horizontal interne. */
+  min-width: 0;
   /* Fond volontairement noir, indépendant du thème, pour bien se
      détacher de l'arrière-plan : les couleurs internes du formulaire
      sont donc redéfinies ici pour rester lisibles. */
@@ -8333,6 +8347,154 @@ input:focus-visible,
   }
   .mtasks2__list .mtask__actions-row { flex: 1; }
   .mtasks2__list .mtask__actions-row .mtask__btn { flex: 1; }
+}
+
+/* --- Fenêtres modales : ne jamais dépasser l'écran ------------------------
+   La fenêtre d'ajout / de modification de tâche contient cinq champs. Sur un
+   petit téléphone, elle pouvait dépasser la hauteur utile : l'overlay la
+   centre verticalement, donc elle était rognée en haut ET en bas, sans
+   qu'aucun défilement ne permette d'atteindre le bouton d'enregistrement.
+   Elle est désormais bornée en hauteur et défile à l'intérieur (voir .modal),
+   mais ce passage permet aussi de resserrer les marges. */
+@media (max-width: 700px) {
+  /* Moins de marge autour de la fenêtre : on gagne de la hauteur utile. */
+  .modal-overlay {
+    padding: 12px;
+    /* La fenêtre est alignée en bas (feuille qui remonte) au lieu d'être
+       centrée : sur téléphone, c'est plus naturel à atteindre d'une seule
+       main, et le titre ne colle plus au bord haut de l'écran. */
+    align-items: flex-end;
+  }
+
+  .modal {
+    padding: 18px 16px;
+    max-width: 100%;
+    max-height: calc(100dvh - 24px);
+  }
+
+  /* Les champs occupent toute la largeur utile de la fenêtre. */
+  #taskModalOverlay .task-form__field input,
+  #taskModalOverlay .task-form__field select,
+  #taskModalOverlay .task-form__field .doli-select__control { max-width: 100%; }
+
+  /* Les boutons d'action se répartissent sur la largeur, cibles tactiles. */
+  .modal__actions { flex-wrap: wrap; }
+  .modal__actions button { flex: 1 1 auto; min-height: 44px; }
+}
+
+/* --- Rubrique Retards : le tableau des tâches en retard devient des cartes -
+   Huit colonnes ne tiennent pas sur un téléphone, et les en-têtes de colonnes
+   sont en `white-space: nowrap` : la zone devait donc défiler horizontalement.
+   Même approche que pour « Mes tâches » : chaque ligne devient une carte, et
+   chaque valeur récupère son intitulé (attribut data-retards-label posé dans
+   retards.js). Le numéro de ligne et les actions gardent leur place d'origine. */
+@media (max-width: 700px) {
+  .retards-table-wrap { overflow-x: visible; }
+
+  .retards-table2,
+  .retards-table2 tbody,
+  .retards-table2 tr,
+  .retards-table2 td { display: block; width: auto; }
+
+  /* Les en-têtes n'ont plus de sens : chaque cellule porte son étiquette. */
+  .retards-table2 thead { display: none; }
+
+  .retards-table2 tbody tr {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--bg-elevated);
+    padding: 10px 12px;
+    margin-bottom: 10px;
+  }
+  .retards-table2 tbody tr:last-child { margin-bottom: 0; }
+
+  /* Le message « aucune tâche en retard » garde sa mise en forme en carte. */
+  .retards-table2 tbody td.retards-table2__empty {
+    border: none;
+    background: transparent;
+    padding: 22px 10px;
+  }
+
+  .retards-table2 tbody td {
+    border-bottom: none;
+    padding: 4px 0;
+  }
+
+  /* Étiquette à gauche, valeur à droite — même lecture que les cartes de
+     « Mes tâches ». La colonne de gauche est assez large pour « Date prévue ». */
+  .retards-table2 tbody td:not(.c-num):not(.c-act) {
+    display: grid;
+    grid-template-columns: 104px minmax(0, 1fr);
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+  }
+  .retards-table2 tbody td:not(.c-num):not(.c-act)::before {
+    content: attr(data-retards-label);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+  }
+
+  /* Le titre de la tâche : mis en avant, pleine largeur, sans étiquette. */
+  .retards-table2 tbody td.retards-t2__title {
+    display: flex;
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+
+  /* Numéro de ligne discret en haut à gauche. */
+  .retards-table2 tbody td.c-num {
+    display: inline-block;
+    padding: 0 0 4px;
+    font-size: 10.5px;
+  }
+
+  /* Le bouton d'action se place en bas à droite, en cible tactile. */
+  .retards-table2 tbody td.c-act {
+    margin-top: 8px;
+    text-align: right;
+  }
+  .retards-table2 .retards-more { min-height: 44px; min-width: 44px; }
+}
+
+/* --- Filet de sécurité : aucune liste ne doit déborder -------------------
+   Les étapes précédentes traitent les cas connus. Cette dernière couche
+   couvre ce qui resterait — une liste non prévue, ou un cas d'affichage
+   particulier (barre d'outils longue, ligne à deux intitulés, etc.).
+
+   `min-width: 0` + `max-width: 100%` empchent un enfant de grille ou de
+   flexbox de dépasser son conteneur ; `overflow-wrap: anywhere` évite qu'un
+   mot long (référence, lien collé, identifiant) ne force un débordement
+   horizontal. Tout est sans effet sur ordinateur.                            */
+@media (max-width: 700px) {
+  .mtasks2__list,
+  .mtasks2-row,
+  .mtasks2-cell,
+  .retards-table-wrap,
+  .retards-table2,
+  .retards-table2 tbody tr,
+  .retards-table2 tbody td,
+  .preuve-item,
+  .mtasks2-count,
+  .retards-kpi,
+  .dash-card,
+  .dash-kpi {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  /* Un contenu trop long est coupé proprement plutôt que de pousser la
+     mise en page vers la droite. */
+  .mtasks2-task-text,
+  .mtask__title,
+  .retards-t2__title,
+  .preuve-item__title,
+  .dash-card__title,
+  .dash-task-section__head h4 {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
 }
 
 /* --- Barres d'outils : retour à la ligne plutôt qu'une rangée unique ----- */

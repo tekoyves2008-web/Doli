@@ -526,11 +526,11 @@ export function renderRetardsTable(tbody, delayed) {
       return `<tr data-id="${escapeHtml(task.id || '')}">
         <td class="c-num">${pageStart + i + 1}</td>
         <td class="retards-t2__title"><span class="retards-t2__ico retards-t2__ico--${priority}" title="${escapeHtml(motif.hint)}" aria-hidden="true">${motif.icon}</span><span>${escapeHtml(task.title || 'Sans titre')}</span></td>
-        <td><span class="retards-pill retards-pill--${priority}">${PRIORITY_LABELS[priority]}</span></td>
-        <td class="retards-t2__date">${planned}</td>
-        <td class="retards-t2__date">${real}</td>
-        <td class="retards-t2__delay">${formatDelay(task.delayMs)}</td>
-        <td><span class="retards-status retards-status--${status}">${statusLabel}</span></td>
+        <td data-retards-label="Priorité"><span class="retards-pill retards-pill--${priority}">${PRIORITY_LABELS[priority]}</span></td>
+        <td class="retards-t2__date" data-retards-label="Date prévue">${planned}</td>
+        <td class="retards-t2__date" data-retards-label="Début réel">${real}</td>
+        <td class="retards-t2__delay" data-retards-label="Retard">${formatDelay(task.delayMs)}</td>
+        <td data-retards-label="Statut"><span class="retards-status retards-status--${status}">${statusLabel}</span></td>
         <td class="c-act"><button type="button" class="retards-more" data-retard-menu="${escapeHtml(task.id || '')}" aria-label="Actions">•••</button></td>
       </tr>`
     })
