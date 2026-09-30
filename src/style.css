@@ -7289,8 +7289,18 @@ input:focus-visible,
    ainsi réellement centré, sans décalage de quelques pixels.
    L'anneau est fluide (max-width plutôt que width fixe) : sur un téléphone
    étroit, 200px de large ne laissaient plus de place à la légende en dessous,
-   et l'anneau sortait de la carte. */
-.retards-donut-card canvas { width: 100%; max-width: 200px; height: auto; aspect-ratio: 1; display: block; margin: 0 auto; }
+   et l'anneau sortait de la carte.
+
+   `aspect-ratio` seul, SANS `height: auto` : sur un <canvas>, `height:auto`
+   en CSS peut écraser l'attribut height="300" du HTML et déformer l'anneau
+   (il devient ovale). Le ratio doit être imposé explicitement. */
+.retards-donut-card canvas {
+  width: 100%;
+  max-width: 200px;
+  aspect-ratio: 1 / 1;
+  display: block;
+  margin: 0 auto;
+}
 .retards-donut-legend {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

@@ -247,6 +247,19 @@ export function renderRetardsBarChart(canvas, days) {
   ctx.textBaseline = 'middle'
   ctx.fillText('Heures', 2, 10)
 
+  // Étiquettes d'axe X : une par jour, mais SAUF quand la place manque.
+  //
+  // AVANT : on dessinait une étiquette par jour, quoi qu'il arrive. Sur une
+  // carte étroite, huit libellés de ~40 px se retrouvaient empilés sur
+  // ~170 px : « 24 s 25 s 26 s 27 s… » devenait illisible (constaté sur capture).
+  //
+  // On calcule donc combien d'étiquettes TIENNENT réellement, et on n'en dessine
+  // qu'une sur `step` (une sur deux, une sur trois…). La première et la
+  // dernière restent toujours affichées, pour garder les bornes du graph.
+  const slotPx = items.length ? chartWidth / items.length : chartWidth
+  const minStep = 46 // largeur réelle d'un libellé « 24 sept. » + respiration
+  const step = Math.max(1, Math.ceil(minStep / Math.max(1, slotPx)))
+
   items.forEach((day, index) => {
     const onTime = day.onTime || 0
     const late = day.late || 0
@@ -265,12 +278,17 @@ export function renderRetardsBarChart(canvas, days) {
       ctx.fillStyle = '#f87171'
       roundTopBar(ctx, x, base - lateH, barWidth, lateH, 5)
     }
-    ctx.fillStyle = muted
-    ctx.font = '10px Inter, sans-serif'
-    ctx.textAlign = 'center'
-    ctx.textBaseline = 'top'
-    const label = day.date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })
-    ctx.fillText(label, cx, base + 7)
+
+    // Étiquette : une sur `step`, plus la dernière (borne droite du graph).
+    const isLast = index === items.length - 1
+    if (index % step === 0 || isLast) {
+      ctx.fillStyle = muted
+      ctx.font = '10px Inter, sans-serif'
+      ctx.textAlign = 'center'
+      ctx.textBaseline = 'top'
+      const label = day.date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })
+      ctx.fillText(label, cx, base + 7)
+    }
   })
 }
 
