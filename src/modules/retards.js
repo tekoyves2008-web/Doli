@@ -184,10 +184,19 @@ const PRIORITY_COLORS = { urgent: '#ef4444', high: '#f59e0b', medium: '#3b82f6',
 
 function themeColors() {
   const isDark = document.documentElement.getAttribute('data-theme') === 'dark'
+  const vars = getComputedStyle(document.documentElement)
+  const read = (name) => vars.getPropertyValue(name).trim()
   return {
     bg: isDark ? '#1a1d26' : '#ffffff',
     text: isDark ? '#e6e8ec' : '#1c2536',
     muted: isDark ? '#9199a6' : '#626c7d',
+    // Anneau neutre quand aucune tâche n'est en retard. Il est piloté par
+    // --pg-ring-track, exactement comme les anneaux de la rubrique Progression
+    // (pgCanvasPalette dans ui.js) : c'est la feuille de style qui décide de la
+    // teinte. Ce donut utilisait auparavant un gris clair codé en dur (#e5e7eb),
+    // très éblouissant sur la carte sombre. Le repli ci-dessous ne sert que si la
+    // variable est absente.
+    track: read('--pg-ring-track') || (isDark ? '#333c50' : '#e9edf4'),
   }
 }
 // Prépare le canvas pour le rendu HiDPI (même logique que ui.js).
@@ -309,10 +318,11 @@ function roundTopBar(ctx, x, y, w, h, r) {
 export function renderRetardsDonutChart(canvas, delayed) {
   if (!canvas) return
   const { ctx, width, height } = prepareCanvas(canvas)
-  const { bg, text, muted } = themeColors()
+  const { text, muted, track } = themeColors()
   ctx.clearRect(0, 0, width, height)
-  ctx.fillStyle = bg
-  ctx.fillRect(0, 0, width, height)
+  // On ne peint PLUS de rectangle de fond derrière le donut : la carte a un fond
+  // en dégradé, et un aplat uni par-dessus laissait une tache rectangulaire
+  // visible (surtout en thème sombre). Le canvas reste transparent.
 
   const order = ['urgent', 'high', 'medium', 'low']
   const groups = order.map((p) => ({
@@ -341,7 +351,10 @@ export function renderRetardsDonutChart(canvas, delayed) {
   const labGap = Math.max(5, Math.round(labFont * 0.8))
 
   if (total === 0) {
-    ctx.strokeStyle = '#e5e7eb'
+    // Anneau neutre, piloté par le CSS (voir themeColors). C'était ici un gris
+    // clair codé en dur (#e5e7eb) : sur la carte sombre il ressortait de façon
+    // éblouissante, contrairement aux anneaux de la rubrique Progression.
+    ctx.strokeStyle = track
     ctx.lineWidth = thick
     ctx.beginPath()
     ctx.arc(centerX, centerY, radius - thick / 2, 0, 2 * Math.PI)
