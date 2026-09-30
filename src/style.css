@@ -8349,29 +8349,58 @@ input:focus-visible,
   .mtasks2__list .mtask__actions-row .mtask__btn { flex: 1; }
 }
 
-/* --- Fenêtres modales : ne jamais dépasser l'écran ------------------------
-   La fenêtre d'ajout / de modification de tâche contient cinq champs. Sur un
-   petit téléphone, elle pouvait dépasser la hauteur utile : l'overlay la
-   centre verticalement, donc elle était rognée en haut ET en bas, sans
-   qu'aucun défilement ne permette d'atteindre le bouton d'enregistrement.
-   Elle est désormais bornée en hauteur et défile à l'intérieur (voir .modal),
-   mais ce passage permet aussi de resserrer les marges. */
+/* --- Fenêtres modales : s'adapter à l'écran, plutôt que d'être coupée ----
+   La fenêtre d'ajout / de modification de tâche contient cinq champs, et son
+   formulaire est une GRILLE À DEUX COLONNES (voir #taskModalOverlay form) :
+   « Début » et « Échéance » se partagent une rangée, et « Titre » et
+   « Description » aussi.
+
+   Sur un téléphone de 360px, chaque champ date ne dispose plus que d'environ
+   160px : les dates deviennent illisibles. Empiler verticalement et resserrer
+   les espacements est donc le double bénéfice — la fenêtre tient en entier,
+   sans défilement, ET les champs deviennent enfin lisibles au doigt.
+
+   La borne de hauteur reste posée sur .modal (voir bloc précédent) : c'est une
+   sécurité pour les écrans les plus petits et pour l'ouverture du clavier
+   virtuel, pas le mode de fonctionnement normal.                                 */
 @media (max-width: 700px) {
   /* Moins de marge autour de la fenêtre : on gagne de la hauteur utile. */
   .modal-overlay {
-    padding: 12px;
-    /* La fenêtre reste CENTRÉE verticalement, comme sur ordinateur. Un
-       alignement en bas avait été essayé puis écarté : la fenêtre tient
-       largement (≈ 400px de haut), et la décaler supprimait le centrage sans
-       aucun gain — la borne de hauteur et le défilement interne règle déjà
-       le vrai problème, à savoir qu'elle ne peut plus être rognée. */
+    padding: 10px;
+    /* La fenêtre reste CENTRÉE verticalement, comme sur ordinateur. */
     align-items: center;
   }
 
   .modal {
-    padding: 18px 16px;
+    padding: 14px 14px 12px;
     max-width: 100%;
-    max-height: calc(100dvh - 24px);
+    max-height: calc(100dvh - 20px);
+  }
+
+  /* Titre un peu plus discret : il reste lisible sans voler de hauteur. */
+  #taskModalOverlay .modal h3 {
+    font-size: 17px;
+    margin-bottom: 2px;
+  }
+
+  /* UNE colonne : chaque champ gagne la largeur de la fenêtre, donc les dates
+     deviennent lisibles. C'est la clé de l'adaptation sur téléphone. */
+  #taskModalOverlay form {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  /* Champs plus compacts : moins de padding vertical, un peu moins d'interligne
+     entre le libellé et le champ. */
+  #taskModalOverlay .task-form__field {
+    gap: 3px;
+  }
+  #taskModalOverlay .task-form__field input,
+  #taskModalOverlay .task-form__field select,
+  #taskModalOverlay .task-form__field .doli-select__control {
+    padding: 8px 12px;
+    font-size: 13px;
   }
 
   /* Les champs occupent toute la largeur utile de la fenêtre. */
@@ -8379,9 +8408,22 @@ input:focus-visible,
   #taskModalOverlay .task-form__field select,
   #taskModalOverlay .task-form__field .doli-select__control { max-width: 100%; }
 
-  /* Les boutons d'action se répartissent sur la largeur, cibles tactiles. */
-  .modal__actions { flex-wrap: wrap; }
-  .modal__actions button { flex: 1 1 auto; min-height: 44px; }
+  /* Boutons pleine largeur : cibles tactiles confortables. Trois boutons ne
+     tiennent pas côte à côte sur 360px, ils passeraient à deux lignes de toute
+     façon — on les empile donc franchement, en gardant 44px de hauteur.
+     La règle est limitée à #taskModalOverlay : la classe .modal__actions est
+     aussi utilisée par la fenêtre « Ajouter une preuve » et celle des
+     réglages, qui ont leur propre disposition (la première empile déjà ses
+     actions via .modal__actions--stack). */
+  #taskModalOverlay .modal__actions {
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 4px;
+  }
+  #taskModalOverlay .modal__actions button {
+    flex: 1 1 100%;
+    min-height: 44px;
+  }
 }
 
 /* --- Rubrique Retards : le tableau des tâches en retard devient des cartes -
