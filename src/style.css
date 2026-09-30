@@ -8497,6 +8497,50 @@ input:focus-visible,
   }
 }
 
+/* --- Les cartes KPI doivent s'empiler, enfin -----------------------------
+   POURQUOI CE BLOC EST PLACÉ ICI, À LA FIN DE LA FEUILLE.
+
+   Les replis vers une seule colonne existaient déjà, mais ils étaient
+   ÉCRASÉS par des règles de base déclarées plus bas dans le fichier.
+
+   En CSS, deux règles de même spécificité s'appliquent : la dernière l'emporte.
+   Et une règle plus spécifique l'emporte toujours, où qu'elle soit écrite.
+
+   - Dashboard : `.dash__kpis:not(.dash__kpis--secondary)` (ligne ~1734) impose
+     `repeat(4, minmax(0, 1fr))`. Le `:not()` rend cette règle PLUS spécifique
+     que le simple `.dash__kpis { grid-template-columns: 1fr }` du repli 700px :
+     les 4 cases restaient donc sur une seule ligne, écrasées.
+   - Retards : `.retards-kpis` est redéclaré en `repeat(4, ...)` APRÈS le
+     repli 720px. Même spécificité, mais déclaré plus tard : il l'emporte.
+   - Retards : `.retards-charts2` (1.5fr / 1fr) est redéclaré après son repli.
+
+   Écrire ces règles ici, en toute fin de feuille et à l'intérieur d'un media
+   query, garantit qu'elles sont les dernières à parler. C'est aussi plus
+   simple et plus sûr que d'aller déplacer des règles au milieu d'un fichier
+   de 8 500 lignes : un déplacement risquerait de casser la cascade ailleurs.
+
+   Le seuil est de 700px partout, comme le reste de l'interface. Les replis
+   existants à 720px (Retards) et 1100px sont laissés en place : ils ne
+   font que des paliers intermédiaires sur tablette.                              */
+@media (max-width: 700px) {
+  /* Dashboard : les 4 cartes du bandeau haut. */
+  .dash__kpis,
+  .dash__kpis:not(.dash__kpis--secondary) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* Retards : les 4 cartes de comptage. */
+  .retards-kpis {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* Retards : « Évolution des retards » et « Répartition des retards »
+     passent l'une au-dessus de l'autre au lieu de se partager la largeur. */
+  .retards-charts2 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 /* --- Barres d'outils : retour à la ligne plutôt qu'une rangée unique ----- */
 @media (max-width: 700px) {
   .mtasks2__toolbar,
