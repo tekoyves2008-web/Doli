@@ -8303,23 +8303,31 @@ input:focus-visible,
   .mtasks2__tablewrap { overflow-x: visible; }
 
   .mtasks2__list .mtasks2-row {
-    padding: 12px 14px;
+    padding: 11px 12px;
     align-items: stretch;
   }
 
-  /* Étiquette au-dessus de chaque valeur, colonne de gauche alignée. */
+  /* Étiquette AU-DESSUS de la valeur, et non à côté.
+
+     La version précédente posait une colonne d'étiquettes de 92px : sur un
+     écran de 360px, elle consommait plus de la moitié de la carte, et il ne
+     restait qu'environ 170px pour la valeur — d'où un rendu étiré et moche.
+     En superposant l'étiquette, elle ne coûte plus qu'une ligne, la valeur
+     récupère toute la largeur, et les intitulés longs (« Période prévue »)
+     tiennent enfin sans être tronqués. C'est le vrai modèle « carte ». */
   .mtasks2__list .mtasks2-cell {
-    display: grid;
-    grid-template-columns: 92px minmax(0, 1fr);
-    align-items: center;
-    gap: 10px;
+    display: block;
     min-width: 0;
   }
 
   .mtasks2__list .mtasks2-cell::before {
     content: attr(data-mtasks2-label);
-    font-size: 11px;
+    display: block;
+    margin-bottom: 2px;
+    font-size: 10.5px;
     font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
     color: var(--text-muted);
     min-width: 0;
   }
@@ -8327,16 +8335,14 @@ input:focus-visible,
   /* Le titre occupe toute la largeur : c'est l'information principale. */
   .mtasks2__list .mtasks2-cell--task {
     display: flex;
-    grid-template-columns: none;
     margin-bottom: 2px;
   }
   .mtasks2__list .mtasks2-cell--task::before { content: none; }
 
   /* Les actions passent en pleine largeur, cibles tactiles. */
   .mtasks2__list .mtasks2-cell--actions {
-    grid-template-columns: none;
-    align-items: stretch;
-    margin-top: 2px;
+    display: block;
+    margin-top: 4px;
   }
   .mtasks2__list .mtasks2-cell--actions::before { content: none; }
   .mtasks2__list .mtask__actions {
@@ -8347,6 +8353,15 @@ input:focus-visible,
   }
   .mtasks2__list .mtask__actions-row { flex: 1; }
   .mtasks2__list .mtask__actions-row .mtask__btn { flex: 1; }
+
+  /* Marges de la vue resserrées. À 14px de chaque côté, elles mangeaient 28px
+     sur un écran de 360px, alors qu'elles n'ont pas à manger l'écran. Ce bloc
+     vient APRÈS les media query de #viewTasks (720px / 600px), donc c'est lui
+     qui parle — et la liste gagne ainsi quelques pixels précieux. */
+  #viewTasks {
+    margin: -16px -10px -40px;
+    padding: 16px 10px 40px;
+  }
 }
 
 /* --- Fenêtres modales : s'adapter à l'écran, plutôt que d'être coupée ----
